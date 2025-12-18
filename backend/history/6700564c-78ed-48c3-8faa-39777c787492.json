@@ -1,0 +1,58 @@
+{
+  "id": "6700564c-78ed-48c3-8faa-39777c787492",
+  "topic": "cs",
+  "platform": "xiaohongshu",
+  "outline": {
+    "raw": "[内容]\n第三步：冲泡咖啡\n\n方法：\n1. 将咖啡豆放入滤杯\n2. 用热水冲洗滤杯，去除杂质\n3. 加入热水，水位达到咖啡豆的2/3\n4. 用盖子盖上滤杯，等待30秒\n5. 慢慢旋开盖子，让咖啡从细嘴壶流出\n\n小贴士🌟：\n等待时可以轻轻摇晃手冲壶，帮助咖啡溶解\n\n配图建议：手冲咖啡的步骤图\n</page>\n\n<page>\n[内容]\n第四步：品鉴咖啡\n\n观察颜色：金黄色\n闻闻香气：浓郁的咖啡香\n尝尝口感：苦中带甜\n\n小贴士💡：\n每个人的口味不同，可以多尝试几次找到最适合你的咖啡豆和冲泡方法\n\n配图建议：品鉴咖啡的图片\n\n<page>\n[内容]\n第五步：享受咖啡时间\n\n找一个安静的地方，慢慢品味这杯美味的咖啡\n可以搭配一些点心或书籍\n\n小贴士🏋️：\n手冲咖啡适合朋友聚会或独自享受\n\n配图建议：享受咖啡的时间\n\n<page>\n[总结]\n手冲咖啡虽然步骤有点多，但只要掌握了方法，就能轻松做出咖啡店的味道\n记得每次使用新鲜的咖啡豆和热水，让每一杯都充满新鲜感！\n\n[行动呼吁]\n试试手冲咖啡吧！\n如果你喜欢这个教程，记得点赞和分享给你的咖啡伙伴们哦！\n让我们一起享受美味的咖啡时光！🌻💖",
+    "pages": [
+      {
+        "index": 0,
+        "type": "content",
+        "content": "[内容]\n第三步：冲泡咖啡\n\n方法：\n1. 将咖啡豆放入滤杯\n2. 用热水冲洗滤杯，去除杂质\n3. 加入热水，水位达到咖啡豆的2/3\n4. 用盖子盖上滤杯，等待30秒\n5. 慢慢旋开盖子，让咖啡从细嘴壶流出\n\n小贴士🌟：\n等待时可以轻轻摇晃手冲壶，帮助咖啡溶解\n\n配图建议：手冲咖啡的步骤图\n</page>"
+      },
+      {
+        "index": 1,
+        "type": "content",
+        "content": "[内容]\n第四步：品鉴咖啡\n\n观察颜色：金黄色\n闻闻香气：浓郁的咖啡香\n尝尝口感：苦中带甜\n\n小贴士💡：\n每个人的口味不同，可以多尝试几次找到最适合你的咖啡豆和冲泡方法\n\n配图建议：品鉴咖啡的图片"
+      },
+      {
+        "index": 2,
+        "type": "content",
+        "content": "[内容]\n第五步：享受咖啡时间\n\n找一个安静的地方，慢慢品味这杯美味的咖啡\n可以搭配一些点心或书籍\n\n小贴士🏋️：\n手冲咖啡适合朋友聚会或独自享受\n\n配图建议：享受咖啡的时间"
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "content": "[总结]\n手冲咖啡虽然步骤有点多，但只要掌握了方法，就能轻松做出咖啡店的味道\n记得每次使用新鲜的咖啡豆和热水，让每一杯都充满新鲜感！\n\n[行动呼吁]\n试试手冲咖啡吧！\n如果你喜欢这个教程，记得点赞和分享给你的咖啡伙伴们哦！\n让我们一起享受美味的咖啡时光！🌻💖"
+      }
+    ]
+  },
+  "images": [
+    {
+      "index": 0,
+      "url": "https://s3.siliconflow.cn/default/outputs/6b57baf1-396b-44fe-a9e5-4443cb468c6a_063e50c4b928cb40aabcd2e891f9ab4d_ComfyUI_2ec87e9b_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193947Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=d8b95de842b433ff8846f83e7310f3f6e75d3585630c1c46ded562872c37f470",
+      "status": "done"
+    },
+    {
+      "index": 1,
+      "url": "https://s3.siliconflow.cn/default/outputs/45c86dfc-a531-4bf2-ad0f-86e1c178db43_8a5bc4170f5375d5a69b6f0dc947792e_ComfyUI_ae92a6fc_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193955Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=98a04e9f28914434e1f7d02e9c64a433532986b3a5c959f433acd06818f97550",
+      "status": "done"
+    },
+    {
+      "index": 2,
+      "url": "https://s3.siliconflow.cn/default/outputs/4df5d76c-c3bd-4c8f-90c5-021cbdd9cd01_01d077a9da2a2efe5e0790619a33c061_ComfyUI_96437249_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T194004Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=2ddd5df9c74b4bc26334f710212d73a8f5dd55984487eb380ebc40242e047f3d",
+      "status": "done"
+    },
+    {
+      "index": 3,
+      "url": "https://s3.siliconflow.cn/default/outputs/1678d163-5ec4-4e03-8d44-6f7ba93d1175_19cb78b7b066605eebe16fa8eb2b657c_ComfyUI_75599e3c_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T194013Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=6dc4d0112b1d7cf09247c0b46a630e9568116ecac173bccbba2bbc780dd993ea",
+      "status": "done"
+    }
+  ],
+  "status": "success",
+  "generation_time": 9.141158,
+  "created_at": "2025-12-18T03:39:29.427582",
+  "updated_at": "2025-12-18T03:40:14.060427",
+  "text_model": "tencent/Hunyuan-MT-7B",
+  "image_model": "Kwai-Kolors/Kolors"
+}

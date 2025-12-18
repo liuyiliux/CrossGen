@@ -1,0 +1,199 @@
+# 图像生成提供商配置文件
+# 支持多种AI图像生成服务的配置
+
+providers:
+  # OpenAI DALL·E 配置
+  dall_e:
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"
+    base_url: "https://api.openai.com/v1"
+    model: "dall-e-3"
+    quality: "standard"  # standard, hd
+    size_config:
+      xiaohongshu: ["1024x1792", "1792x1024"]
+      douyin: ["1024x1792"]
+      wechat: ["1792x1024"]
+      toutiao: ["1024x1024"]
+    timeout: 60
+    retry_count: 2
+    style: "vivid"  # vivid, natural
+    headers:
+      "Content-Type": "application/json"
+      "Authorization": "Bearer ${OPENAI_API_KEY}"
+    
+  # Stable Diffusion 配置
+  stable_diffusion:
+    enabled: false
+    api_key: "${SD_API_KEY}"
+    base_url: "http://localhost:7860/sdapi/v1"
+    model: "stable-diffusion-xl"
+    width: 1024
+    height: 1024
+    steps: 20
+    cfg_scale: 7
+    sampler_name: "DPM++ 2M Karras"
+    batch_size: 1
+    timeout: 120
+    retry_count: 2
+    negative_prompt: "low quality, blurry, distorted, ugly"
+    
+  # Midjourney 配置
+  midjourney:
+    enabled: false
+    api_key: "${MIDJOURNEY_API_KEY}"
+    base_url: "https://api.midjourney.com/v1"
+    model: "midjourney-v6"
+    quality: "high"
+    style: "natural"
+    aspect_ratios:
+      xiaohongshu: "2:3"
+      douyin: "9:16"
+      wechat: "16:9"
+      toutiao: "1:1"
+    timeout: 180
+    retry_count: 1
+    
+  # 百度文心一格配置
+    wenyi:
+    enabled: false
+    api_key: "${WENYI_API_KEY}"
+    secret_key: "${WENYI_SECRET_KEY}"
+    base_url: "https://aip.baidubce.com"
+    model: "wenyi-v3"
+    width: 1024
+    height: 1024
+    timeout: 60
+    retry_count: 2
+
+# 提示词增强配置
+prompt_enhancement:
+  # 小红书风格增强
+  xiaohongshu:
+    style_keywords: ["ins", "trending", "aesthetic", "vibrant", "lifestyle"]
+    quality_keywords: ["high quality", "detailed", "sharp focus", "professional"]
+    lighting_keywords: ["soft lighting", "natural light", "bright"]
+    composition_keywords: ["centered", "balanced", "rule of thirds"]
+    
+  # 抖音风格增强
+  douyin:
+    style_keywords: ["dynamic", "energetic", "bold", "attention-grabbing"]
+    quality_keywords: ["4k", "ultra detailed", "cinematic"]
+    lighting_keywords: ["dramatic lighting", "vibrant colors"]
+    composition_keywords: ["close-up", "eye-level", "engaging"]
+    
+  # 微信公众号风格增强
+  wechat:
+    style_keywords: ["professional", "clean", "informative", "editorial"]
+    quality_keywords: ["high resolution", "crisp", "well-composed"]
+    lighting_keywords: ["even lighting", "professional"]
+    composition_keywords: ["wide shot", "informative layout"]
+    
+  # 头条号风格增强
+  toutiao:
+    style_keywords: ["news-style", "documentary", "authentic", "journalistic"]
+    quality_keywords: ["realistic", "detailed", "clear"]
+    lighting_keywords: ["natural", "available light"]
+    composition_keywords: ["news photography", "storytelling"]
+
+# 图像后处理配置
+post_processing:
+  # 基础调整
+  basic_adjustments:
+    brightness: 0  # -100 to 100
+    contrast: 0    # -100 to 100
+    saturation: 0   # -100 to 100
+    sharpness: 0    # -100 to 100
+    
+  # 水印配置
+  watermark:
+    enabled: false
+    text: "逸流生成"
+    position: "bottom_right"  # bottom_left, bottom_right, top_left, top_right, center
+    opacity: 0.5
+    font_size: 24
+    color: "#FFFFFF"
+    
+  # 尺寸调整
+  resizing:
+    maintain_aspect_ratio: true
+    upscale_method: "lanczos"  # nearest, bilinear, bicubic, lanczos
+    downscale_method: "area"    # nearest, bilinear, bicubic, area
+
+# 内容安全配置
+content_safety:
+  enabled: true
+  filters:
+    - "violence"
+    - "adult_content"
+    - "hate_speech"
+    - "illegal_content"
+  action: "block"  # block, blur, warn
+
+# 性能优化配置
+performance:
+  # 并发控制
+  concurrent_requests:
+    max_concurrent: 3
+    queue_size: 10
+    timeout_per_request: 120
+    
+  # 缓存配置
+  cache:
+    enabled: true
+    ttl: 86400  # 24小时
+    max_size: 500
+    storage_type: "memory"  # memory, redis, file
+    
+  # 预热配置
+  warmup:
+    enabled: false
+    common_prompts:
+      - "beautiful landscape"
+      - "modern interior design"
+      - "fashion photography"
+
+# 平台映射配置
+platform_mapping:
+  xiaohongshu:
+    primary_provider: "dall_e"
+    fallback_provider: "stable_diffusion"
+    aspect_ratio: "2:3"
+    
+  douyin:
+    primary_provider: "dall_e"
+    fallback_provider: "stable_diffusion"
+    aspect_ratio: "9:16"
+    
+  wechat:
+    primary_provider: "dall_e"
+    fallback_provider: "stable_diffusion"
+    aspect_ratio: "16:9"
+    
+  toutiao:
+    primary_provider: "dall_e"
+    fallback_provider: "stable_diffusion"
+    aspect_ratio: "1:1"
+
+# 质量控制配置
+quality_control:
+  # 质量检查
+  quality_check:
+    enabled: true
+    min_resolution: 512
+    max_file_size: 10485760  # 10MB
+    allowed_formats: ["png", "jpg", "jpeg", "webp"]
+    
+  # 自动重试配置
+  auto_retry:
+    enabled: true
+    max_retries: 2
+    retry_conditions:
+      - "low_quality_score"
+      - "content_filter_triggered"
+      - "generation_error"
+    
+  # 质量评分阈值
+  quality_thresholds:
+    min_score: 0.7
+    aesthetic_threshold: 0.6
+    technical_threshold: 0.8

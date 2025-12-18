@@ -1,0 +1,136 @@
+# 文本生成提供商配置文件
+# 支持多种AI文本生成服务的配置
+
+providers:
+  # OpenAI 配置
+  openai:
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"  # 从环境变量读取
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-4"
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    frequency_penalty: 0
+    presence_penalty: 0
+    timeout: 30
+    retry_count: 3
+    headers:
+      "Content-Type": "application/json"
+      "Authorization": "Bearer ${OPENAI_API_KEY}"
+    
+  # Anthropic Claude 配置
+  claude:
+    enabled: false
+    api_key: "${ANTHROPIC_API_KEY}"
+    base_url: "https://api.anthropic.com"
+    model: "claude-3-sonnet-20240229"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 30
+    retry_count: 3
+    headers:
+      "Content-Type": "application/json"
+      "x-api-key": "${ANTHROPIC_API_KEY}"
+      "anthropic-version": "2023-06-01"
+    
+  # 百度文心一言配置
+  wenxin:
+    enabled: false
+    api_key: "${WENXIN_API_KEY}"
+    secret_key: "${WENXIN_SECRET_KEY}"
+    base_url: "https://aip.baidubce.com"
+    model: "wenxin-4"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 30
+    retry_count: 3
+    
+  # 阿里通义千问配置
+  qwen:
+    enabled: false
+    api_key: "${QWEN_API_KEY}"
+    base_url: "https://dashscope.aliyuncs.com/api/v1"
+    model: "qwen-plus"
+    max_tokens: 2000
+    temperature: 0.7
+    timeout: 30
+    retry_count: 3
+    headers:
+      "Authorization": "Bearer ${QWEN_API_KEY}"
+
+# 提示词模板配置
+prompt_templates:
+  # 小红书内容生成模板
+  xiaohongshu: |
+    请根据以下要求生成小红书风格的内容：
+    
+    主题：{topic}
+    标题要求：{title_requirements}
+    内容结构：{section_structure}
+    语言风格：{text_style}
+    
+    请生成包含标题和正文的内容，语言要活泼有趣，符合小红书用户的阅读习惯。
+    
+  # 抖音脚本生成模板
+  douyin: |
+    请根据以下要求生成抖音短视频脚本：
+    
+    主题：{topic}
+    标题要求：{title_requirements}
+    脚本结构：{section_structure}
+    视频时长：{video_duration}
+    
+    请生成包含标题和分场景脚本的完整内容，语言要有感染力，适合短视频传播。
+    
+  # 微信公众号文章模板
+  wechat: |
+    请根据以下要求生成微信公众号文章：
+    
+    主题：{topic}
+    标题要求：{title_requirements}
+    文章结构：{section_structure}
+    文章风格：{text_style}
+    
+    请生成包含标题和完整正文的内容，语言要专业且有深度，适合公众号读者。
+    
+  # 头条号文章模板
+  toutiao: |
+    请根据以下要求生成头条号文章：
+    
+    主题：{topic}
+    标题要求：{title_requirements}
+    文章结构：{section_structure}
+    新闻风格：{text_style}
+    
+    请生成具有新闻性的内容，标题要吸引人，内容要有信息价值。
+
+# 平台映射配置
+platform_mapping:
+  xiaohongshu:
+    primary_provider: "openai"
+    fallback_provider: "claude"
+    
+  douyin:
+    primary_provider: "openai"
+    fallback_provider: "claude"
+    
+  wechat:
+    primary_provider: "claude"
+    fallback_provider: "openai"
+    
+  toutiao:
+    primary_provider: "openai"
+    fallback_provider: "qwen"
+
+# 负载均衡配置
+load_balancing:
+  strategy: "round_robin"  # round_robin, random, weighted
+  health_check_interval: 60  # 秒
+  failure_threshold: 3  # 连续失败次数后切换
+
+# 缓存配置
+cache:
+  enabled: true
+  ttl: 3600  # 缓存时间（秒）
+  max_size: 1000  # 最大缓存条目数

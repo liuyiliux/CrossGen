@@ -1,0 +1,58 @@
+{
+  "id": "e4e76c3d-83c5-4ded-9a47-918116f97e7e",
+  "topic": "啊啊啊12",
+  "platform": "xiaohongshu",
+  "outline": {
+    "raw": "[内容]\n第三步：预热水壶\n\n将水壶放在炉子上，加入热水，加热至92-96℃\n\n小贴士💡：\n使用热水可以提取出更多的咖啡风味\n\n配图建议：水壶加热的图片\n\n<page>\n[内容]\n第四步：冲泡咖啡\n\n将咖啡豆倒入滤杯中\n用漏网将滤纸铺在滤杯上\n慢慢倒入热水，保持水流均匀\n\n时间：5分钟\n\n小贴士💡：\n不要搅拌咖啡豆，以免破坏口感\n\n配图建议：手冲咖啡的过程\n\n<page>\n[内容]\n第五步：品鉴咖啡\n\n等待5分钟后，轻轻晃动滤杯，让咖啡完全渗出\n品尝咖啡的味道和香气\n\n小贴士💡：\n可以适当加一点牛奶或奶油，提升口感\n\n配图建议：品鉴咖啡的图片\n\n<page>\n[总结]\n手冲咖啡虽然步骤有点多，但只要掌握了技巧，你也能做出美味可口的咖啡\n记得定期清洁器具，保持咖啡的新鲜度哦！\n\n[行动呼吁]\n试试手冲咖啡，让你的早晨更加美好！\n#手冲咖啡 #咖啡爱好 #咖啡生活 #咖啡技巧",
+    "pages": [
+      {
+        "index": 0,
+        "type": "content",
+        "content": "[内容]\n第三步：预热水壶\n\n将水壶放在炉子上，加入热水，加热至92-96℃\n\n小贴士💡：\n使用热水可以提取出更多的咖啡风味\n\n配图建议：水壶加热的图片"
+      },
+      {
+        "index": 1,
+        "type": "content",
+        "content": "[内容]\n第四步：冲泡咖啡\n\n将咖啡豆倒入滤杯中\n用漏网将滤纸铺在滤杯上\n慢慢倒入热水，保持水流均匀\n\n时间：5分钟\n\n小贴士💡：\n不要搅拌咖啡豆，以免破坏口感\n\n配图建议：手冲咖啡的过程"
+      },
+      {
+        "index": 2,
+        "type": "content",
+        "content": "[内容]\n第五步：品鉴咖啡\n\n等待5分钟后，轻轻晃动滤杯，让咖啡完全渗出\n品尝咖啡的味道和香气\n\n小贴士💡：\n可以适当加一点牛奶或奶油，提升口感\n\n配图建议：品鉴咖啡的图片"
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "content": "[总结]\n手冲咖啡虽然步骤有点多，但只要掌握了技巧，你也能做出美味可口的咖啡\n记得定期清洁器具，保持咖啡的新鲜度哦！\n\n[行动呼吁]\n试试手冲咖啡，让你的早晨更加美好！\n#手冲咖啡 #咖啡爱好 #咖啡生活 #咖啡技巧"
+      }
+    ]
+  },
+  "images": [
+    {
+      "index": 0,
+      "url": "https://s3.siliconflow.cn/default/outputs/995fdf85-6b34-4c5a-88c8-96003b80660b_1c9bae023dbfc021173f8e91b40944e2_ComfyUI_02431d65_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193835Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=f694bed4d4a83896e5e9f496f714799c53ba9e54965d5f4b45283a2b4ff3b5bb",
+      "status": "done"
+    },
+    {
+      "index": 1,
+      "url": "https://s3.siliconflow.cn/default/outputs/2dd1b4d6-d8b8-49dc-8c89-11d02d59dd4f_fb5bd1d9b83e8ac44150092b218829ab_ComfyUI_72e3bf48_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193842Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=a74018c6a323152e754eae23603ba527abe4d02ab51d83bb10c2d19438695753",
+      "status": "done"
+    },
+    {
+      "index": 2,
+      "url": "https://s3.siliconflow.cn/default/outputs/bfdde988-82a7-4d8a-bd27-7b7b87ab6f0f_f0448282b9705ae5f62f8659b58d7f1b_ComfyUI_6c8d7310_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193850Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=61eaa26c1e6ac78677e6fef0c0deb47aeefa5ac19ed4d82b6f8dc69f8464ceef",
+      "status": "done"
+    },
+    {
+      "index": 3,
+      "url": "https://s3.siliconflow.cn/default/outputs/6efe2829-e1af-4f48-956c-7c861cc6dd5b_75c610739154255017e4a5bfb4f8a56f_ComfyUI_21ad120f_00001_.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAXXXXFILESEXAMPLE%2F20251217%2Fcn-shanghai-1%2Fs3%2Faws4_request&X-Amz-Date=20251217T193900Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImdyYXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmYWFzOmRlcDpvcHI6ZDI5Y3UzZ2gzdnZjNzNjNWJpNWc6Njg5NDciLCJpc3MiOiJodHRwczovL2lhbS5zaWxpY29uZmxvdy5jbiIsImlhdCI6MTc2NTk4ODc2OSwiZXhwIjoxNzY2MTYxNTY5LCJ0eXAiOiJzZXJ2aWNlIiwiYXBsdCI6InNmOmZhYXM6ZmFicmljIiwidG50IjoiZDI5Y3UzZ2gzdnZjNzNjNWJpNWciLCJpZCI6ImQ1MWRqODk3MTluczczYjBoOW4wIiwiYWNjZXNzIjpbeyJ0eXBlIjoiZmFhcyIsInN1YmplY3RJZCI6ImQyOWN1M2doM3Z2YzczYzViaTVnIiwiYWN0aW9ucyI6WyJmYWFzOmludm9jYXRpb246cHVsbGluZyJdfV19.xTUF9O-4y46l6WkegiT3Ybk-4XaBqJsN81bHVFAz8fjS5Ey80eM2WPmTWVpOvMtRtUxrjsJBW69Ch_WMW8Nu1GOaYePbr4sWwny1FqiiRKPR5OBZKuJemKGh9Q9fKvwJwp3XUDv4LdqkMfkUUgNNbNCoBWAg2X6wCl7UN_m1wmBT0uPuUVY_Ayte0rqWT673pKMCND1hthJPwviS2oirTLEnztZsVDtwpQBRjh9xj69rgyIvib9Fae-l1o4uxFzHCuKwp43lyKXTqeUcxrc5EiVv20dXaR9A2LakvtIh0HZQDLK20xx14j9LFL4dQREebv6dpVxANmP-fhsHoBckFjovixME1mA7Ciu1IluAYF9ZvzA37VAulW7wrXaozyCqM8oC93yQlTkN8oXxGq1gcCYdo--t4eBafEljzQl9-s-bk3a3ZYF53F0Prh6Qj7jjPSIWjuIYKKC6Y0XVLslkSLKgyrD2wa2Z9K1bXgixgDCkyPa9vwJvnBFvE-mlSApVhX8JAqZNfJTIcHlmSDsnuHZDgarF1JfZNCMzuHYVM4AUACYLgFlryEGkxnj06fp3xxDrZdqMWHTA2GmNAPcB2BTlHefdFiX06AT1lsmPBsBT2dwGufzybFETMW3FLUDjlxjpuA5w17IJ14pnJJpz8oNht-KtWwrGCpb8jozJ2Nc&X-Amz-Signature=767e8c0a7a4a97a8bb9c1afb52903e9508c3949e19a983e07e7405d5cd64b72c",
+      "status": "done"
+    }
+  ],
+  "status": "success",
+  "generation_time": 7.322253,
+  "created_at": "2025-12-18T03:37:21.646234",
+  "updated_at": "2025-12-18T03:39:01.043282",
+  "text_model": "",
+  "image_model": ""
+}

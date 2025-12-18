@@ -1,0 +1,161 @@
+cache:
+  enabled: true
+  max_size: 1000
+  ttl: 3600
+load_balancing:
+  failure_threshold: 3
+  health_check_interval: 60
+  strategy: round_robin
+platform_mapping:
+  douyin:
+    fallback_provider: 硅基流动-qwenplus
+    primary_provider: 硅基流动-Hunyuan-MT-7B
+  toutiao:
+    fallback_provider: 硅基流动-qwenplus
+    primary_provider: 硅基流动-Hunyuan-MT-7B
+  wechat:
+    fallback_provider: 硅基流动-qwenplus
+    primary_provider: 硅基流动-Hunyuan-MT-7B
+  xiaohongshu:
+    fallback_provider: 硅基流动-qwenplus
+    primary_provider: 硅基流动-Hunyuan-MT-7B
+prompt_templates:
+  douyin: '请根据以下要求生成抖音短视频脚本：
+
+
+    主题：{topic}
+
+    标题要求：{title_requirements}
+
+    脚本结构：{section_structure}
+
+    视频时长：{video_duration}
+
+
+    请生成包含标题和分场景脚本的完整内容，语言要有感染力，适合短视频传播。
+
+    '
+  toutiao: '请根据以下要求生成头条号文章：
+
+
+    主题：{topic}
+
+    标题要求：{title_requirements}
+
+    文章结构：{section_structure}
+
+    新闻风格：{text_style}
+
+
+    请生成具有新闻性的内容，标题要吸引人，内容要有信息价值。
+
+    '
+  wechat: '请根据以下要求生成微信公众号文章：
+
+
+    主题：{topic}
+
+    标题要求：{title_requirements}
+
+    文章结构：{section_structure}
+
+    文章风格：{text_style}
+
+
+    请生成包含标题和完整正文的内容，语言要专业且有深度，适合公众号读者。
+
+    '
+  xiaohongshu: '请根据以下要求生成小红书风格的内容：
+
+
+    主题：{topic}
+
+    标题要求：{title_requirements}
+
+    内容结构：{section_structure}
+
+    语言风格：{text_style}
+
+
+    请生成包含标题和正文的内容，语言要活泼有趣，符合小红书用户的阅读习惯。
+
+    '
+providers:
+  gemini:
+    api_key: ${GEMINI_API_KEY}
+    base_url: https://generativelanguage.googleapis.com/v1
+    enabled: false
+    headers:
+      Authorization: Bearer ${GEMINI_API_KEY}
+      Content-Type: application/json
+    image_model: gemini-1.5-flash
+    model: gemini-1.5-flash
+    name: gemini
+    reference_image_field: images
+    retry_count: 2
+    size_config:
+      douyin:
+      - 1024x1792
+      toutiao:
+      - 1024x1024
+      wechat:
+      - 1792x1024
+      xiaohongshu:
+      - 1024x1792
+      - 1792x1024
+    status: disconnected
+    support_multiple_reference_images: true
+    support_reference_image: true
+    timeout: 60
+    type: gemini
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    base_url: https://api.openai.com/v1
+    enabled: false
+    headers:
+      Authorization: Bearer ${OPENAI_API_KEY}
+      Content-Type: application/json
+    image_model: dall-e-3
+    image_quality: standard
+    image_style: vivid
+    model: gpt-4o
+    name: openai
+    reference_image_field: image_urls
+    retry_count: 2
+    size_config:
+      douyin:
+      - 1024x1792
+      toutiao:
+      - 1024x1024
+      wechat:
+      - 1792x1024
+      xiaohongshu:
+      - 1024x1792
+      - 1792x1024
+    status: disconnected
+    support_multiple_reference_images: true
+    support_reference_image: true
+    timeout: 60
+    type: openai
+  硅基流动-Hunyuan-MT-7B:
+    api_endpoint: v1/chat/completions
+    api_key: sk-llcbjvooquigqisjmxrrubpfsfjnmujdahiozggweigrcbtd
+    base_url: https://api.siliconflow.cn/
+    enabled: true
+    max_output_tokens: 8000
+    model: tencent/Hunyuan-MT-7B
+    name: 硅基流动-Hunyuan-MT-7B
+    status: disconnected
+    timeout: 60
+    type: openai
+  硅基流动-qwenplus:
+    api_endpoint: v1/chat/completions
+    api_key: sk-llcbjvooquigqisjmxrrubpfsfjnmujdahiozggweigrcbtd
+    base_url: https://api.siliconflow.cn/
+    enabled: true
+    max_output_tokens: 8000
+    model: Qwen/Qwen3-VL-32B-Instruct
+    name: 硅基流动-qwenplus
+    status: connected
+    timeout: 120
+    type: openai
