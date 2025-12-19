@@ -342,6 +342,8 @@ temp/
 # Config files with sensitive data
 config/*.key
 config/local.yaml
+config/text_providers.yaml
+config/image_providers.yaml
 
 # Local development
 .local/
