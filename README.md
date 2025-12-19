@@ -48,7 +48,7 @@
 
 1. **克隆项目**
 ```bash
-git clone https://github.com/your-org/yiliu.git
+git clone https://cnb.cool/yiliu/yiliu.git
 cd yiliu
 ```
 
@@ -146,7 +146,7 @@ providers:
 ## 📖 使用指南
 
 ### 基础使用
-1. 输入创作主题（如："秋季显白美甲"）
+1. 输入创作主题（如："鉴定baishuij"）
 2. 选择目标发布平台
 3. 点击生成按钮
 4. 查看生成的图文内容
@@ -215,7 +215,7 @@ docker-compose up -d
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-当前进度: 🚧 第一阶段开发中 (12%)
+当前进度: ✅ 第一阶段开发完成，已部署可访问
 
 ## 🤝 贡献指南
 
@@ -231,8 +231,8 @@ docker-compose up -d
 
 ## 📞 联系我们
 
-- 项目主页: https://github.com/your-org/yiliu
-- 问题反馈: https://github.com/your-org/yiliu/issues
+- 项目主页: https://cnb.cool/yiliu/yiliu
+- 问题反馈: https://cnb.cool/yiliu/yiliu/issues
 - 邮箱: team@yiliu.com
 
 ## 🙏 致谢

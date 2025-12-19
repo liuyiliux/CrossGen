@@ -27,7 +27,7 @@ def sample_generation_request():
         dict: 示例生成请求数据
     """
     return {
-        "topic": "秋季显白美甲",
+        "topic": "鉴定白水晶",
         "platforms": ["xiaohongshu", "douyin"]
     }
 
@@ -40,7 +40,7 @@ def sample_batch_generation_request():
         dict: 示例批量生成请求数据
     """
     return {
-        "topics": ["秋季显白美甲", "冬季护肤攻略"],
+        "topics": ["鉴定白水晶", "水晶科普"],
         "platforms": ["xiaohongshu", "wechat"]
     }
 

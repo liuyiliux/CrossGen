@@ -13,7 +13,7 @@
         :value="modelValue"
         @input="handleInput"
         class="composer-textarea"
-        placeholder="输入主题，例如：秋季显白美甲..."
+        placeholder="输入主题，例如：鉴定白水晶..."
         @keydown.enter.prevent="handleEnter"
         :disabled="loading"
         rows="1"
