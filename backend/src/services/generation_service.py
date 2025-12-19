@@ -216,6 +216,13 @@ class GenerationService:
                     
                     # 调用AI API生成文本（大纲）
                     print(f"\n=== 开始生成大纲 ===")
+                    
+                    # 检查provider是否存在
+                    if not provider:
+                        error_msg = f"未找到适合平台 {platform} 的文本提供商"
+                        print(f"错误: {error_msg}")
+                        raise Exception(error_msg)
+                    
                     print(f"使用提供商: {provider.name}")
                     print(f"请求参数: 提示词长度={len(prompt)}, max_tokens=2000, temperature=0.7")
                     

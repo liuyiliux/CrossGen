@@ -33,17 +33,24 @@ class ProviderManager:
         """
         try:
             # 获取文本提供商配置
+            print("开始加载文本提供商配置...")
             text_config = self.config_service.get_text_providers()
             providers_config = text_config.get("providers", {})
             
             # 获取平台映射配置
             self.text_platform_mapping = text_config.get("platform_mapping", {})
+            print(f"加载到 {len(providers_config)} 个文本提供商配置")
             
             # 注册提供商
             for name, config in providers_config.items():
-                await self.register_text_provider(name, config)
+                print(f"正在注册文本提供商: {name}")
+                if await self.register_text_provider(name, config):
+                    print(f"文本提供商 {name} 注册成功")
+                else:
+                    print(f"文本提供商 {name} 注册失败")
             
             self.text_loaded = True
+            print(f"文本提供商加载完成，可用提供商数量: {len(self.available_text_providers)}")
             return True
             
         except Exception as e:
@@ -58,17 +65,24 @@ class ProviderManager:
         """
         try:
             # 获取图像提供商配置
+            print("开始加载图像提供商配置...")
             image_config = self.config_service.get_image_providers()
             providers_config = image_config.get("providers", {})
             
             # 获取平台映射配置
             self.image_platform_mapping = image_config.get("platform_mapping", {})
+            print(f"加载到 {len(providers_config)} 个图像提供商配置")
             
             # 注册提供商
             for name, config in providers_config.items():
-                await self.register_image_provider(name, config)
+                print(f"正在注册图像提供商: {name}")
+                if await self.register_image_provider(name, config):
+                    print(f"图像提供商 {name} 注册成功")
+                else:
+                    print(f"图像提供商 {name} 注册失败")
             
             self.image_loaded = True
+            print(f"图像提供商加载完成，可用提供商数量: {len(self.available_image_providers)}")
             return True
             
         except Exception as e:
@@ -116,7 +130,7 @@ class ProviderManager:
             provider_type = config.get("type", "")
             provider = None
             
-            if provider_type == "openai":
+            if provider_type == "openai" or provider_type == "siliconflow":
                 provider = OpenAIProvider(provider_config)
             elif provider_type == "gemini":
                 provider = GeminiProvider(provider_config)
