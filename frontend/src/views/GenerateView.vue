@@ -192,6 +192,7 @@ async function retrySingleImage(index: number) {
     console.log('尺寸:', store.selectedSize)
     
     const response = await axios.post('/api/generate/image', {
+      history_id: store.recordId,
       page_index: index,
       prompt: page.content,
       image_provider: store.imageProviderId,
@@ -285,6 +286,7 @@ async function retryAllFailed() {
         console.log('尺寸:', store.selectedSize)
         
         const response = await axios.post('/api/generate/image', {
+          history_id: store.recordId,
           page_index: image.index,
           prompt: page.content,
           image_provider: store.imageProviderId,
@@ -530,6 +532,7 @@ onMounted(async () => {
         console.log('尺寸:', store.selectedSize)
         
         const response = await axios.post('/api/generate/image', {
+          history_id: store.recordId,
           page_index: index,
           prompt: page.content,
           image_provider: store.imageProviderId,

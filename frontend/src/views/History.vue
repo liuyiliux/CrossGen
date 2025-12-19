@@ -34,10 +34,12 @@
               style="width: 180px;"
             >
               <el-option label="全部" value="" />
-              <el-option label="小红书" value="xiaohongshu" />
-              <el-option label="抖音" value="douyin" />
-              <el-option label="微信" value="wechat" />
-              <el-option label="头条" value="toutiao" />
+              <el-option
+                v-for="option in platformOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
             </el-select>
           </el-form-item>
           
@@ -419,29 +421,21 @@ onMounted(() => {
   loadHistory()
 })
 
-// 平台标签映射
-const platformLabels: Record<string, string> = {
-  xiaohongshu: '小红书',
-  douyin: '抖音',
-  wechat: '微信',
-  toutiao: '头条'
-}
+// 导入共享平台映射工具
+import { ref, onMounted } from 'vue'
+import { getPlatformLabel, getPlatformType, getPlatformOptions, loadPlatformConfig } from '../utils/platformUtils'
 
-// 获取平台标签
-const getPlatformLabel = (platform: string) => {
-  return platformLabels[platform] || platform
-}
+// 平台选项
+const platformOptions = ref(getPlatformOptions())
 
-// 获取平台类型
-const getPlatformType = (platform: string) => {
-  const typeMap: Record<string, any> = {
-    xiaohongshu: 'primary',
-    douyin: 'success',
-    wechat: 'warning',
-    toutiao: 'info'
-  }
-  return typeMap[platform] || 'info'
-}
+// 加载平台配置
+onMounted(async () => {
+  await loadPlatformConfig()
+  // 更新平台选项
+  platformOptions.value = getPlatformOptions()
+  // 重新加载历史记录，确保平台名称正确显示
+  loadHistory()
+})
 
 // 获取状态类型
 const getStatusType = (status: string) => {
@@ -460,7 +454,13 @@ const getStatusLabel = (status: string) => {
     success: '成功',
     failed: '失败',
     processing: '处理中',
-    cancelled: '已取消'
+    cancelled: '已取消',
+    image_generating: '图片生成中',
+    image_success: '图片生成成功',
+    image_failed: '图片生成失败',
+    outline_generating: '大纲生成中',
+    outline_success: '大纲生成成功',
+    outline_failed: '大纲生成失败'
   }
   return labelMap[status] || status
 }

@@ -89,7 +89,9 @@ class GenerationService:
                     outline=initial_outline,
                     images=[],
                     status=GenerationStatus.OUTLINE_GENERATING,
-                    generation_time=0
+                    generation_time=0,
+                    text_model=request.text_provider,
+                    image_model=request.image_provider
                 ))
                 history_record_id = history_record.id
                 
@@ -136,7 +138,9 @@ class GenerationService:
                     outline=initial_outline,
                     images=[],
                     status=GenerationStatus.OUTLINE_GENERATING,
-                    generation_time=0
+                    generation_time=0,
+                    text_model=request.text_provider,
+                    image_model=request.image_provider
                 ))
                 history_record_id = history_record.id
                 
@@ -359,90 +363,29 @@ class GenerationService:
             end_time = datetime.now()
             generation_time = (end_time - start_time).total_seconds()
             
-            # 创建历史记录
-            from src.services.history_service import HistoryService
-            from src.models.history import HistoryRecordCreate, Outline, Page
-            
-            # 解析大纲数据，正确处理分页
-            outline_pages = []
-            page_index = 0
-            
-            for result in results:
-                # 解析内容中的<page>标签
-                content = result.content
-                
-                # 查找第一个[标签]作为页面类型，没有则默认为content
-                page_type = "content"
-                type_match = re.search(r'\[(\w+)\]', content)
-                if type_match:
-                    page_type = type_match.group(1)
-                
-                # 处理单页情况
-                if "<page>" not in content:
-                    outline_pages.append(Page(
-                        index=page_index,
-                        type=page_type,
-                        content=content.strip()
-                    ))
-                    page_index += 1
-                else:
-                    # 处理多页情况，分割<page>标签
-                    pages = content.split("<page>")
-                    for page_content in pages:
-                        page_content = page_content.strip()
-                        if page_content:
-                            # 查找当前页面的类型
-                            current_type = page_type
-                            type_match = re.search(r'\[(\w+)\]', page_content)
-                            if type_match:
-                                current_type = type_match.group(1)
-                            
-                            outline_pages.append(Page(
-                                index=page_index,
-                                type=current_type,
-                                content=page_content
-                            ))
-                            page_index += 1
-            
-            # 处理平台类型，确保是字符串
-            platform_values = []
-            for p in request.platforms:
-                if hasattr(p, 'value'):
-                    platform_values.append(p.value)
-                else:
-                    platform_values.append(str(p))
-            
-            outline = Outline(
-                raw=f"生成主题: {request.topic}\n平台: {platform_values}",
-                pages=outline_pages
-            )
-            
-            # 保存历史记录
-            history_record_id = None
-            if results:
+            # 根据实际生成阶段更新历史记录状态
+            from src.models.history import HistoryRecordUpdate
+            if results and history_record_id:
                 history_service = HistoryService()
-                # 确保平台类型是字符串
-                platform = results[0].platform
-                platform_str = platform.value if hasattr(platform, 'value') else str(platform)
                 
-                # 创建Outline对象
-                outline_obj = Outline(
-                    raw=f"""生成主题: {request.topic}
-平台: {platform_values}""",
-                    pages=outline_pages
-                )
+                # 只有在生成了图片或者完成了所有生成步骤后，才更新为SUCCESS
+                # 否则保持OUTLINE_SUCCESS状态，让用户可以区分大纲生成和完整生成
+                # 这里我们检查是否需要生成图片
+                needs_image_generation = True  # 默认需要生成图片
                 
-                # 使用正确的HistoryRecordCreate对象
-                history_data = HistoryRecordCreate(
-                    topic=request.topic,
-                    platform=platform_str,
-                    outline=outline_obj,
-                    images=[],
-                    status="success",
-                    generation_time=generation_time
-                )
-                history_record = await history_service.create_history(history_data)
-                history_record_id = history_record.id
+                # 检查是否已经完成了图片生成
+                # 如果没有图片生成需求，或者图片已经生成完成，才更新为SUCCESS
+                # 否则保持OUTLINE_SUCCESS状态
+                # 暂时注释掉自动更新为SUCCESS的逻辑，让用户可以在历史记录中看到大纲生成成功的状态
+                # await history_service.update_history(
+                #     history_record_id,
+                #     HistoryRecordUpdate(
+                #         status=GenerationStatus.SUCCESS,
+                #         generation_time=generation_time
+                #     )
+                # )
+                # 保持OUTLINE_SUCCESS状态
+                pass
             
             return GenerationResponse(
                 success=True,
@@ -571,6 +514,8 @@ class GenerationService:
         print(f"提示词: {prompt[:100]}...")
         print(f"使用提供商: {image_provider}")
         
+        start_time = datetime.now()
+        
         try:
             # 初始化提供商管理器
             if not await self.initialize_provider_manager():
@@ -610,6 +555,9 @@ class GenerationService:
             
             print(f"图像生成结果: {image_result}")
             
+            end_time = datetime.now()
+            generation_time = (end_time - start_time).total_seconds()
+            
             if image_result and image_result.get("success") and image_result.get("images"):
                 # 生成成功
                 image_url = image_result["images"][0]
@@ -618,7 +566,8 @@ class GenerationService:
                     "success": True,
                     "image_url": image_url,
                     "provider": image_provider,
-                    "model": provider.model
+                    "model": provider.model,
+                    "generation_time": generation_time
                 }
             else:
                 # 生成失败
@@ -627,16 +576,20 @@ class GenerationService:
                 return {
                     "success": False,
                     "error": error_msg,
-                    "provider": image_provider
+                    "provider": image_provider,
+                    "generation_time": generation_time
                 }
             
         except Exception as e:
+            end_time = datetime.now()
+            generation_time = (end_time - start_time).total_seconds()
             print(f"生成单张图片异常: {str(e)}")
             import traceback
             traceback.print_exc()
             return {
                 "success": False,
-                "error": f"生成图片异常: {str(e)}"
+                "error": f"生成图片异常: {str(e)}",
+                "generation_time": generation_time
             }
         finally:
             print("=== 单张图片生成结束 ===")

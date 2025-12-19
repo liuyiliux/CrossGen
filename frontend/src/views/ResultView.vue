@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">创作完成</h1>
-        <p class="page-subtitle">恭喜！你的小红书图文已生成完毕，共 {{ store.images.length }} 张</p>
+        <p class="page-subtitle">恭喜！你的{{ getPlatformLabel(store.selectedPlatform) }}图文已生成完毕，共 {{ store.images.length }} 张</p>
       </div>
       <div style="display: flex; gap: 12px;">
         <button class="btn" @click="startOver" style="background: white; border: 1px solid var(--el-border-color);">
@@ -168,14 +168,22 @@
 </style>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGeneratorStore } from '../stores/generator'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
+// 导入共享平台映射工具
+import { getPlatformLabel, loadPlatformConfig } from '../utils/platformUtils'
 
 const router = useRouter()
 const store = useGeneratorStore()
 const regeneratingIndex = ref<number | null>(null)
+
+// 加载平台配置
+onMounted(async () => {
+  await loadPlatformConfig()
+})
 
 const viewImage = (url: string) => {
   const baseUrl = url.split('?')[0]

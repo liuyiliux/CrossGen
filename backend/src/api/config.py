@@ -103,6 +103,16 @@ async def get_image_providers() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"获取图像提供商配置失败: {str(e)}")
 
 
+@router.get("/config/providers/video")
+async def get_video_providers() -> Dict[str, Any]:
+    """获取视频生成提供商配置"""
+    try:
+        # 目前不支持视频生成，返回空列表
+        return {"providers": {"providers": {}}}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取视频提供商配置失败: {str(e)}")
+
+
 @router.post("/config/provider/text/{provider_name}")
 async def update_text_provider(
     provider_name: str,

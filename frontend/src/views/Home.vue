@@ -236,18 +236,14 @@ onMounted(() => {
   loadProviders()
 })
 
-// 平台标签映射
-const platformLabels: Record<string, string> = {
-  xiaohongshu: '小红书',
-  douyin: '抖音',
-  wechat: '微信',
-  toutiao: '头条'
-}
+// 导入共享平台映射工具
+import { onMounted } from 'vue'
+import { getPlatformLabel, loadPlatformConfig } from '../utils/platformUtils'
 
-// 获取平台标签
-const getPlatformLabel = (platform: string) => {
-  return platformLabels[platform] || platform
-}
+// 加载平台配置
+onMounted(async () => {
+  await loadPlatformConfig()
+})
 
 // 格式化时间
 const formatTime = (time: string | Date) => {
@@ -269,6 +265,8 @@ const handleGenerate = async (platform: string) => {
 
   generatorStore.setLoading(true)
   generatorStore.setError(null)
+  // 保存所选平台到store
+  generatorStore.setSelectedPlatform(platform)
 
   try {
     const imageFiles = generatorStore.userImages
@@ -316,6 +314,11 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
     // 添加文本服务商参数
     if (generatorStore.textProviderId) {
       formData.append('text_provider', generatorStore.textProviderId)
+    }
+    
+    // 添加图像服务商参数
+    if (generatorStore.imageProviderId) {
+      formData.append('image_provider', generatorStore.imageProviderId)
     }
     
     // 添加图片文件

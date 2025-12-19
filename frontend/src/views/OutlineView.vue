@@ -219,6 +219,8 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+// 导入共享平台映射工具
+import { loadPlatformConfig } from '../utils/platformUtils'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 import { useGeneratorStore } from '../stores/generator'
@@ -328,7 +330,10 @@ const loadProviders = async () => {
 }
 
 // 组件挂载时检查状态
-onMounted(() => {
+onMounted(async () => {
+  // 加载平台配置
+  await loadPlatformConfig()
+  
   // 检查是否有复制的历史记录
   const copiedHistory = localStorage.getItem('copiedHistory')
   if (copiedHistory) {
@@ -343,6 +348,13 @@ onMounted(() => {
         // 如果有主题，保存到store
         if (historyData.topic) {
           store.topic = historyData.topic
+        }
+        // 如果有文本模型和图像模型，保存到store
+        if (historyData.text_model) {
+          store.textProviderId = historyData.text_model
+        }
+        if (historyData.image_model) {
+          store.imageProviderId = historyData.image_model
         }
         // 清空recordId，确保复制的记录生成新的历史记录
         store.recordId = null
@@ -464,6 +476,7 @@ const generateSingleImage = async (index: number) => {
   try {
     // 调用API生成单张图片
     const response = await axios.post('/api/generate/image', {
+      history_id: store.recordId,
       page_index: index,
       prompt: store.outline.pages[index].content,
       image_provider: imageProviderId.value,
@@ -568,9 +581,9 @@ const generateSingleVideo = (index: number) => {
 /* 网格布局 */
 .outline-grid {
   display: grid;
-  /* 响应式列：最小宽度 280px，自动填充 */
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  /* 响应式列：最小宽度 300px，自动填充 */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
@@ -579,15 +592,15 @@ const generateSingleVideo = (index: number) => {
 .outline-card {
   display: flex;
   flex-direction: column;
-  padding: 16px; /* 减小内边距 */
+  padding: 20px;
   transition: all 0.2s ease;
-  border: none;
-  border-radius: 8px; /* 较小的圆角 */
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
   background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   /* 保持一定的长宽比感，虽然高度自适应，但由于 flex column 和内容撑开，
      这里设置一个 min-height 让它看起来像个竖向卡片 */
-  min-height: 360px;
+  min-height: 400px;
   position: relative;
 }
 
@@ -619,9 +632,9 @@ const generateSingleVideo = (index: number) => {
 }
 
 .page-number {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: #ccc;
+  color: #e0e0e0;
   font-family: 'Inter', sans-serif;
 }
 
@@ -677,7 +690,13 @@ const generateSingleVideo = (index: number) => {
   color: #333;
   resize: none; /* 禁止手动拉伸，保持卡片整体感 */
   font-family: inherit;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  /* 添加 placeholder 样式 */
+}
+
+.textarea-paper::placeholder {
+  color: #bdbdbd;
+  font-style: italic;
 }
 
 .textarea-paper:focus {
@@ -686,10 +705,11 @@ const generateSingleVideo = (index: number) => {
 
 .word-count {
   text-align: right;
-  font-size: 11px;
-  color: #ddd;
+  font-size: 12px;
+  color: #9e9e9e;
   margin-top: auto;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 /* 图片预览区域 */
@@ -828,10 +848,10 @@ const generateSingleVideo = (index: number) => {
 /* 单张生成按钮 */
 .single-generate-buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #f5f5f5;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .btn-small {
@@ -881,15 +901,15 @@ const generateSingleVideo = (index: number) => {
 
 /* 添加卡片 */
 .add-card-dashed {
-  border: 2px dashed #eee;
-  background: transparent;
+  border: 2px dashed #e0e0e0;
+  background: #fafafa;
   box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  min-height: 360px;
-  color: #ccc;
+  min-height: 400px;
+  color: #9e9e9e;
   transition: all 0.2s;
 }
 
@@ -904,9 +924,10 @@ const generateSingleVideo = (index: number) => {
 }
 
 .add-icon {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 300;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  line-height: 1;
 }
 
 /* 页面头部 */
@@ -919,31 +940,40 @@ const generateSingleVideo = (index: number) => {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding: 24px 0;
+  border-bottom: 1px solid #e8e8e8;
+  flex-wrap: wrap;
+  gap: 24px;
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   margin: 0;
   color: var(--el-text-color-primary);
+  line-height: 1.2;
 }
 
 .page-subtitle {
-  margin: 8px 0 0 0;
-  font-size: 14px;
+  margin: 12px 0 0 0;
+  font-size: 16px;
   color: var(--el-text-color-secondary);
+  line-height: 1.5;
 }
 
 .btn {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary {
@@ -954,14 +984,31 @@ const generateSingleVideo = (index: number) => {
 .btn-primary:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3);
 }
 
 .btn-secondary {
   background: white;
   color: var(--el-text-color-primary);
+  border: 1px solid var(--el-border-color);
 }
 
 .btn-secondary:hover {
   background: #f9f9f9;
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn:disabled:hover {
+  background: var(--el-color-primary);
+  border-color: var(--el-border-color);
+  color: white;
 }
 </style>

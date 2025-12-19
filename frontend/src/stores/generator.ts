@@ -86,6 +86,9 @@ interface GeneratorState {
   
   // 选择的图像尺寸
   selectedSize: string | null
+  
+  // 选择的平台
+  selectedPlatform: string | null
 }
 
 const STORAGE_KEY = 'generator-state'
@@ -118,7 +121,8 @@ function saveState(state: GeneratorState) {
       textProviderId: state.textProviderId,
       imageProviderId: state.imageProviderId,
       videoProviderId: state.videoProviderId,
-      selectedSize: state.selectedSize
+      selectedSize: state.selectedSize,
+      selectedPlatform: state.selectedPlatform
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
   } catch (e) {
@@ -128,67 +132,70 @@ function saveState(state: GeneratorState) {
 
 export const useGeneratorStore = defineStore('generator', {
   state: (): GeneratorState => {
-    const saved = loadState()
-    return {
-      // 当前阶段
-      stage: saved.stage || 'input',
-      
-      // 用户输入
-      topic: saved.topic || '',
-      
-      // 用户上传的图片
-      userImages: [],
-      
-      // 大纲数据
-      outline: saved.outline || {
-        raw: '',
-        pages: []
-      },
-      
-      // 文本服务商ID
-      textProviderId: saved.textProviderId || null,
-      
-      // 图像服务商ID
-      imageProviderId: saved.imageProviderId || null,
-      
-      // 选择的图像尺寸
-      selectedSize: saved.selectedSize || null,
-      
-      // 视频服务商ID
-      videoProviderId: saved.videoProviderId || null,
-      
-      // 可用文本服务商列表
-      textProviders: [],
-      
-      // 可用图像服务商列表
-      imageProviders: [],
-      
-      // 可用视频服务商列表
-      videoProviders: [],
-      
-      // 生成进度
-      progress: saved.progress || {
-        current: 0,
-        total: 0,
-        status: 'idle'
-      },
-      
-      // 生成结果
-      images: saved.images || [],
-      
-      // 任务ID
-      taskId: saved.taskId || null,
-      
-      // 历史记录ID
-      recordId: saved.recordId || null,
-      
-      // 加载状态
-      loading: false,
-      
-      // 错误信息
-      error: null
-    }
-  },
+      const saved = loadState()
+      return {
+        // 当前阶段
+        stage: saved.stage || 'input',
+        
+        // 用户输入
+        topic: saved.topic || '',
+        
+        // 用户上传的图片
+        userImages: [],
+        
+        // 大纲数据
+        outline: saved.outline || {
+          raw: '',
+          pages: []
+        },
+        
+        // 文本服务商ID
+        textProviderId: saved.textProviderId || null,
+        
+        // 图像服务商ID
+        imageProviderId: saved.imageProviderId || null,
+        
+        // 选择的图像尺寸
+        selectedSize: saved.selectedSize || null,
+        
+        // 选择的平台
+        selectedPlatform: saved.selectedPlatform || null,
+        
+        // 视频服务商ID
+        videoProviderId: saved.videoProviderId || null,
+        
+        // 可用文本服务商列表
+        textProviders: [],
+        
+        // 可用图像服务商列表
+        imageProviders: [],
+        
+        // 可用视频服务商列表
+        videoProviders: [],
+        
+        // 生成进度
+        progress: saved.progress || {
+          current: 0,
+          total: 0,
+          status: 'idle'
+        },
+        
+        // 生成结果
+        images: saved.images || [],
+        
+        // 任务ID
+        taskId: saved.taskId || null,
+        
+        // 历史记录ID
+        recordId: saved.recordId || null,
+        
+        // 加载状态
+        loading: false,
+        
+        // 错误信息
+        error: null
+      }
+    },
 
   actions: {
     /**
@@ -226,6 +233,13 @@ export const useGeneratorStore = defineStore('generator', {
      */
     setSelectedSize(size: string | null) {
       this.selectedSize = size
+    },
+    
+    /**
+     * 设置选择的平台
+     */
+    setSelectedPlatform(platform: string | null) {
+      this.selectedPlatform = platform
     },
 
     /**

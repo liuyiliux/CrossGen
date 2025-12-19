@@ -144,6 +144,9 @@ interface UploadedImage {
 import { useGeneratorStore } from '../../stores/generator'
 const generatorStore = useGeneratorStore()
 
+// 导入共享平台映射工具
+import { getPlatformOptions, loadPlatformConfig } from '../../utils/platformUtils'
+
 // 定义 Props
 const props = defineProps<{
   modelValue: string
@@ -165,86 +168,20 @@ const uploadedImages = ref<UploadedImage[]>([])
 
 // 平台选择
 const selectedPlatform = ref('xiaohongshu')
-const platforms = ref<Array<{value: string, label: string}>>([
-  { value: 'xiaohongshu', label: '小红书' },
-  { value: 'douyin', label: '抖音' },
-  { value: 'wechat', label: '微信' },
-  { value: 'toutiao', label: '头条' }
-])
+const platforms = ref<Array<{value: string, label: string}>>([])
 
-// 加载平台列表
-const loadPlatforms = async () => {
-  try {
-    const response = await axios.get('/api/config/templates')
-    let platformTemplates: any = {}
-    
-    // 检查响应格式，兼容不同的响应结构
-    if (response.data?.templates?.platform_templates) {
-      // 如果响应有 templates.platform_templates 结构
-      platformTemplates = response.data.templates.platform_templates
-    } else if (response.data?.platform_templates) {
-      // 如果响应直接有 platform_templates 结构
-      platformTemplates = response.data.platform_templates
-    } else if (response.data?.templates) {
-      // 旧格式兼容
-      platformTemplates = response.data.templates
-    }
-    
-    const platformList: Array<{value: string, label: string}> = []
-    
-    // 遍历模板键，添加到平台列表
-    Object.entries(platformTemplates).forEach(([key, template]: [string, any]) => {
-      // 检查是否已经存在
-      if (!platformList.some(p => p.value === key)) {
-        // 从模板配置中获取平台中文名称，如果没有则使用键作为标签
-        platformList.push({ 
-          value: key, 
-          label: template?.name || key 
-        })
-      }
-    })
-    
-    // 更新平台列表
-    platforms.value = platformList
-    
-    // 如果当前选择的平台不在列表中，选择第一个平台
-    if (!platformList.some(p => p.value === selectedPlatform.value)) {
-      selectedPlatform.value = platformList[0]?.value || 'xiaohongshu'
-    }
-    
-    console.log('平台列表加载成功:', platformList)
-  } catch (error) {
-    console.error('加载平台列表失败:', error)
-    // 加载失败时，尝试使用所有平台模板键作为列表
-    try {
-      const response = await axios.get('/api/config/templates')
-      let allPlatformKeys: string[] = []
-      
-      if (response.data?.templates?.platform_templates) {
-        allPlatformKeys = Object.keys(response.data.templates.platform_templates)
-      } else if (response.data?.platform_templates) {
-        allPlatformKeys = Object.keys(response.data.platform_templates)
-      } else if (response.data?.templates) {
-        allPlatformKeys = Object.keys(response.data.templates)
-      }
-      
-      // 使用平台键作为标签，确保至少能显示所有平台
-      const fallbackPlatformList = allPlatformKeys.map(key => ({
-        value: key,
-        label: key
-      }))
-      
-      platforms.value = fallbackPlatformList
-      console.log('使用回退平台列表:', fallbackPlatformList)
-    } catch (fallbackError) {
-      console.error('回退平台列表加载也失败:', fallbackError)
-    }
+// 组件挂载时加载平台配置
+onMounted(async () => {
+  await loadPlatformConfig()
+  // 更新平台选项
+  platforms.value = getPlatformOptions()
+  
+  // 如果当前选择的平台不在列表中，选择第一个平台
+  if (platforms.value.length > 0 && !platforms.value.some(p => p.value === selectedPlatform.value)) {
+    selectedPlatform.value = platforms.value[0].value
   }
-}
-
-// 组件挂载时加载平台列表
-onMounted(() => {
-  loadPlatforms()
+  
+  console.log('平台列表加载成功:', platforms.value)
 })
 
 /**

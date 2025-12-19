@@ -29,6 +29,7 @@ class GenerationRequest(BaseModel):
     topic: str = Field(..., description="生成主题")
     platforms: List[PlatformType] = Field(..., description="目标平台列表")
     text_provider: Optional[str] = Field(default=None, description="文本生成提供商名称")
+    image_provider: Optional[str] = Field(default=None, description="图像生成提供商名称")
     options: Optional[Dict[str, Any]] = Field(default=None, description="生成选项")
     
     class Config:
