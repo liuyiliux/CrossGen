@@ -47,8 +47,16 @@ class GenerationService:
             print(f"初始化提供商管理器失败: {str(e)}")
             return False
     
-    async def generate_single(self, request: GenerationRequest) -> GenerationResponse:
-        """生成单个主题的内容"""
+    async def generate_single(self, request: GenerationRequest, reference_images: List[str] = None) -> GenerationResponse:
+        """生成单个主题的内容
+        
+        Args:
+            request: 生成请求
+            reference_images: 参考图列表，base64编码或URL
+            
+        Returns:
+            GenerationResponse: 生成结果
+        """
         start_time = datetime.now()
         
         try:
@@ -226,11 +234,49 @@ class GenerationService:
                     print(f"使用提供商: {provider.name}")
                     print(f"请求参数: 提示词长度={len(prompt)}, max_tokens=2000, temperature=0.7")
                     
-                    ai_result = await provider.generate_text(
-                        prompt,
-                        max_tokens=2000,
-                        temperature=0.7
-                    )
+                    # 构建包含参考图的完整提示
+                    full_prompt = [
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                    
+                    # 如果有参考图，添加到提示中
+                    if reference_images:
+                        print(f"使用参考图: {len(reference_images)}张")
+                        for img in reference_images:
+                            full_prompt.append({
+                                "type": "image_url",
+                                "image_url": img
+                            })
+                    
+                    # 如果有参考图，将参考图添加到提示中
+                    if reference_images:
+                        # 构建包含文本和图像的多模态提示
+                        multimodal_prompt = [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                        
+                        # 添加参考图
+                        for img in reference_images:
+                            multimodal_prompt.append(img)
+                        
+                        ai_result = await provider.generate_text(
+                            multimodal_prompt,
+                            max_tokens=2000,
+                            temperature=0.7
+                        )
+                    else:
+                        # 纯文本提示
+                        ai_result = await provider.generate_text(
+                            prompt,
+                            max_tokens=2000,
+                            temperature=0.7
+                        )
                     
                     # 打印大纲生成的响应
                     print(f"大纲生成响应: {ai_result}")

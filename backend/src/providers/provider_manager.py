@@ -114,6 +114,7 @@ class ProviderManager:
             provider_config = ProviderConfig(
                 name=name,
                 enabled=config.get("enabled", False),
+                provider_type="text",  # 设置为文本提供商
                 api_key=config.get("api_key"),
                 base_url=config.get("base_url"),
                 model=config.get("model"),
@@ -130,8 +131,10 @@ class ProviderManager:
             provider_type = config.get("type", "")
             provider = None
             
-            if provider_type == "openai" or provider_type == "siliconflow":
+            if provider_type == "openai":
                 provider = OpenAIProvider(provider_config)
+            elif provider_type == "siliconflow":
+                provider = SiliconFlowProvider(provider_config)
             elif provider_type == "gemini":
                 provider = GeminiProvider(provider_config)
             else:
@@ -192,17 +195,18 @@ class ProviderManager:
                         supported_sizes = []
                 
                 provider_config = ProviderConfig(
-                    name=name,
-                    enabled=config.get("enabled", False),
-                    api_key=config.get("api_key"),
-                    base_url=config.get("base_url"),
-                    model=config.get("model"),
-                    api_endpoint=config.get("api_endpoint"),
-                    timeout=config.get("timeout", 30),
-                    retry_count=config.get("retry_count", 3),
-                    headers=config.get("headers"),
-                    supported_sizes=supported_sizes  # 添加支持的尺寸
-                )
+                name=name,
+                enabled=config.get("enabled", False),
+                provider_type="image",  # 设置为图像提供商
+                api_key=config.get("api_key"),
+                base_url=config.get("base_url"),
+                model=config.get("model"),
+                api_endpoint=config.get("api_endpoint"),
+                timeout=config.get("timeout", 30),
+                retry_count=config.get("retry_count", 3),
+                headers=config.get("headers"),
+                supported_sizes=supported_sizes  # 添加支持的尺寸
+            )
                 provider = OpenAIProvider(provider_config)
             elif provider_type == "siliconflow":
                 # 为SiliconFlow创建ProviderConfig对象
@@ -220,6 +224,7 @@ class ProviderManager:
                 provider_config = ProviderConfig(
                     name=name,
                     enabled=config.get("enabled", True),
+                    provider_type="image",  # 设置为图像提供商
                     api_key=config.get("api_key"),
                     base_url=config.get("base_url"),
                     model=config.get("model"),
@@ -564,6 +569,8 @@ class ProviderManager:
             
             if provider_type == "openai":
                 provider = OpenAIProvider(provider_config)
+            elif provider_type == "siliconflow":
+                provider = SiliconFlowProvider(provider_config)
             elif provider_type == "gemini":
                 provider = GeminiProvider(provider_config)
             else:

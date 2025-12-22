@@ -113,7 +113,7 @@ async def get_video_providers() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"获取视频提供商配置失败: {str(e)}")
 
 
-@router.post("/config/provider/text/{provider_name}")
+@router.post("/config/provider/text/{provider_name:path}")
 async def update_text_provider(
     provider_name: str,
     config: Dict[str, Any]
@@ -132,7 +132,7 @@ async def update_text_provider(
         raise HTTPException(status_code=500, detail=f"更新文本提供商失败: {str(e)}")
 
 
-@router.delete("/config/provider/text/{provider_name}")
+@router.delete("/config/provider/text/{provider_name:path}")
 async def delete_text_provider(
     provider_name: str
 ) -> Dict[str, str]:
@@ -150,7 +150,7 @@ async def delete_text_provider(
         raise HTTPException(status_code=500, detail=f"删除文本提供商失败: {str(e)}")
 
 
-@router.post("/config/provider/image/{provider_name}")
+@router.post("/config/provider/image/{provider_name:path}")
 async def update_image_provider(
     provider_name: str,
     config: Dict[str, Any]
@@ -169,7 +169,7 @@ async def update_image_provider(
         raise HTTPException(status_code=500, detail=f"更新图像提供商失败: {str(e)}")
 
 
-@router.delete("/config/provider/image/{provider_name}")
+@router.delete("/config/provider/image/{provider_name:path}")
 async def delete_image_provider(
     provider_name: str
 ) -> Dict[str, str]:
@@ -186,7 +186,7 @@ async def delete_image_provider(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"删除图像提供商失败: {str(e)}")
 
-@router.post("/config/provider/test/{provider_type}/{provider_name}")
+@router.post("/config/provider/test/{provider_type}/{provider_name:path}")
 async def test_provider_connection(
     provider_type: str,
     provider_name: str

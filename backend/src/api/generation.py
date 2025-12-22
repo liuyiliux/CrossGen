@@ -22,7 +22,13 @@ router = APIRouter()
 
 
 @router.post("/generate", response_model=GenerationResponse)
-async def generate_content(request: Request) -> GenerationResponse:
+async def generate_content(
+    request: Request,
+    topic: Optional[str] = Form(None),
+    platform: Optional[str] = Form(None),
+    text_provider: Optional[str] = Form(None),
+    images: Optional[List[UploadFile]] = File(None)
+) -> GenerationResponse:
     """单个内容生成请求
     
     支持两种请求格式：
@@ -34,17 +40,28 @@ async def generate_content(request: Request) -> GenerationResponse:
         # 获取请求内容类型
         content_type = request.headers.get("content-type", "")
         
+        reference_images = []
+        
         # 如果是JSON请求
         if "application/json" in content_type:
             request_body = await request.json()
             generation_request = GenerationRequest(**request_body)
+            # 从JSON请求中提取参考图
+            if request_body.get("reference_images"):
+                reference_images = request_body.get("reference_images")
         # 如果是表单请求
-        elif "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
-            form_data = await request.form()
-            
-            topic = form_data.get("topic")
-            platform = form_data.get("platform")
-            text_provider = form_data.get("text_provider")
+        elif "multipart/form-data" in content_type:
+            # 处理文件上传
+            if images:
+                # 读取上传的图片并转换为base64
+                import base64
+                for image in images:
+                    image_data = await image.read()
+                    base64_image = base64.b64encode(image_data).decode("utf-8")
+                    reference_images.append({
+                        "type": "image_url",
+                        "image_url": f"data:{image.content_type};base64,{base64_image}"
+                    })
             
             if not topic or not platform:
                 raise HTTPException(status_code=422, detail="请求格式错误，缺少必要参数")
@@ -58,7 +75,7 @@ async def generate_content(request: Request) -> GenerationResponse:
             raise HTTPException(status_code=415, detail="不支持的媒体类型")
         
         service = GenerationService()
-        result = await service.generate_single(generation_request)
+        result = await service.generate_single(generation_request, reference_images=reference_images)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"生成失败: {str(e)}")

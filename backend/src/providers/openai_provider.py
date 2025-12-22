@@ -188,7 +188,7 @@ class OpenAIProvider(BaseProvider):
         """生成文本
         
         Args:
-            prompt: 生成提示词
+            prompt: 生成提示词，支持纯文本或包含文本和图像的数组格式
             **kwargs: 额外参数
             
         Returns:
@@ -203,6 +203,37 @@ class OpenAIProvider(BaseProvider):
             print(f"\n=== 开始发送文本生成请求 ===")
             print(f"使用模型: {model_name}")
             
+            # 构建用户消息内容
+            user_content = []
+            
+            # 检测prompt类型，支持多模态输入
+            if isinstance(prompt, str):
+                # 纯文本输入，保持向后兼容
+                print(f"纯文本输入: {prompt[:50]}..." if len(prompt) > 50 else f"纯文本输入: {prompt}")
+                user_content = prompt
+            elif isinstance(prompt, list):
+                # 多模态输入，包含文本和图像
+                print(f"多模态输入，包含 {len(prompt)} 个元素")
+                for item in prompt:
+                    if isinstance(item, dict):
+                        if item.get("type") == "text":
+                            print(f"文本元素: {item['text'][:50]}..." if len(item['text']) > 50 else f"文本元素: {item['text']}")
+                            user_content.append(item)
+                        elif item.get("type") == "image_url":
+                            image_url = item['image_url']
+                            if isinstance(image_url, dict):
+                                url = image_url.get("url", "")
+                                print(f"图像元素: {url[:50]}..." if len(url) > 50 else f"图像元素: {url}")
+                                user_content.append(item)
+                            elif isinstance(image_url, str):
+                                print(f"图像元素: {image_url[:50]}..." if len(image_url) > 50 else f"图像元素: {image_url}")
+                                user_content.append({
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": image_url
+                                    }
+                                })
+            
             # 构建请求参数
             request_body = {
                 "model": model_name,
@@ -213,7 +244,7 @@ class OpenAIProvider(BaseProvider):
                     },
                     {
                         "role": "user",
-                        "content": prompt
+                        "content": user_content
                     }
                 ],
                 "max_tokens": kwargs.get("max_tokens", kwargs.get("max_output_tokens", self.max_output_tokens)),

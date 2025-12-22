@@ -12,6 +12,7 @@ class ProviderConfig:
     """提供商配置数据类"""
     name: str
     enabled: bool
+    provider_type: str = "text"  # 提供商类型："text" 或 "image"
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     model: Optional[str] = None
