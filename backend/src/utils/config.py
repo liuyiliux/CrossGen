@@ -18,10 +18,41 @@ class Settings(BaseSettings):
     HOST: str = Field(default="0.0.0.0", env="HOST")
     PORT: int = Field(default=8000, env="PORT")
     
-    # 数据库配置
+    # 数据库配置 - 从环境变量加载默认值
     REDIS_URL: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
     REDIS_PASSWORD: Optional[str] = Field(default=None, env="REDIS_PASSWORD")
     REDIS_ENABLED: bool = Field(default=True, env="REDIS_ENABLED")
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # 尝试从system_config.yaml加载配置，覆盖环境变量
+        try:
+            from pathlib import Path
+            import yaml
+            
+            # 读取system_config.yaml
+            config_dir = Path(__file__).parent.parent.parent.parent / "config"
+            system_config_file = config_dir / "system_config.yaml"
+            
+            if system_config_file.exists():
+                with open(system_config_file, 'r', encoding='utf-8') as f:
+                    system_config = yaml.safe_load(f) or {}
+                    
+                # 优先使用system_config.yaml中的Redis配置
+                if "redis" in system_config:
+                    redis_config = system_config["redis"]
+                    # 覆盖REDIS_ENABLED
+                    if "enabled" in redis_config:
+                        self.REDIS_ENABLED = redis_config["enabled"]
+                    # 覆盖REDIS_URL
+                    if "url" in redis_config:
+                        self.REDIS_URL = redis_config["url"]
+                    # 覆盖REDIS_PASSWORD
+                    if "password" in redis_config:
+                        self.REDIS_PASSWORD = redis_config["password"]
+        except Exception as e:
+            # 如果加载失败，使用默认值
+            print(f"加载system_config.yaml失败: {str(e)}")
     
     # 安全配置
     SECRET_KEY: str = Field(env="SECRET_KEY")

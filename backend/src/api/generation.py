@@ -154,7 +154,8 @@ async def generate_single_image(
     history_id: str = Body(..., description="历史记录ID"),
     page_index: int = Body(..., description="页面索引"),
     prompt: str = Body(..., description="生成提示词"),
-    image_provider: str = Body(..., description="图像提供商名称")
+    image_provider: str = Body(..., description="图像提供商名称"),
+    reference_images: List[Dict[str, Any]] = Body(None, description="参考图片列表")
 ) -> Dict[str, Any]:
     """生成单张图片"""
     
@@ -179,7 +180,7 @@ async def generate_single_image(
         
         # 生成图片
         service = GenerationService()
-        result = await service.generate_single_image(prompt, image_provider)
+        result = await service.generate_single_image(prompt, image_provider, reference_images)
         
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象

@@ -281,3 +281,111 @@ async def export_config() -> Dict[str, Any]:
         return {"config": config, "exported_at": service.get_current_time()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"导出配置失败: {str(e)}")
+
+
+@router.get("/config/general")
+async def get_general_config() -> Dict[str, Any]:
+    """获取通用配置"""
+    
+    try:
+        service = ConfigService()
+        system_config = service.get_system_config()
+        
+        # 转换为前端需要的格式
+        return {
+            "config": {
+                "redis_enabled": system_config.get("redis", {}).get("enabled", False),
+                "redis_url": system_config.get("redis", {}).get("url", "redis://localhost:6379/0"),
+                "redis_password": system_config.get("redis", {}).get("password", ""),
+                "mysql_enabled": system_config.get("mysql", {}).get("enabled", False),
+                "mysql_host": system_config.get("mysql", {}).get("host", "localhost"),
+                "mysql_port": system_config.get("mysql", {}).get("port", 3306),
+                "mysql_database": system_config.get("mysql", {}).get("database", ""),
+                "mysql_username": system_config.get("mysql", {}).get("username", ""),
+                "mysql_password": system_config.get("mysql", {}).get("password", "")
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取通用配置失败: {str(e)}")
+
+
+@router.post("/config/general")
+async def update_general_config(
+    config: Dict[str, Any]
+) -> Dict[str, str]:
+    """更新通用配置"""
+    
+    try:
+        service = ConfigService()
+        
+        # 转换为system_config.yaml格式
+        system_config = {
+            "redis": {
+                "enabled": config.get("redis_enabled", False),
+                "url": config.get("redis_url", "redis://localhost:6379/0"),
+                "password": config.get("redis_password", "")
+            },
+            "mysql": {
+                "enabled": config.get("mysql_enabled", False),
+                "host": config.get("mysql_host", "localhost"),
+                "port": config.get("mysql_port", 3306),
+                "database": config.get("mysql_database", ""),
+                "username": config.get("mysql_username", ""),
+                "password": config.get("mysql_password", "")
+            }
+        }
+        
+        success = service.update_system_config(system_config)
+        if not success:
+            raise HTTPException(status_code=400, detail="更新通用配置失败")
+        
+        return {"message": "通用配置更新成功"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新通用配置失败: {str(e)}")
+
+@router.post("/config/test/redis")
+async def test_redis_connection(
+    config: Dict[str, Any]
+) -> Dict[str, Any]:
+    """测试Redis连接"""
+    try:
+        service = ConfigService()
+        
+        # 测试Redis连接
+        redis_config = {
+            'url': config.get('redis_url', 'redis://localhost:6379/0'),
+            'password': config.get('redis_password', '')
+        }
+        result = service.test_redis_connection(redis_config)
+        return result
+    except Exception as e:
+        return {
+            'success': False,
+            'message': f"测试Redis连接失败: {str(e)}"
+        }
+
+@router.post("/config/test/mysql")
+async def test_mysql_connection(
+    config: Dict[str, Any]
+) -> Dict[str, Any]:
+    """测试MySQL连接"""
+    try:
+        service = ConfigService()
+        
+        # 测试MySQL连接
+        mysql_config = {
+            'host': config.get('mysql_host', 'localhost'),
+            'port': config.get('mysql_port', 3306),
+            'username': config.get('mysql_username', ''),
+            'password': config.get('mysql_password', ''),
+            'database': config.get('mysql_database', '')
+        }
+        result = service.test_mysql_connection(mysql_config)
+        return result
+    except Exception as e:
+        return {
+            'success': False,
+            'message': f"测试MySQL连接失败: {str(e)}"
+        }

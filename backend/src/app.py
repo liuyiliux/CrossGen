@@ -32,9 +32,28 @@ async def lifespan(app: FastAPI):
     os.makedirs("uploads", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
     
+    # 初始化提供商管理器
+    try:
+        from src.providers.provider_manager import ProviderManager
+        from src.services.generation_service import GenerationService
+        provider_manager = ProviderManager()
+        await provider_manager.load_providers()
+        # 将提供商管理器存储在应用状态中
+        app.state.provider_manager = provider_manager
+        # 设置为GenerationService的全局提供商管理器
+        GenerationService.set_global_provider_manager(provider_manager)
+        logger.info("提供商管理器初始化成功")
+    except Exception as e:
+        logger.error(f"初始化提供商管理器失败: {str(e)}")
+    
     yield
     
     # 关闭时执行
+    # 关闭提供商管理器连接
+    if hasattr(app.state, 'provider_manager'):
+        await app.state.provider_manager.close_all()
+        logger.info("提供商管理器连接已关闭")
+    
     logger.info("逸流后端服务关闭")
 
 

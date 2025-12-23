@@ -22,12 +22,44 @@ from src.providers.provider_manager import ProviderManager
 
 
 class GenerationService:
-    """内容生成服务"""
+    """内容生成服务 - 单例模式"""
     
-    def __init__(self):
-        self.active_jobs: Dict[str, GenerationStatus] = {}
-        self.provider_manager: Optional[ProviderManager] = None
-        self.provider_manager_loaded = False
+    # 类变量，保存单例实例
+    _instance = None
+    # 锁，确保线程安全
+    _lock = asyncio.Lock()
+    _initialized = False
+    # 全局提供商管理器实例
+    _global_provider_manager = None
+    
+    def __new__(cls):
+        """创建单例实例"""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    @classmethod
+    def set_global_provider_manager(cls, provider_manager: ProviderManager):
+        """设置全局提供商管理器实例
+        
+        Args:
+            provider_manager: 提供商管理器实例
+        """
+        cls._global_provider_manager = provider_manager
+        # 如果单例已经初始化，更新其提供商管理器
+        if cls._instance is not None and hasattr(cls._instance, 'provider_manager'):
+            cls._instance.provider_manager = provider_manager
+            cls._instance.provider_manager_loaded = True
+    
+    async def __init__(self):
+        """初始化内容生成服务"""
+        # 只初始化一次
+        if not self._initialized:
+            self.active_jobs: Dict[str, GenerationStatus] = {}
+            self.provider_manager: Optional[ProviderManager] = None
+            self.provider_manager_loaded = False
+            self.image_analysis_service: Optional[Any] = None
+            self._initialized = True
     
     async def initialize_provider_manager(self) -> bool:
         """初始化提供商管理器
@@ -38,14 +70,33 @@ class GenerationService:
         if self.provider_manager_loaded and self.provider_manager:
             return True
         
-        try:
-            self.provider_manager = ProviderManager()
-            await self.provider_manager.load_providers()
-            self.provider_manager_loaded = True
-            return True
-        except Exception as e:
-            print(f"初始化提供商管理器失败: {str(e)}")
-            return False
+        async with self._lock:
+            # 双重检查，避免并发问题
+            if self.provider_manager_loaded and self.provider_manager:
+                return True
+                
+            try:
+                # 优先使用全局提供商管理器
+                if self._global_provider_manager:
+                    self.provider_manager = self._global_provider_manager
+                    self.provider_manager_loaded = True
+                    print("使用全局提供商管理器实例")
+                else:
+                    # 全局提供商管理器不存在，创建新实例
+                    self.provider_manager = ProviderManager()
+                    await self.provider_manager.load_providers()
+                    self.provider_manager_loaded = True
+                    print("创建新的提供商管理器实例")
+                
+                # 初始化图片分析服务
+                from src.services.image_analysis_service import ImageAnalysisService
+                self.image_analysis_service = ImageAnalysisService()
+                await self.image_analysis_service.initialize()
+                
+                return True
+            except Exception as e:
+                print(f"初始化提供商管理器失败: {str(e)}")
+                return False
     
     async def generate_single(self, request: GenerationRequest, reference_images: List[str] = None) -> GenerationResponse:
         """生成单个主题的内容
@@ -189,6 +240,23 @@ class GenerationService:
                         prompt = f"为{platform_str}平台生成关于{request.topic}的内容"
                         print(f"使用默认提示词: {prompt}")
                         print(f"未找到平台 {platform_str} 的大纲模板，可用模板平台: {list(platform_templates.keys())}")
+                    
+                    # 如果有参考图片，使用图片分析服务生成提示词
+                    if reference_images:
+                        print(f"使用参考图生成提示词: {len(reference_images)}张")
+                        
+                        # 从参考图片生成提示词
+                        prompt_results = await self.image_analysis_service.generate_prompts_from_images(reference_images)
+                        
+                        # 提取生成的提示词
+                        generated_prompts = []
+                        for result in prompt_results:
+                            if result.get("success"):
+                                generated_prompts.append(result.get("prompt"))
+                        
+                        if generated_prompts:
+                            # 将生成的提示词添加到原始提示词中
+                            prompt += f"\n\n参考图片生成的提示词:\n{chr(10).join(generated_prompts)}"
                     
                     # 获取当前使用的提供商
                     # 优先使用请求中指定的提供商
@@ -552,13 +620,14 @@ class GenerationService:
         if status and status.status == "completed":
             return status.results
         return None
-    
-    async def generate_single_image(self, prompt: str, image_provider: str) -> Dict[str, Any]:
+
+    async def generate_single_image(self, prompt: str, image_provider: str, reference_images: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """生成单张图片
         
         Args:
             prompt: 生成图片的提示词
             image_provider: 使用的图像提供商名称
+            reference_images: 参考图片列表，base64编码或URL
             
         Returns:
             Dict[str, Any]: 生成结果
@@ -567,8 +636,23 @@ class GenerationService:
         print(f"提示词: {prompt[:100]}...")
         print(f"使用提供商: {image_provider}")
         
+        # 添加参考图片处理日志
+        if reference_images:
+            print(f"收到参考图片数量: {len(reference_images)}")
+            for i, img in enumerate(reference_images):
+                if isinstance(img, dict):
+                    img_type = img.get('type', 'unknown')
+                    print(f"  参考图片 {i+1} 类型: {img_type}")
+                    if img_type == 'image_url':
+                        img_url = img.get('image_url', '')
+                        print(f"  参考图片 {i+1} URL: {img_url[:100]}...")
+                else:
+                    print(f"  参考图片 {i+1} 格式: {type(img)}")
+        else:
+            print("未收到参考图片")
+
         start_time = datetime.now()
-        
+
         try:
             # 初始化提供商管理器
             if not await self.initialize_provider_manager():
@@ -598,19 +682,27 @@ class GenerationService:
             print(f"提供商地址: {provider.base_url}")
             print(f"使用模型: {provider.model}")
             
+            # 准备图像生成参数
+            generation_params = {
+                "prompt": prompt,
+                "platform": "general",
+                "size": "1024x1792",
+                "n": 1
+            }
+            
+            # 如果有参考图片，添加到生成参数中
+            if reference_images:
+                generation_params["reference_images"] = reference_images
+                print(f"传递 {len(reference_images)} 张参考图片到图像生成API")
+            
             # 调用图像生成API
-            image_result = await provider.generate_image(
-                prompt,
-                "general",  # 通用平台
-                size="1024x1792",  # 默认尺寸
-                n=1  # 生成1张图片
-            )
-            
+            image_result = await provider.generate_image(**generation_params)
+
             print(f"图像生成结果: {image_result}")
-            
+
             end_time = datetime.now()
             generation_time = (end_time - start_time).total_seconds()
-            
+
             if image_result and image_result.get("success") and image_result.get("images"):
                 # 生成成功
                 image_url = image_result["images"][0]
@@ -632,7 +724,7 @@ class GenerationService:
                     "provider": image_provider,
                     "generation_time": generation_time
                 }
-            
+
         except Exception as e:
             end_time = datetime.now()
             generation_time = (end_time - start_time).total_seconds()

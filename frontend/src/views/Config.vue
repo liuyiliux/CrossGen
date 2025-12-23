@@ -40,6 +40,18 @@
                   />
                 </el-form-item>
                 
+                <!-- Redis 测试按钮 -->
+                <el-form-item>
+                  <el-button 
+                    type="primary" 
+                    @click="testRedisConnection" 
+                    :loading="testingRedis"
+                    icon="Connection"
+                  >
+                    测试Redis连接
+                  </el-button>
+                </el-form-item>
+                
                 <!-- MySQL 配置 -->
                 <el-collapse v-model="mysqlCollapse" class="mysql-collapse">
                   <el-collapse-item title="MySQL 配置" name="mysql">
@@ -77,6 +89,18 @@
                         show-password
                         placeholder="MySQL 密码"
                       />
+                    </el-form-item>
+
+                    <!-- MySQL 测试按钮 -->
+                    <el-form-item>
+                      <el-button 
+                        type="primary" 
+                        @click="testMysqlConnection" 
+                        :loading="testingMysql"
+                        icon="Connection"
+                      >
+                        测试MySQL连接
+                      </el-button>
                     </el-form-item>
                   </el-collapse-item>
                 </el-collapse>
@@ -698,6 +722,9 @@ const generalConfig = ref<any>({
 })
 const originalGeneralConfig = ref<any>(null)
 const savingGeneral = ref(false)
+// 测试连接状态
+const testingRedis = ref(false)
+const testingMysql = ref(false)
 
 
 
@@ -1214,13 +1241,12 @@ const getProviderStatusText = (status: string) => {
 const loadGeneralConfig = async () => {
   loading.value = true
   try {
-    // 这里应该调用后端的通用配置API
-    // 暂时使用本地模拟数据
-    generalConfig.value = {
-      redis_enabled: false,
-      redis_url: 'redis://localhost:6379/0'
+    // 调用后端的通用配置API获取实际配置
+    const response = await axios.get('/api/config/general')
+    if (response.data?.config) {
+      generalConfig.value = response.data.config
+      originalGeneralConfig.value = JSON.parse(JSON.stringify(generalConfig.value))
     }
-    originalGeneralConfig.value = JSON.parse(JSON.stringify(generalConfig.value))
   } catch (error: any) {
     ElMessage.error(error.response?.data?.detail || '加载通用配置失败')
     console.error('加载通用配置失败:', error)
@@ -1233,11 +1259,12 @@ const loadGeneralConfig = async () => {
 const saveGeneralConfig = async () => {
   savingGeneral.value = true
   try {
-    // 这里应该调用后端的保存通用配置API
-    // 暂时模拟成功
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    originalGeneralConfig.value = JSON.parse(JSON.stringify(generalConfig.value))
-    ElMessage.success('通用配置保存成功')
+    // 调用后端的保存通用配置API
+    const response = await axios.post('/api/config/general', generalConfig.value)
+    if (response.data?.message) {
+      originalGeneralConfig.value = JSON.parse(JSON.stringify(generalConfig.value))
+      ElMessage.success(response.data.message)
+    }
   } catch (error: any) {
     ElMessage.error(error.response?.data?.detail || '保存通用配置失败')
     console.error('保存通用配置失败:', error)
@@ -1251,6 +1278,42 @@ const resetGeneralConfig = () => {
   if (originalGeneralConfig.value) {
     generalConfig.value = JSON.parse(JSON.stringify(originalGeneralConfig.value))
     ElMessage.info('通用配置已重置')
+  }
+}
+
+// 测试Redis连接
+const testRedisConnection = async () => {
+  testingRedis.value = true
+  try {
+    const response = await axios.post('/api/config/test/redis', generalConfig.value)
+    if (response.data?.success) {
+      ElMessage.success(response.data.message)
+    } else {
+      ElMessage.error(response.data.message || 'Redis连接测试失败')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || 'Redis连接测试失败')
+    console.error('测试Redis连接失败:', error)
+  } finally {
+    testingRedis.value = false
+  }
+}
+
+// 测试MySQL连接
+const testMysqlConnection = async () => {
+  testingMysql.value = true
+  try {
+    const response = await axios.post('/api/config/test/mysql', generalConfig.value)
+    if (response.data?.success) {
+      ElMessage.success(response.data.message)
+    } else {
+      ElMessage.error(response.data.message || 'MySQL连接测试失败')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || 'MySQL连接测试失败')
+    console.error('测试MySQL连接失败:', error)
+  } finally {
+    testingMysql.value = false
   }
 }
 

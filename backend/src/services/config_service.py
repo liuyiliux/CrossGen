@@ -23,6 +23,7 @@ class ConfigService:
         self.platform_templates_file = self.config_dir / "platform_templates.yaml"
         self.text_providers_file = self.config_dir / "text_providers.yaml"
         self.image_providers_file = self.config_dir / "image_providers.yaml"
+        self.system_config_file = self.config_dir / "system_config.yaml"
         
         # 示例配置文件路径
         self.text_providers_example_file = self.config_dir / "text_providers.yaml.example"
@@ -31,6 +32,7 @@ class ConfigService:
         self._platform_templates_cache = None
         self._text_providers_cache = None
         self._image_providers_cache = None
+        self._system_config_cache = None
     
     def get_platform_templates(self) -> Dict[str, Any]:
         """获取平台模板配置"""
@@ -226,16 +228,110 @@ class ConfigService:
             self._platform_templates_cache = None
             self._text_providers_cache = None
             self._image_providers_cache = None
+            self._system_config_cache = None
             
             # 重新加载配置
             self.get_platform_templates()
             self.get_text_providers()
             self.get_image_providers()
+            self.get_system_config()
             return True
             
         except Exception as e:
             print(f"重新加载配置失败: {str(e)}")
             return False
+    
+    def get_system_config(self) -> Dict[str, Any]:
+        """获取系统配置"""
+        if self._system_config_cache is None:
+            self._system_config_cache = self._load_yaml(self.system_config_file, {
+                "redis": {
+                    "enabled": False,
+                    "url": "redis://localhost:6379/0",
+                    "password": ""
+                },
+                "mysql": {
+                    "enabled": False,
+                    "host": "localhost",
+                    "port": 3306,
+                    "database": "",
+                    "username": "",
+                    "password": ""
+                }
+            })
+        return self._system_config_cache
+    
+    def update_system_config(self, config: Dict[str, Any]) -> bool:
+        """更新系统配置"""
+        try:
+            current_config = self.get_system_config()
+            # 合并配置
+            current_config.update(config)
+            self._save_yaml(self.system_config_file, current_config)
+            # 清除缓存
+            self._system_config_cache = None
+            return True
+        except Exception as e:
+            print(f"更新系统配置失败: {str(e)}")
+            return False
+    
+    def test_redis_connection(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """测试Redis连接"""
+        try:
+            import redis
+            
+            # 创建Redis客户端
+            redis_client = redis.from_url(
+                config.get('url', 'redis://localhost:6379/0'),
+                password=config.get('password'),
+                decode_responses=True,
+                socket_connect_timeout=5,
+                socket_timeout=5
+            )
+            
+            # 测试连接
+            redis_client.ping()
+            return {
+                'success': True,
+                'message': 'Redis连接成功'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Redis连接失败: {str(e)}'
+            }
+    
+    def test_mysql_connection(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """测试MySQL连接"""
+        try:
+            import pymysql
+            
+            # 创建MySQL连接
+            connection = pymysql.connect(
+                host=config.get('host', 'localhost'),
+                port=config.get('port', 3306),
+                user=config.get('username'),
+                password=config.get('password'),
+                database=config.get('database', ''),
+                connect_timeout=5
+            )
+            
+            # 测试连接
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                result = cursor.fetchone()
+            
+            connection.close()
+            
+            return {
+                'success': True,
+                'message': 'MySQL连接成功'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'MySQL连接失败: {str(e)}'
+            }
     
     def export_all_config(self) -> Dict[str, Any]:
         """导出所有配置"""
@@ -243,6 +339,7 @@ class ConfigService:
             "platform_templates": self.get_platform_templates(),
             "text_providers": self.get_text_providers(),
             "image_providers": self.get_image_providers(),
+            "system_config": self.get_system_config(),
             "exported_at": self.get_current_time()
         }
     

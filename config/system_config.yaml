@@ -1,0 +1,11 @@
+mysql:
+  database: ''
+  enabled: false
+  host: 81.70.219.37
+  password: lyl-616626
+  port: 3306
+  username: root
+redis:
+  enabled: false
+  password: ''
+  url: redis://localhost:6379/0

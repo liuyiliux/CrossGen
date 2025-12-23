@@ -3,22 +3,18 @@
 处理历史记录的存储和检索
 """
 
-import os
 import json
 import uuid
-import time
 import asyncio
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from pathlib import Path
-from contextlib import asynccontextmanager
 
 from src.models.history import (
     HistoryRecord,
     HistoryRecordCreate,
     HistoryRecordUpdate,
-    HistoryFilter,
-    GenerationStatus
+    HistoryFilter
 )
 
 
