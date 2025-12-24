@@ -276,7 +276,23 @@
                           :preview-src-list="selectedHistory.images.filter(img => img.url).map(img => img.url)"
                           fit="cover"
                           class="result-image"
-                        />
+                          lazy
+                        >
+                          <!-- 加载占位符 -->
+                          <template #loading>
+                            <div class="image-placeholder">
+                              <el-icon><PictureRounded /></el-icon>
+                              <span>加载中...</span>
+                            </div>
+                          </template>
+                          <!-- 错误占位符 -->
+                          <template #error>
+                            <div class="image-placeholder error">
+                              <el-icon><PictureRounded /></el-icon>
+                              <span>加载失败</span>
+                            </div>
+                          </template>
+                        </el-image>
                         
                         <!-- 图片状态 -->
                         <div class="image-status">
@@ -312,7 +328,23 @@
                           :preview-src-list="result.images"
                           fit="cover"
                           class="result-image"
-                        />
+                          lazy
+                        >
+                          <!-- 加载占位符 -->
+                          <template #loading>
+                            <div class="image-placeholder">
+                              <el-icon><PictureRounded /></el-icon>
+                              <span>加载中...</span>
+                            </div>
+                          </template>
+                          <!-- 错误占位符 -->
+                          <template #error>
+                            <div class="image-placeholder error">
+                              <el-icon><PictureRounded /></el-icon>
+                              <span>加载失败</span>
+                            </div>
+                          </template>
+                        </el-image>
                       </div>
                     </div>
                     

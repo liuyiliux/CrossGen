@@ -36,6 +36,12 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
+      },
+      // 代理阿里云百炼图片URL，解决跨域问题
+      '/image-proxy': {
+        target: 'https://dashscope.aliyuncs.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/image-proxy/, '')
       }
     }
   },

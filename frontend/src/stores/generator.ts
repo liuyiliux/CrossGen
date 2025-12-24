@@ -442,13 +442,37 @@ export const useGeneratorStore = defineStore('generator', {
     },
 
     /**
+     * 处理图片URL，确保格式正确并添加代理
+     */
+    processImageUrl(url: string): string {
+      if (!url) return ''
+      
+      // 确保URL是完整的绝对URL
+      let processedUrl = url
+      
+      // 如果是阿里云百炼的URL，添加代理前缀
+      if (processedUrl.includes('dashscope.aliyuncs.com')) {
+        // 使用本地代理，解决跨域问题
+        processedUrl = processedUrl.replace('https://dashscope.aliyuncs.com', '/image-proxy')
+      } else if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
+        // 如果不是完整URL，添加https前缀
+        processedUrl = `https://${processedUrl}`
+      }
+      
+      return processedUrl
+    },
+
+    /**
      * 更新生成进度
      */
     updateProgress(index: number, status: 'generating' | 'done' | 'error', url?: string, error?: string) {
       const image = this.images.find(img => img.index === index)
       if (image) {
         image.status = status
-        if (url) image.url = url
+        if (url) {
+          // 处理图片URL
+          image.url = this.processImageUrl(url)
+        }
         if (error) image.error = error
       }
       if (status === 'done') {
@@ -463,7 +487,9 @@ export const useGeneratorStore = defineStore('generator', {
       const image = this.images.find(img => img.index === index)
       if (image) {
         const timestamp = Date.now()
-        image.url = `${newUrl}?t=${timestamp}`
+        // 处理图片URL并添加时间戳防止缓存
+        const processedUrl = this.processImageUrl(newUrl)
+        image.url = `${processedUrl}?t=${timestamp}`
         image.status = 'done'
         delete image.error
       }

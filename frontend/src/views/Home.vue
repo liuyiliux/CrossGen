@@ -468,14 +468,21 @@ async function createHistoryRecord(
   status: string
 ) {
   try {
+    // 获取文本提供商信息
+    const textProvider = generatorStore.textProviders.find(p => p.name === generatorStore.textProviderId)
+    // 获取图像提供商信息
+    const imageProvider = generatorStore.imageProviders.find(p => p.name === generatorStore.imageProviderId)
+    
     const response = await axios.post('/api/history', {
       topic,
       platform,
       outline,
       images,
       status,
-      text_model: generatorStore.textProviders.find(p => p.name === generatorStore.textProviderId)?.model || '',
-      image_model: ''
+      // 保存完整的文本提供商名称和模型信息
+      text_model: textProvider ? `${textProvider.name} (${textProvider.model})` : generatorStore.textProviderId || '默认模型',
+      // 保存完整的图像提供商名称和模型信息
+      image_model: imageProvider ? `${imageProvider.name} (${imageProvider.model})` : generatorStore.imageProviderId || '默认模型'
     })
     
     if (response.data?.id) {

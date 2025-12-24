@@ -29,6 +29,7 @@
               :src="image.url"
               :alt="`第 ${image.index + 1} 页`"
               style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
+              @error="onImageError($event)"
             />
             <!-- Regenerating Overlay -->
             <div v-if="regeneratingIndex === image.index" style="position: absolute; inset: 0; background: rgba(255,255,255,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
@@ -221,6 +222,14 @@ const downloadAll = () => {
   link.download = `yiliu_images.zip`
   link.click()
   ElMessage.success('开始打包下载所有图片')
+}
+
+// 处理图片加载错误
+const onImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  if (target) {
+    target.src = 'https://via.placeholder.com/300x400?text=加载失败'
+  }
 }
 
 const handleRegenerate = async (image: any) => {
