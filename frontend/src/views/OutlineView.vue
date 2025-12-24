@@ -4,47 +4,50 @@
       <div>
         <h1 class="page-title">编辑大纲</h1>
         <p class="page-subtitle">调整页面顺序，修改文案，打造完美内容</p>
-        <!-- 主题编辑输入框 -->
-        <div class="topic-edit" style="margin-top: 16px; max-width: 600px;">
-          <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">生成主题</label>
-          <el-input
-            v-model="store.topic"
-            placeholder="请输入生成主题"
-            size="large"
-            clearable
-            style="width: 100%;"
-          />
-          <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">修改主题后，将基于新主题生成内容</span>
-        </div>
-        
-        <!-- 总标题输入 -->
-        <div class="topic-edit" style="margin-top: 16px; max-width: 600px;">
-          <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
-          <el-input
-            v-model="store.outline.title"
-            placeholder="请输入总标题"
-            size="large"
-            clearable
-            style="width: 100%;"
-            @input="store.updateOutlineTitle(store.outline.title || '')"
-          />
-          <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总标题，用于展示在所有图片之上</span>
-        </div>
-        
-        <!-- 总文案输入 -->
-        <div class="topic-edit" style="margin-top: 16px; max-width: 600px;">
-          <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总文案</label>
-          <el-input
-            v-model="store.outline.copywriting"
-            placeholder="请输入总文案，最好包含相关#话题标签"
-            size="large"
-            clearable
-            type="textarea"
-            :rows="3"
-            style="width: 100%;"
-            @input="store.updateOutlineCopywriting(store.outline.copywriting || '')"
-          />
-          <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
+        <!-- 主题编辑输入框容器，使用两列布局 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; max-width: 1200px;">
+          <!-- 生成主题输入框 -->
+          <div class="topic-edit">
+            <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">生成主题</label>
+            <el-input
+              v-model="store.topic"
+              placeholder="请输入生成主题"
+              size="large"
+              clearable
+              style="width: 100%;"
+            />
+            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">修改主题后，将基于新主题生成内容</span>
+          </div>
+          
+          <!-- 总标题输入 -->
+          <div class="topic-edit">
+            <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
+            <el-input
+              v-model="store.outline.title"
+              placeholder="请输入总标题"
+              size="large"
+              clearable
+              style="width: 100%;"
+              @input="store.updateOutlineTitle(store.outline.title || '')"
+            />
+            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总标题，用于展示在所有图片之上</span>
+          </div>
+          
+          <!-- 总文案输入，占据两列 -->
+          <div class="topic-edit" style="grid-column: 1 / -1;">
+            <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总文案</label>
+            <el-input
+              v-model="store.outline.copywriting"
+              placeholder="请输入总文案，最好包含相关#话题标签"
+              size="large"
+              clearable
+              type="textarea"
+              :rows="3"
+              style="width: 100%; resize: vertical; min-height: 100px;"
+              @input="store.updateOutlineCopywriting(store.outline.copywriting || '')"
+            />
+            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
+          </div>
         </div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
@@ -164,6 +167,8 @@
             class="textarea-paper"
             placeholder="在此输入图片提示词..."
             @input="store.updatePage(page.index, page.image_prompt || page.content)"
+            rows="5"
+            style="resize: vertical; min-height: 100px; max-height: 500px;"
           />
           <div class="word-count">{{ (page.image_prompt || page.content).length }} 字</div>
         </div>
@@ -486,7 +491,7 @@ const generateSingleImage = async (index: number) => {
     store.images.push({
       index: store.images.length,
       url: '',
-      status: 'idle'
+      status: 'error' // 使用error状态替代idle状态，因为GeneratedImage接口不支持idle状态
     })
   }
   

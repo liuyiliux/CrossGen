@@ -23,12 +23,14 @@
           <div 
             v-if="image.url" 
             style="position: relative; aspect-ratio: 3/4; overflow: hidden; cursor: pointer;" 
-            @click="viewImage(image.url)"
+            @click="previewImage(image)"
           >
-            <img
+            <el-image
               :src="image.url"
               :alt="`第 ${image.index + 1} 页`"
               style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
+              :preview-src-list="store.images.filter(img => img.url).map(img => img.url)"
+              :initial-index="image.index"
               @error="onImageError($event)"
             />
             <!-- Regenerating Overlay -->
@@ -186,9 +188,10 @@ onMounted(async () => {
   await loadPlatformConfig()
 })
 
-const viewImage = (url: string) => {
-  const baseUrl = url.split('?')[0]
-  window.open(baseUrl + '?thumbnail=false', '_blank')
+const previewImage = (image: any) => {
+  // 使用el-image的内置预览功能，无需额外实现
+  // el-image组件会自动处理预览逻辑
+  console.log('预览图片:', image.index)
 }
 
 const startOver = () => {
@@ -233,22 +236,45 @@ const onImageError = (event: Event) => {
 }
 
 const handleRegenerate = async (image: any) => {
-  if (!store.taskId || regeneratingIndex.value !== null) return
+  if (!store.imageProviderId || regeneratingIndex.value !== null) return
 
   regeneratingIndex.value = image.index
   try {
-    // TODO: 实现重新生成图片的API调用
     console.log('重新生成图片:', image.index)
     
-    // 模拟API调用
-    setTimeout(() => {
-      const newUrl = 'https://picsum.photos/800/1200?random=' + Date.now()
-      store.updateImage(image.index, newUrl)
-      regeneratingIndex.value = null
-      ElMessage.success('图片重新生成成功')
-    }, 1500)
+    // 获取对应的提示词
+    const page = store.outline.pages[image.index]
+    if (!page) {
+      throw new Error('找不到对应的页面信息')
+    }
+    
+    // 调用API重新生成单张图片
+    const response = await axios.post('/api/generate/image', {
+      history_id: store.recordId,
+      page_index: image.index,
+      prompt: page.image_prompt || page.content,
+      image_provider: store.imageProviderId,
+      size: store.selectedSize
+    })
+    
+    console.log('API响应:', response.data)
+    
+    if (response.data.success) {
+      // 更新图片状态
+      store.updateImage(image.index, response.data.image_url)
+      ElMessage.success(`第${image.index + 1}页图片重新生成成功`)
+    } else {
+      // 处理生成失败
+      store.images[image.index].status = 'error'
+      store.images[image.index].error = response.data.error || '重新生成失败'
+      ElMessage.error(`第${image.index + 1}页图片重新生成失败: ${response.data.error || '重新生成失败'}`)
+    }
   } catch (e: any) {
-    ElMessage.error('重绘失败: ' + e.message)
+    console.error('重新生成图片失败:', e)
+    store.images[image.index].status = 'error'
+    store.images[image.index].error = e.message || '网络错误，请重试'
+    ElMessage.error(`重绘失败: ${e.message || '网络错误，请重试'}`)
+  } finally {
     regeneratingIndex.value = null
   }
 }
