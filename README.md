@@ -4,16 +4,17 @@
 
 ## 项目简介
 
-逸流是一款智能化的多平台图文生成器，帮助内容创作者通过"一句话"快速生成符合小红书、抖音、微信公众号、头条号等平台特色的专业图文内容。
+逸流是一款智能化的多平台图文生成器，帮助内容创作者通过"一句话"快速生成符合小红书、抖音、微信公众号、头条号、反推等平台特色的专业图文内容。
 
 ### ✨ 核心特性
 
 - 🎯 **一键生成**: 一句话输入，自动生成多平台图文内容
-- 🔄 **多平台适配**: 支持小红书、抖音、公众号、头条号等主流平台
+- 🔄 **多平台适配**: 支持小红书、抖音、公众号、头条号、反推等主流平台
 - 🧠 **AI驱动**: 集成GPT、Claude等LLM和Stable Diffusion图像生成
 - ⚡ **批量处理**: 支持批量主题并行生成
 - 🎨 **模板化**: 灵活的平台模板配置，快速响应平台规则变化
 - 📱 **响应式**: 现代化Web界面，支持多设备访问
+- 📋 **结构化内容**: 支持总标题+总文案+多张图片的内容结构
 
 ## 🏗️ 技术架构
 
@@ -120,20 +121,31 @@ yiliu/
 ## ⚙️ 配置说明
 
 ### 平台模板配置
+
+平台模板配置文件位于 `config/platform_templates.yaml`，用于定义不同平台的内容生成规则。每个平台模板包含以下主要部分：
+
 ```yaml
 # config/platform_templates.yaml
 platform_templates:
-  xiaohongshu:
-    title_style:
-      max_length: 20
-      punctuation: "emoji_allowed"
-    image_requirements:
-      ratio: "3:4"
-      count: 3-5
-    output_format: "markdown"
+  fantui:  # 反推平台
+    name: 反推
+    outline_template: '你是一个图片创作高手。用户会给你一个要求以及说明，你需要生成包含一个标题、一个文案和多个图片提示词的内容。
+      # ... 模板内容
+    image_template: '{full_outline}'
+    video_template: '请生成一个适合小红书的短视频脚本，根据以下主题和大纲：
+      # ... 模板内容
 ```
 
+**模板字段说明**：
+- `name`: 平台中文名称
+- `outline_template`: 大纲生成模板，用于生成包含标题、文案和图片提示词的完整内容
+- `image_template`: 图片生成模板，用于生成单张图片
+- `video_template`: 视频生成模板，用于生成视频脚本
+
 ### AI提供商配置
+
+AI提供商配置文件位于 `config/text_providers.yaml` 和 `config/image_providers.yaml`，用于配置AI服务的API密钥和参数。
+
 ```yaml
 # config/text_providers.yaml
 providers:
@@ -146,13 +158,29 @@ providers:
 ## 📖 使用指南
 
 ### 基础使用
-1. 输入创作主题（如："鉴定baishuij"）
-2. 选择目标发布平台
-3. 点击生成按钮
-4. 查看生成的图文内容
-5. 下载或导出结果
+
+1. **输入创作主题**（如："冬日少女写真"）
+2. **选择目标发布平台**（如：反推、小红书、抖音等）
+3. **点击生成按钮**，等待AI生成大纲
+4. **编辑大纲内容**（可选）
+   - 修改总标题
+   - 修改总文案
+   - 调整图片提示词
+   - 添加或删除图片
+5. **生成图片**，等待AI生成图片
+6. **查看生成的图文内容**
+7. **下载或导出结果**
+
+### 内容结构
+
+逸流生成的内容采用以下结构化格式：
+
+- **总标题**：整个图文内容的标题
+- **总文案**：整个图文内容的主体文案，支持#话题标签
+- **图片提示词**：每个图片对应一个提示词，用`<page>`标签分割
 
 ### 批量生成
+
 1. 批量输入多个主题
 2. 选择目标平台
 3. 启动批量生成任务
@@ -160,6 +188,7 @@ providers:
 5. 批量下载所有结果
 
 ### 配置管理
+
 1. 访问配置页面
 2. 修改平台模板参数
 3. 配置AI提供商密钥
@@ -169,6 +198,7 @@ providers:
 ## 🔧 开发指南
 
 ### 本地开发
+
 1. 安装开发依赖
 2. 启动开发服务器
 3. 进行代码修改
@@ -176,11 +206,13 @@ providers:
 5. 提交代码变更
 
 ### 代码规范
+
 - 后端: PEP8 + Black + isort + MyPy
 - 前端: ESLint + Prettier + TypeScript
 - 提交: Conventional Commits
 
 ### 测试
+
 ```bash
 # 后端测试
 cd backend
@@ -194,6 +226,7 @@ pnpm test
 ## 📦 部署
 
 ### Docker部署
+
 ```bash
 # 构建镜像
 docker build -t yiliu:latest .
@@ -203,6 +236,7 @@ docker-compose up -d
 ```
 
 ### 生产部署
+
 1. 配置环境变量
 2. 构建生产版本
 3. 部署到云服务器
@@ -212,10 +246,10 @@ docker-compose up -d
 ## 📊 项目状态
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-当前进度: ✅ 第一阶段开发完成，已部署可访问
+当前进度: ✅ 正式版已发布，支持多平台图文生成
 
 ## 🤝 贡献指南
 
