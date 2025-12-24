@@ -514,6 +514,42 @@ const generateSingleImage = async (index: number) => {
   console.log('提示词:', store.outline.pages[index].content)
   
   try {
+    // 检查recordId是否为null，如果是，则创建新的历史记录
+    if (!store.recordId) {
+      try {
+        // 创建新的历史记录
+        const createHistoryResponse = await axios.post('/api/history', {
+          topic: store.topic,
+          platform: store.selectedPlatform || 'xiaohongshu', // 使用store中的platform或默认值
+          outline: {
+            raw: store.outline.raw,
+            title: store.outline.title,
+            copywriting: store.outline.copywriting,
+            pages: store.outline.pages
+          },
+          images: [], // 初始为空数组
+          status: 'processing', // 设置初始状态
+          text_model: store.textProviderId,
+          image_model: store.imageProviderId
+        }, {
+          signal: controller.signal
+        })
+        
+        if (createHistoryResponse.data) {
+          store.recordId = createHistoryResponse.data.id
+          console.log('创建新历史记录成功，recordId:', store.recordId)
+        } else {
+          throw new Error('创建历史记录失败: 无效的响应数据')
+        }
+      } catch (historyError: any) {
+        console.error('创建历史记录失败:', historyError)
+        store.images[index].status = 'error'
+        store.images[index].error = '创建历史记录失败，请重试'
+        ElMessage.error('创建历史记录失败，请重试')
+        return
+      }
+    }
+    
     // 调用API生成单张图片
     const response = await axios.post('/api/generate/image', {
       history_id: store.recordId,
