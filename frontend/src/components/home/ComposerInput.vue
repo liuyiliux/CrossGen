@@ -29,6 +29,7 @@
           placeholder="请选择平台"
           size="large"
           class="selector-input"
+          :loading="loading"
         >
           <el-option
             v-for="platform in platforms"
@@ -47,6 +48,7 @@
           size="large"
           clearable
           class="selector-input"
+          :loading="loading"
         >
           <el-option 
             v-for="provider in generatorStore.textProviders.filter(p => p.enabled)" 
@@ -108,7 +110,7 @@
       <div class="toolbar-right">
         <button
               class="btn btn-primary generate-btn"
-              @click="$emit('generate', selectedPlatform)"
+              @click="$emit('generate', generatorStore.selectedPlatform || 'xiaohongshu')"
               :disabled="!modelValue.trim() || loading"
             >
               <span v-if="loading" class="spinner-sm"></span>
@@ -169,21 +171,53 @@ const uploadedImages = ref<UploadedImage[]>([])
 // 平台选择
 const platforms = ref<Array<{value: string, label: string}>>([])
 
+// 加载状态
+const loading = ref(true)
+
 // 组件挂载时加载平台配置
 onMounted(async () => {
-  await loadPlatformConfig()
-  // 更新平台选项
-  platforms.value = getPlatformOptions()
-  
-  // 如果 generatorStore 中没有保存的平台，或者保存的平台不在列表中，选择第一个平台
-  if (!generatorStore.selectedPlatform || 
-      (platforms.value.length > 0 && 
-       !platforms.value.some(p => p.value === generatorStore.selectedPlatform))) {
-    generatorStore.selectedPlatform = platforms.value[0]?.value || 'xiaohongshu'
+  loading.value = true
+  try {
+    // 等待平台配置加载完成
+    await loadPlatformConfig()
+    
+    // 获取平台选项
+    platforms.value = getPlatformOptions()
+    
+    // 如果没有平台选项，显示警告并使用默认平台
+    if (platforms.value.length === 0) {
+      console.warn('未加载到平台配置，使用默认平台')
+      // 添加默认平台选项
+      platforms.value = [
+        { label: '小红书', value: 'xiaohongshu' },
+        { label: '抖音', value: 'douyin' },
+        { label: '微信', value: 'wechat' },
+        { label: '头条', value: 'toutiao' },
+        { label: '测试', value: 'ceshi' }
+      ]
+    }
+    
+    // 如果 generatorStore 中没有保存的平台，或者保存的平台不在列表中，选择第一个平台
+    if (!generatorStore.selectedPlatform || 
+        !platforms.value.some(p => p.value === generatorStore.selectedPlatform)) {
+      generatorStore.selectedPlatform = platforms.value[0]?.value || 'xiaohongshu'
+    }
+    
+    console.log('平台列表加载成功:', platforms.value)
+    console.log('当前选择的平台:', generatorStore.selectedPlatform)
+  } catch (error) {
+    console.error('加载平台配置失败:', error)
+    // 加载失败时使用默认平台
+    platforms.value = [
+      { label: '小红书', value: 'xiaohongshu' },
+      { label: '抖音', value: 'douyin' },
+      { label: '微信', value: 'wechat' },
+      { label: '头条', value: 'toutiao' },
+      { label: '测试', value: 'ceshi' }
+    ]
+  } finally {
+    loading.value = false
   }
-  
-  console.log('平台列表加载成功:', platforms.value)
-  console.log('当前选择的平台:', generatorStore.selectedPlatform)
 })
 
 /**

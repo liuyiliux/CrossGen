@@ -14,7 +14,8 @@ from src.models.history import (
     HistoryRecord,
     HistoryRecordCreate,
     HistoryRecordUpdate,
-    HistoryFilter
+    HistoryFilter,
+    GeneratedImage
 )
 
 
@@ -58,6 +59,9 @@ class HistoryService:
                     # 转换日期字符串为datetime对象
                     data["created_at"] = datetime.fromisoformat(data["created_at"])
                     data["updated_at"] = datetime.fromisoformat(data["updated_at"])
+                    # 转换images字段的字典列表为GeneratedImage对象列表
+                    if "images" in data:
+                        data["images"] = [GeneratedImage(**img) for img in data["images"]]
                     history_records.append(HistoryRecord(**data))
             except Exception as e:
                 print(f"读取历史记录文件失败 {file_path}: {str(e)}")
@@ -102,6 +106,9 @@ class HistoryService:
                 # 转换日期字符串为datetime对象
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
                 data["updated_at"] = datetime.fromisoformat(data["updated_at"])
+                # 转换images字段的字典列表为GeneratedImage对象列表
+                if "images" in data:
+                    data["images"] = [GeneratedImage(**img) for img in data["images"]]
                 return HistoryRecord(**data)
         except Exception as e:
             print(f"读取历史记录文件失败 {file_path}: {str(e)}")
@@ -167,6 +174,11 @@ class HistoryService:
         
         # 更新字段
         update_dict = update_data.model_dump(exclude_unset=True)
+        
+        # 转换images字段的字典列表为GeneratedImage对象列表（如果存在）
+        if "images" in update_dict:
+            update_dict["images"] = [GeneratedImage(**img) for img in update_dict["images"]]
+        
         updated_history = existing_history.model_copy(update=update_dict)
         updated_history.updated_at = datetime.now()
         

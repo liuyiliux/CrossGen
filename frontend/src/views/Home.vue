@@ -231,18 +231,13 @@ const loadProviders = async () => {
   }
 }
 
-// 组件挂载时加载服务商数据
-onMounted(() => {
-  loadProviders()
-})
-
 // 导入共享平台映射工具
-import { onMounted } from 'vue'
 import { getPlatformLabel, loadPlatformConfig } from '../utils/platformUtils'
 
-// 加载平台配置
+// 组件挂载时加载服务商数据和平台配置
 onMounted(async () => {
   await loadPlatformConfig()
+  loadProviders()
 })
 
 // 格式化时间
@@ -268,7 +263,8 @@ const handleGenerate = async () => {
 
   try {
     const imageFiles = generatorStore.userImages
-    const platform = generatorStore.selectedPlatform
+    // 确保platform是string类型，使用默认值'xiaohongshu'如果为null
+    const platform = generatorStore.selectedPlatform || 'xiaohongshu'
 
     const result = await generateOutline(
       generatorStore.topic.trim(),
