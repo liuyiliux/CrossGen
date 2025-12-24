@@ -208,10 +208,13 @@
             v-else-if="store.images[idx].status === 'done' && store.images[idx].url"
             class="image-preview"
           >
-            <img 
-              :src="store.images[idx].url" 
+            <el-image
+              :src="store.images[idx].url"
               :alt="`Page ${idx + 1}`"
-              @click="viewImage(idx)"
+              :preview-src-list="store.images.filter(img => img.url).map(img => img.url)"
+              :initial-index="idx"
+              fit="cover"
+              class="preview-image"
             />
             <div class="image-actions">
               <button 
@@ -629,15 +632,7 @@ const stopAllImageGeneration = () => {
   }
 }
 
-// 查看图片大图
-const viewImage = (index: number) => {
-  const image = store.images[index]
-  if (image.status === 'done' && image.url) {
-    // 这里可以实现图片预览功能，例如使用Element Plus的ImageViewer组件
-    // 简单实现：在新窗口打开图片
-    window.open(image.url, '_blank')
-  }
-}
+
 
 // 单张生成视频
 const generateSingleVideo = (index: number) => {
@@ -868,14 +863,14 @@ const generateSingleVideo = (index: number) => {
   cursor: pointer;
 }
 
-.image-preview img {
+.preview-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.image-preview:hover img {
+.image-preview:hover .preview-image {
   transform: scale(1.05);
 }
 

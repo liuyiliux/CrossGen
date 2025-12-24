@@ -23,7 +23,6 @@
           <div 
             v-if="image.url" 
             style="position: relative; aspect-ratio: 3/4; overflow: hidden; cursor: pointer;" 
-            @click="previewImage(image)"
           >
             <el-image
               :src="image.url"
