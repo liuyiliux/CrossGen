@@ -265,6 +265,39 @@ class ProviderManager:
                     supported_sizes=supported_sizes  # 添加支持的尺寸
                 )
                 provider = GeminiProvider(provider_config)
+            elif provider_type == "generic":
+                # 解析supported_sizes字段
+                supported_sizes = config.get("supported_sizes", [])
+                if isinstance(supported_sizes, str):
+                    # 如果是字符串，尝试解析为JSON
+                    import json
+                    try:
+                        supported_sizes = json.loads(supported_sizes)
+                    except json.JSONDecodeError:
+                        print(f"  警告：supported_sizes字段解析失败，使用默认值")
+                        supported_sizes = []
+                
+                provider_config = ProviderConfig(
+                    name=name,
+                    enabled=config.get("enabled", True),
+                    provider_type="image",  # 显式设置为图像提供商
+                    api_key=config.get("api_key"),
+                    base_url=config.get("base_url"),
+                    model=config.get("model"),
+                    timeout=config.get("timeout", 30),
+                    retry_count=config.get("retry_count", 3),
+                    headers=config.get("headers"),
+                    supported_sizes=supported_sizes  # 添加支持的尺寸
+                )
+                
+                # 添加通用配置
+                provider_config.request_config = config.get("request_config", {})
+                provider_config.response_config = config.get("response_config", {})
+                provider_config.size_config = config.get("size_config", {})
+                
+                # 导入并创建GenericImageProvider实例
+                from src.providers.generic_image_provider import GenericImageProvider
+                provider = GenericImageProvider(provider_config)
             else:
                 print(f"不支持的图像提供商类型: {provider_type}")
                 return False
@@ -608,6 +641,7 @@ class ProviderManager:
                 provider_config = ProviderConfig(
                     name=resolved_config.get("name", "temp_image_provider"),
                     enabled=True,
+                    provider_type="image",  # 显式设置为图像提供商
                     api_key=resolved_config.get("api_key"),
                     base_url=resolved_config.get("base_url"),
                     model=resolved_config.get("model"),
@@ -622,6 +656,7 @@ class ProviderManager:
                 provider_config = ProviderConfig(
                     name=resolved_config.get("name", "temp_image_provider"),
                     enabled=True,
+                    provider_type="image",  # 显式设置为图像提供商
                     api_key=resolved_config.get("api_key"),
                     base_url=resolved_config.get("base_url"),
                     model=resolved_config.get("model"),
@@ -638,6 +673,7 @@ class ProviderManager:
                 provider_config = ProviderConfig(
                     name=resolved_config.get("name", "temp_image_provider"),
                     enabled=True,
+                    provider_type="image",  # 显式设置为图像提供商
                     api_key=resolved_config.get("api_key"),
                     base_url=resolved_config.get("base_url"),
                     model=resolved_config.get("model"),
@@ -647,6 +683,28 @@ class ProviderManager:
                     headers=resolved_config.get("headers")
                 )
                 provider = GeminiProvider(provider_config)
+            elif provider_type == "generic":
+                # 为通用图像提供商创建配置
+                provider_config = ProviderConfig(
+                    name=resolved_config.get("name", "temp_image_provider"),
+                    enabled=True,
+                    provider_type="image",  # 显式设置为图像提供商
+                    api_key=config.get("api_key"),  # 直接使用原始配置中的api_key，不使用解析后的
+                    base_url=resolved_config.get("base_url"),
+                    model=resolved_config.get("model"),
+                    timeout=resolved_config.get("timeout", 30),
+                    retry_count=resolved_config.get("retry_count", 3),
+                    headers=resolved_config.get("headers")
+                )
+                # 添加通用配置
+                provider_config.request_config = resolved_config.get("request_config", {})
+                provider_config.response_config = resolved_config.get("response_config", {})
+                provider_config.size_config = resolved_config.get("size_config", {})
+                provider_config.supported_sizes = resolved_config.get("supported_sizes", [])
+                
+                # 导入GenericImageProvider
+                from src.providers.generic_image_provider import GenericImageProvider
+                provider = GenericImageProvider(provider_config)
             else:
                 raise ValueError(f"不支持的图像提供商类型: {provider_type}")
             

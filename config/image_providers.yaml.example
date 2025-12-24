@@ -54,7 +54,7 @@ providers:
     retry_count: 1
     
   # 百度文心一格配置
-    wenyi:
+  wenyi:
     enabled: false
     api_key: "${WENYI_API_KEY}"
     secret_key: "${WENYI_SECRET_KEY}"
@@ -64,6 +64,105 @@ providers:
     height: 1024
     timeout: 60
     retry_count: 2
+    
+  # 百炼通用配置示例（使用generic类型）
+  bailian:
+    type: generic
+    enabled: true
+    api_key: "${BAILIAN_API_KEY}"
+    base_url: "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+    model: "z-image-turbo"
+    timeout: 120
+    retry_count: 3
+    # 请求配置
+    request_config:
+      template: |
+        {
+          "model": "{{ model }}",
+          "input": {
+            "messages": [
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "text": "{{ prompt }}"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": {
+            "size": "{{ size }}",
+            "prompt_extend": false,
+            "negative_prompt": ""
+          }
+        }
+      # 参数默认值
+      defaults:
+        size: "1024*1024"
+        n: 1
+      # 参数转换规则
+      parameter_transforms:
+        # 将x分隔的尺寸转换为*分隔
+        size: "{{ size.replace('x', '*') }}"
+    # 响应解析配置
+    response_config:
+      # 提取图像URL的JSONPath
+      images_path: "$.output.images[*].url"
+      # 提取使用信息的JSONPath
+      usage_path: "$.usage"
+      # 提取错误信息的JSONPath
+      error_path: "$.error.message"
+    # 尺寸配置
+    size_config:
+      # 总像素范围
+      total_pixels:
+        min: "512*512"
+        max: "2048*2048"
+      # 推荐总像素范围
+      recommended_total_pixels:
+        min: "1024*1024"
+        max: "1536*1536"
+      # 支持的宽高比
+      supported_aspect_ratios:
+        - "1:1"
+        - "2:3"
+        - "3:2"
+        - "3:4"
+        - "4:3"
+        - "7:9"
+        - "9:7"
+        - "9:16"
+        - "9:21"
+        - "16:9"
+        - "21:9"
+      # 推荐分辨率列表
+      recommended_resolutions:
+        - "1024*1024"
+        - "1120*1440"
+        - "1440*1120"
+        - "1280*1280"
+        - "1024*1536"
+        - "1536*1024"
+    # 支持的尺寸列表
+    supported_sizes:
+      - "1024*1024"
+      - "1120*1440"
+      - "1440*1120"
+      - "1280*1280"
+      - "1024*1536"
+      - "1536*1024"
+      - "1536*1536"
+      - "720*1280"
+      - "1280*720"
+      - "576*1344"
+      - "1344*576"
+      - "864*1536"
+      - "1536*864"
+      - "896*1152"
+      - "1152*896"
+      - "1024*1792"
+      - "1792*1024"
 
 # 提示词增强配置
 prompt_enhancement:

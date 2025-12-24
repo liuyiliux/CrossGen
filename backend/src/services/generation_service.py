@@ -358,34 +358,67 @@ class GenerationService:
                         # 解析AI返回的内容，处理页面拆分
                         print(f"开始解析页面内容")
                         
-                        # 简单解析标题和内容
-                        lines = generated_text.split("\n")
-                        title = lines[0] if lines else f"[{platform.upper()}] {request.topic}"
-                        content = "\n".join(lines[1:]) if len(lines) > 1 else generated_text
-                        
-                        # 解析页面信息，查找<page>标签
-                        pages = []
-                        if "<page>" in content:
-                            print(f"发现<page>标签，开始拆分页面")
-                            # 拆分页面
-                            page_sections = content.split("<page>")
-                            for i, section in enumerate(page_sections):
+                        # 解析AI生成的内容，提取总标题、总文案和多个图片提示词
+                        def parse_generated_content(generated_text):
+                            # 初始化结果
+                            title = ""
+                            copywriting = ""
+                            image_prompts = []
+                            
+                            # 查找总标题
+                            title_match = re.search(r'【标题】：(.*?)\n(?=【文案】：|$)', generated_text, re.DOTALL)
+                            if title_match:
+                                title = title_match.group(1).strip()
+                            
+                            # 查找总文案
+                            copywriting_match = re.search(r'【文案】：(.*?)\n(?=【图片提示词】：|$)', generated_text, re.DOTALL)
+                            if copywriting_match:
+                                copywriting = copywriting_match.group(1).strip()
+                            
+                            # 提取所有图片提示词部分（从第一个【图片提示词】：开始）
+                            image_prompts_section = generated_text
+                            image_start_match = re.search(r'【图片提示词】：', generated_text)
+                            if image_start_match:
+                                image_prompts_section = generated_text[image_start_match.start():]
+                            
+                            # 按<page>标签分割图片提示词
+                            page_sections = image_prompts_section.split('<page>')
+                            
+                            for section in page_sections:
                                 section = section.strip()
-                                if section:
-                                    pages.append({
-                                        "id": f"p{i+1}",
-                                        "type": "content",
-                                        "content": section
-                                    })
-                            print(f"页面拆分完成，共 {len(pages)} 页")
-                        else:
-                            # 如果没有<page>标签，将整个内容作为一页
+                                if not section:
+                                    continue
+                                
+                                # 提取当前页面的图片提示词
+                                image_prompt_match = re.search(r'【图片提示词】：(.*?)(?=\n<page>|$)', section, re.DOTALL)
+                                if image_prompt_match:
+                                    image_prompt = image_prompt_match.group(1).strip()
+                                    if image_prompt:
+                                        image_prompts.append(image_prompt)
+                            
+                            return title, copywriting, image_prompts
+                        
+                        # 使用解析函数提取内容
+                        title, copywriting, image_prompts = parse_generated_content(generated_text)
+                        
+                        # 使用完整的生成文本作为content
+                        content = generated_text
+                        
+                        # 生成简单标题
+                        if not title:
+                            title = f"[{platform.upper()}] {request.topic}"
+                        
+                        # 创建页面列表
+                        pages = []
+                        for i, image_prompt in enumerate(image_prompts):
                             pages.append({
-                                "id": "p1",
+                                "id": f"p{i+1}",
                                 "type": "content",
-                                "content": content
+                                "content": image_prompt,
+                                "image_prompt": image_prompt
                             })
-                            print(f"没有发现<page>标签，将内容作为单页处理")
+                        
+                        print(f"页面拆分完成，共 {len(pages)} 页")
                         
                         # 只生成文本内容，不生成图像
                         # 图像生成只在专门的图像生成接口中调用
@@ -399,7 +432,8 @@ class GenerationService:
                                 "provider": ai_result.get("provider"),
                                 "model": ai_result.get("model"),
                                 "usage": ai_result.get("usage", {}),
-                                "pages": pages  # 保存拆分后的页面信息
+                                "pages": pages,  # 保存拆分后的页面信息
+                                "copywriting": copywriting.strip()  # 保存总文案
                             }
                         )
                         print(f"文本生成完成，不自动生成图像")
@@ -440,10 +474,29 @@ class GenerationService:
                         
                         # 处理单页情况
                         if "<page>" not in content:
+                            # 解析文案和图片提示词
+                            copywriting = ""
+                            image_prompt = ""
+                            
+                            # 查找文案部分
+                            copywriting_match = re.search(r'【文案】：(.*?)(?=【图片提示词】：|$)', content, re.DOTALL)
+                            if copywriting_match:
+                                copywriting = copywriting_match.group(1).strip()
+                            
+                            # 查找图片提示词部分
+                            image_prompt_match = re.search(r'【图片提示词】：(.*?)$', content, re.DOTALL)
+                            if image_prompt_match:
+                                image_prompt = image_prompt_match.group(1).strip()
+                            
+                            # 如果没有解析到图片提示词，将整个内容作为图片提示词
+                            if not image_prompt:
+                                image_prompt = content.strip()
+                            
                             outline_pages.append(Page(
                                 index=page_index,
                                 type=page_type,
-                                content=content.strip()
+                                content=image_prompt,
+                                image_prompt=image_prompt
                             ))
                             page_index += 1
                         else:
@@ -458,16 +511,37 @@ class GenerationService:
                                     if type_match:
                                         current_type = type_match.group(1)
                                     
+                                    # 解析文案和图片提示词
+                                    copywriting = ""
+                                    image_prompt = ""
+                                    
+                                    # 查找文案部分
+                                    copywriting_match = re.search(r'【文案】：(.*?)(?=【图片提示词】：|$)', page_content, re.DOTALL)
+                                    if copywriting_match:
+                                        copywriting = copywriting_match.group(1).strip()
+                                    
+                                    # 查找图片提示词部分
+                                    image_prompt_match = re.search(r'【图片提示词】：(.*?)$', page_content, re.DOTALL)
+                                    if image_prompt_match:
+                                        image_prompt = image_prompt_match.group(1).strip()
+                                    
+                                    # 如果没有解析到图片提示词，将整个内容作为图片提示词
+                                    if not image_prompt:
+                                        image_prompt = page_content.strip()
+                                    
                                     outline_pages.append(Page(
                                         index=page_index,
                                         type=current_type,
-                                        content=page_content
+                                        content=image_prompt,
+                                        image_prompt=image_prompt
                                     ))
                                     page_index += 1
                     
                     # 更新历史记录，状态为outline_success
                     final_outline = Outline(
-                        raw=f"生成主题: {request.topic}\n平台: {platform_values}",
+                        raw=result.content.strip(),
+                        title=result.title.strip(),
+                        copywriting=copywriting.strip(),  # 直接使用解析得到的文案
                         pages=outline_pages
                     )
                     

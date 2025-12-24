@@ -16,6 +16,36 @@
           />
           <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">修改主题后，将基于新主题生成内容</span>
         </div>
+        
+        <!-- 总标题输入 -->
+        <div class="topic-edit" style="margin-top: 16px; max-width: 600px;">
+          <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
+          <el-input
+            v-model="store.outline.title"
+            placeholder="请输入总标题"
+            size="large"
+            clearable
+            style="width: 100%;"
+            @input="store.updateOutlineTitle(store.outline.title || '')"
+          />
+          <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总标题，用于展示在所有图片之上</span>
+        </div>
+        
+        <!-- 总文案输入 -->
+        <div class="topic-edit" style="margin-top: 16px; max-width: 600px;">
+          <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总文案</label>
+          <el-input
+            v-model="store.outline.copywriting"
+            placeholder="请输入总文案，最好包含相关#话题标签"
+            size="large"
+            clearable
+            type="textarea"
+            :rows="3"
+            style="width: 100%;"
+            @input="store.updateOutlineCopywriting(store.outline.copywriting || '')"
+          />
+          <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
+        </div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
         <div style="width: 240px;">
@@ -126,14 +156,19 @@
           </div>
         </div>
 
-        <textarea
-          v-model="page.content"
-          class="textarea-paper"
-          placeholder="在此输入文案..."
-          @input="store.updatePage(page.index, page.content)"
-        />
+        <!-- 图片提示词输入 -->
+        <div class="content-section">
+          <div class="section-title">图片提示词</div>
+          <textarea
+            v-model="page.image_prompt"
+            class="textarea-paper"
+            placeholder="在此输入图片提示词..."
+            @input="store.updatePage(page.index, page.image_prompt || page.content)"
+          />
+          <div class="word-count">{{ (page.image_prompt || page.content).length }} 字</div>
+        </div>
         
-        <div class="word-count">{{ page.content.length }} 字</div>
+
         
         <!-- 图片预览区域 -->
         <div v-if="store.images[idx]" class="image-preview-section">
@@ -581,9 +616,9 @@ const generateSingleVideo = (index: number) => {
 /* 网格布局 */
 .outline-grid {
   display: grid;
-  /* 响应式列：最小宽度 300px，自动填充 */
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 28px;
+  /* 响应式列：最小宽度 320px，自动填充 */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
@@ -592,27 +627,30 @@ const generateSingleVideo = (index: number) => {
 .outline-card {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  transition: all 0.2s ease;
+  padding: 24px;
+  transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-  border-radius: 12px;
+  border-radius: 16px;
   background: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
   /* 保持一定的长宽比感，虽然高度自适应，但由于 flex column 和内容撑开，
      这里设置一个 min-height 让它看起来像个竖向卡片 */
-  min-height: 400px;
+  min-height: 420px;
   position: relative;
+  backdrop-filter: blur(10px);
 }
 
 .outline-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
   z-index: 10;
+  border-color: var(--el-color-primary);
 }
 
 .outline-card.dragging-over {
   border: 2px dashed var(--el-color-primary);
   opacity: 0.8;
+  background: rgba(255, 36, 66, 0.02);
 }
 
 /* 顶部栏 */
@@ -620,77 +658,132 @@ const generateSingleVideo = (index: number) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f5f5f5;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .page-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .page-number {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--el-color-primary);
   font-family: 'Inter', sans-serif;
+  background: rgba(255, 36, 66, 0.06);
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
 .page-type {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background: linear-gradient(135deg, rgba(255, 36, 66, 0.08) 0%, rgba(255, 36, 66, 0.02) 100%);
+  color: var(--el-color-primary);
+  box-shadow: 0 2px 4px rgba(255, 36, 66, 0.1);
+  border: 1px solid rgba(255, 36, 66, 0.15);
 }
 
-.page-type.cover { color: #FF4D4F; background: #FFF1F0; }
-.page-type.content { color: #8c8c8c; background: #f5f5f5; }
-.page-type.summary { color: #52C41A; background: #F6FFED; }
+.page-type.cover { 
+  color: #FF4D4F; 
+  background: #FFF1F0; 
+  border-color: #FFCCC7;
+}
+.page-type.content { 
+  color: #1890FF; 
+  background: #E6F7FF; 
+  border-color: #91D5FF;
+}
+.page-type.summary { 
+  color: #52C41A; 
+  background: #F6FFED; 
+  border-color: #B7EB8F;
+}
 
 .card-controls {
   display: flex;
-  gap: 8px;
-  opacity: 0.4;
-  transition: opacity 0.2s;
+  gap: 10px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
 }
 
-.outline-card:hover .card-controls { opacity: 1; }
+.outline-card:hover .card-controls { 
+  opacity: 1;
+  background: #ffffff;
+  border-color: var(--el-color-primary);
+}
 
 .drag-handle {
   cursor: grab;
-  padding: 2px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-.drag-handle:active { cursor: grabbing; }
+.drag-handle:hover {
+  background: rgba(255, 36, 66, 0.1);
+  color: var(--el-color-primary);
+}
+
+.drag-handle:active { 
+  cursor: grabbing;
+  background: rgba(255, 36, 66, 0.15);
+}
 
 .icon-btn {
   background: none;
   border: none;
   cursor: pointer;
   color: #999;
-  padding: 2px;
-  transition: color 0.2s;
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
-.icon-btn:hover { color: #FF4D4F; }
+.icon-btn:hover { 
+  color: #FF4D4F;
+  background: rgba(255, 77, 79, 0.1);
+}
+
+.icon-btn:active { 
+  background: rgba(255, 77, 79, 0.15);
+}
 
 /* 文本区域 - 核心 */
 .textarea-paper {
   flex: 1; /* 占据剩余空间 */
   width: 100%;
-  border: none;
-  background: transparent;
-  padding: 0;
+  border: 1px solid #f0f0f0;
+  background: #fafafa;
+  padding: 16px;
   font-size: 16px; /* 更大的字号 */
   line-height: 1.7; /* 舒适行高 */
   color: #333;
   resize: none; /* 禁止手动拉伸，保持卡片整体感 */
   font-family: inherit;
   margin-bottom: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   /* 添加 placeholder 样式 */
 }
 
@@ -701,6 +794,9 @@ const generateSingleVideo = (index: number) => {
 
 .textarea-paper:focus {
   outline: none;
+  border-color: var(--el-color-primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 36, 66, 0.1);
 }
 
 .word-count {
@@ -946,6 +1042,11 @@ const generateSingleVideo = (index: number) => {
   border-bottom: 1px solid #e8e8e8;
   flex-wrap: wrap;
   gap: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 30px;
+  margin-bottom: 30px;
 }
 
 .page-title {

@@ -43,11 +43,15 @@ class Page(BaseModel):
     index: int
     type: str
     content: str
+    image_prompt: Optional[str] = None
+    copywriting: Optional[str] = None
 
 
 class Outline(BaseModel):
     """大纲数据模型"""
     raw: str
+    title: Optional[str] = None        # 总标题
+    copywriting: Optional[str] = None  # 总文案
     pages: List[Page]
 
 

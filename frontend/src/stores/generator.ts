@@ -16,6 +16,7 @@ interface Page {
   index: number
   type: 'cover' | 'content' | 'summary'
   content: string
+  image_prompt?: string
 }
 
 // 定义生成图片类型
@@ -41,6 +42,8 @@ interface GeneratorState {
   // 大纲数据
   outline: {
     raw: string
+    title?: string        // 总标题
+    copywriting?: string  // 总文案
     pages: Page[]
   }
   
@@ -146,6 +149,8 @@ export const useGeneratorStore = defineStore('generator', {
         // 大纲数据
         outline: saved.outline || {
           raw: '',
+          title: '',
+          copywriting: '',
           pages: []
         },
         
@@ -273,9 +278,17 @@ export const useGeneratorStore = defineStore('generator', {
     /**
      * 设置大纲
      */
-    setOutline(raw: string, pages: Page[]) {
+    setOutline(raw: string, pages: Page[], title?: string, copywriting?: string) {
       this.outline.raw = raw
-      this.outline.pages = pages
+      this.outline.title = title
+      this.outline.copywriting = copywriting
+      
+      // 确保每个页面的image_prompt字段被正确设置
+      this.outline.pages = pages.map(page => ({
+        ...page,
+        image_prompt: page.image_prompt || page.content  // 如果image_prompt为空，使用content作为默认值
+      }))
+      
       this.stage = 'outline'
       // 清空图片数组，避免自动生成图像
       this.images = []
@@ -290,18 +303,61 @@ export const useGeneratorStore = defineStore('generator', {
       const page = this.outline.pages.find(p => p.index === index)
       if (page) {
         page.content = content
+        page.image_prompt = content  // 同时更新image_prompt
         // 同步更新 raw 文本
         this.syncRawFromPages()
       }
     },
+    
+    /**
+     * 更新大纲标题
+     */
+    updateOutlineTitle(title: string) {
+      this.outline.title = title
+      // 同步更新 raw 文本
+      this.syncRawFromPages()
+    },
 
     /**
-     * 根据 pages 重新生成 raw 文本
+     * 更新大纲文案
+     */
+    updateOutlineCopywriting(copywriting: string) {
+      this.outline.copywriting = copywriting
+      // 同步更新 raw 文本
+      this.syncRawFromPages()
+    },
+
+    /**
+     * 根据 pages 和大纲信息重新生成 raw 文本
      */
     syncRawFromPages() {
-      this.outline.raw = this.outline.pages
-        .map(page => page.content)
-        .join('\n\n<page>\n\n')
+      let raw = ''
+      
+      // 添加标题
+      if (this.outline.title) {
+        raw += `【标题】：${this.outline.title}\n\n`
+      }
+      
+      // 添加文案
+      if (this.outline.copywriting) {
+        raw += `【文案】：${this.outline.copywriting}\n\n`
+      }
+      
+      // 添加图片提示词
+      for (const page of this.outline.pages) {
+        if (page.image_prompt) {
+          raw += `【图片提示词】：${page.image_prompt}\n\n`
+        } else {
+          raw += `【图片提示词】：${page.content}\n\n`
+        }
+        
+        // 添加<page>标签分隔（除了最后一页）
+        if (page.index < this.outline.pages.length - 1) {
+          raw += '<page>\n\n'
+        }
+      }
+      
+      this.outline.raw = raw.trim()
     },
 
     /**

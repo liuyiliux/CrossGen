@@ -277,8 +277,25 @@ const handleGenerate = async () => {
     )
 
     if (result.success && result.pages) {
-      // 使用状态管理存储结果
-      generatorStore.setOutline(result.outline || '', result.pages)
+      // 从API返回的结果中提取title和copywriting
+      let title = ''
+      let copywriting = ''
+      const content = result.outline || ''
+      
+      // 查找标题
+      const titleMatch = content.match(/【标题】：(.*?)\n/)
+      if (titleMatch && titleMatch[1]) {
+        title = titleMatch[1].trim()
+      }
+      
+      // 查找文案
+      const copywritingMatch = content.match(/【文案】：(.*?)\n【图片提示词】：/s)
+      if (copywritingMatch && copywritingMatch[1]) {
+        copywriting = copywritingMatch[1].trim()
+      }
+      
+      // 使用状态管理存储结果，传递title和copywriting
+      generatorStore.setOutline(content, result.pages, title, copywriting)
       
       ElMessage.success('生成成功，正在跳转到大纲编辑页面...')
       
@@ -346,14 +363,16 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
         pages = firstResult.metadata.pages.map((page, index) => ({
           index,
           type: 'content',
-          content: page.content
+          content: page.content,
+          image_prompt: page.content  // 将content复制到image_prompt
         }))
       } else {
         // 如果没有拆分的页面信息，将整个内容作为一页
         pages = [{
           index: 0,
           type: 'content',
-          content: firstResult.content
+          content: firstResult.content,
+          image_prompt: firstResult.content  // 将content复制到image_prompt
         }]
       }
       

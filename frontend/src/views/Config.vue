@@ -369,6 +369,7 @@
                 <el-option label="OpenAI API接口" value="openai" />
                 <el-option label="Google-Gemini" value="gemini" />
                 <el-option label="SiliconFlow" value="siliconflow" />
+                <el-option label="通用配置" value="generic" />
               </el-select>
             </el-form-item>
             
@@ -409,6 +410,41 @@
                 placeholder="输入API端点路径，如 /v1/chat/completions"
               />
               <span class="help-text">默认端点: /v1/chat/completions (文本生成) 或 /v1/images/generations (图像生成)</span>
+            </el-form-item>
+            
+            <!-- 通用配置相关字段 -->
+            <el-form-item label="请求模板" v-if="currentProvider.type === 'generic'">
+              <el-input
+                v-model="currentProvider.request_config.template"
+                type="textarea"
+                :rows="10"
+                placeholder='输入Jinja2模板，如 {"role": "user", "content": [{"text": "{{ prompt }}"}]}'
+              />
+              <span class="help-text">使用Jinja2模板语法，可用变量: model, prompt, size, n等</span>
+            </el-form-item>
+            
+            <el-form-item label="响应图像路径" v-if="currentProvider.type === 'generic'">
+              <el-input
+                v-model="currentProvider.response_config.images_path"
+                placeholder="输入提取图像URL的JSONPath，如 $.output.choices[0].message.content[0].image"
+              />
+              <span class="help-text">使用JSONPath语法，从API响应中提取图像URL</span>
+            </el-form-item>
+            
+            <el-form-item label="响应使用路径" v-if="currentProvider.type === 'generic'">
+              <el-input
+                v-model="currentProvider.response_config.usage_path"
+                placeholder="输入提取使用信息的JSONPath，如 $.usage"
+              />
+              <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
+            </el-form-item>
+            
+            <el-form-item label="响应错误路径" v-if="currentProvider.type === 'generic'">
+              <el-input
+                v-model="currentProvider.response_config.error_path"
+                placeholder="输入提取错误信息的JSONPath，如 $.message"
+              />
+              <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
             </el-form-item>
             
 
@@ -459,6 +495,17 @@
               <el-form-item label="支持多图参考">
                 <el-switch v-model="currentProvider.support_multiple_reference_images" />
                 <span class="help-text">是否支持使用多张参考图，单图模型会取第一张</span>
+              </el-form-item>
+              
+              <!-- 支持的尺寸 - 所有类型提供商都显示 -->
+              <el-form-item label="支持的尺寸">
+                <el-input
+                  v-model="currentProvider.supported_sizes"
+                  type="textarea"
+                  placeholder='输入支持的尺寸列表，如 ["1024x1024", "1056x1584", "1584x1056"]'
+                  :rows="3"
+                />
+                <span class="help-text">JSON格式的尺寸列表，用于限制用户可选的尺寸</span>
               </el-form-item>
               
               <!-- SiliconFlow特有配置 -->
@@ -698,7 +745,15 @@ const currentProvider = ref<any>({
   model: '',
   status: 'disconnected',
   enabled: true,
-  timeout: 30
+  timeout: 30,
+  request_config: {
+    template: ''
+  },
+  response_config: {
+    images_path: '',
+    usage_path: '',
+    error_path: ''
+  }
 })
 const providerFormRef = ref()
 const testingConnection = ref(false)
@@ -918,6 +973,8 @@ const loadProviders = async () => {
         status: 'disconnected', // 默认为未连接，需要测试
         enabled: provider.enabled !== undefined ? provider.enabled : true, // 默认启用
         timeout: provider.timeout !== undefined ? provider.timeout : 30, // 默认30秒
+        request_config: provider.request_config || { template: '' },
+        response_config: provider.response_config || { images_path: '', usage_path: '', error_path: '' },
         ...provider
       }))
     }
@@ -934,6 +991,8 @@ const loadProviders = async () => {
           status: 'disconnected', // 默认为未连接，需要测试
           enabled: provider.enabled !== undefined ? provider.enabled : true, // 默认启用
           timeout: provider.timeout !== undefined ? provider.timeout : 30, // 默认30秒
+          request_config: provider.request_config || { template: '' },
+          response_config: provider.response_config || { images_path: '', usage_path: '', error_path: '' },
           ...provider
         }
         
@@ -986,7 +1045,15 @@ const openProviderDialog = (type: 'text' | 'image', provider?: any) => {
         status: 'disconnected',
         enabled: true,
         timeout: 30,
-        supported_sizes: JSON.stringify(["1024x1024", "1056x1584", "1584x1056"], null, 2) // 默认尺寸
+        supported_sizes: JSON.stringify(["1024x1024", "1056x1584", "1584x1056"], null, 2), // 默认尺寸
+        request_config: {
+          template: ''
+        },
+        response_config: {
+          images_path: '',
+          usage_path: '',
+          error_path: ''
+        }
       }
     }
   
@@ -1212,7 +1279,8 @@ const getProviderTypeColor = (type: string) => {
   const colorMap: Record<string, any> = {
     openai: 'primary',
     gemini: 'success',
-    siliconflow: 'warning'
+    siliconflow: 'warning',
+    generic: 'info'
   }
   return colorMap[type] || 'info'
 }
