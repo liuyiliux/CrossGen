@@ -51,7 +51,7 @@ class GenerationService:
             cls._instance.provider_manager = provider_manager
             cls._instance.provider_manager_loaded = True
     
-    async def __init__(self):
+    def __init__(self):
         """初始化内容生成服务"""
         # 只初始化一次
         if not self._initialized:

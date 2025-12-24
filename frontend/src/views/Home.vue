@@ -260,16 +260,15 @@ function handleImagesChange(images: File[]) {
 /**
  * 开始生成
  */
-const handleGenerate = async (platform: string) => {
+const handleGenerate = async () => {
   if (!generatorStore.topic.trim()) return
 
   generatorStore.setLoading(true)
   generatorStore.setError(null)
-  // 保存所选平台到store
-  generatorStore.setSelectedPlatform(platform)
 
   try {
     const imageFiles = generatorStore.userImages
+    const platform = generatorStore.selectedPlatform
 
     const result = await generateOutline(
       generatorStore.topic.trim(),
@@ -285,7 +284,8 @@ const handleGenerate = async (platform: string) => {
       
       // 清理预览
       composerRef.value?.clearPreviews()
-      generatorStore.setUserImages([])
+      // 保留用户上传的图片，用于后续生成
+      // generatorStore.setUserImages([])
       
       // 跳转到大纲编辑页面
       router.push('/outline')
@@ -324,7 +324,7 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
     // 添加图片文件
     if (imageFiles && imageFiles.length > 0) {
       imageFiles.forEach((file, index) => {
-        formData.append(`reference_images[${index}]`, file, file.name)
+        formData.append('images', file, file.name)
       })
     }
     

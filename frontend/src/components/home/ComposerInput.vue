@@ -25,7 +25,7 @@
       <div class="selector-item">
         <label class="selector-label">平台选择</label>
         <el-select 
-          v-model="selectedPlatform" 
+          v-model="generatorStore.selectedPlatform" 
           placeholder="请选择平台"
           size="large"
           class="selector-input"
@@ -167,7 +167,6 @@ const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const uploadedImages = ref<UploadedImage[]>([])
 
 // 平台选择
-const selectedPlatform = ref('xiaohongshu')
 const platforms = ref<Array<{value: string, label: string}>>([])
 
 // 组件挂载时加载平台配置
@@ -176,12 +175,15 @@ onMounted(async () => {
   // 更新平台选项
   platforms.value = getPlatformOptions()
   
-  // 如果当前选择的平台不在列表中，选择第一个平台
-  if (platforms.value.length > 0 && !platforms.value.some(p => p.value === selectedPlatform.value)) {
-    selectedPlatform.value = platforms.value[0].value
+  // 如果 generatorStore 中没有保存的平台，或者保存的平台不在列表中，选择第一个平台
+  if (!generatorStore.selectedPlatform || 
+      (platforms.value.length > 0 && 
+       !platforms.value.some(p => p.value === generatorStore.selectedPlatform))) {
+    generatorStore.selectedPlatform = platforms.value[0]?.value || 'xiaohongshu'
   }
   
   console.log('平台列表加载成功:', platforms.value)
+  console.log('当前选择的平台:', generatorStore.selectedPlatform)
 })
 
 /**
@@ -198,7 +200,7 @@ function handleInput(event: Event) {
  */
 function handleEnter(e: KeyboardEvent) {
   if (e.shiftKey) return // 允许 Shift+Enter 换行
-  emit('generate', selectedPlatform.value)
+  emit('generate', generatorStore.selectedPlatform)
 }
 
 /**
