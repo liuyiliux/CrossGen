@@ -319,7 +319,7 @@ class GenericImageProvider(BaseProvider):
         return transformed
     
     def _render_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """渲染请求模板
+        """渲染请求体
         
         Args:
             params: 请求参数
@@ -330,8 +330,16 @@ class GenericImageProvider(BaseProvider):
         if not self.request_template:
             raise ValueError("未配置请求模板")
         
+        # 清理参数中的控制字符，确保JSON有效
+        clean_params = {}
+        for key, value in params.items():
+            if isinstance(value, str):
+                # 替换换行符、制表符等控制字符为空格，确保JSON有效
+                value = value.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+            clean_params[key] = value
+        
         # 渲染模板
-        rendered = self.request_template.render(**params)
+        rendered = self.request_template.render(**clean_params)
         
         # 解析为JSON
         import json

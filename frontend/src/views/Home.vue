@@ -145,7 +145,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElLoading } from 'element-plus'
 import {
   Document,
   ChatLineRound,
@@ -256,10 +256,23 @@ function handleImagesChange(images: File[]) {
  * 开始生成
  */
 const handleGenerate = async () => {
+  // 防止重复提交
+  if (generatorStore.loading) {
+    console.log('生成请求已在处理中，请勿重复点击')
+    return
+  }
+  
   if (!generatorStore.topic.trim()) return
 
   generatorStore.setLoading(true)
   generatorStore.setError(null)
+  
+  // 创建全局加载指示器
+  const loadingInstance = ElLoading.service({
+    lock: true,
+    text: '正在生成大纲，请稍候...',
+    background: 'rgba(255, 255, 255, 0.8)'
+  })
 
   try {
     const imageFiles = generatorStore.userImages
@@ -312,6 +325,8 @@ const handleGenerate = async () => {
     console.error('生成失败:', err)
   } finally {
     generatorStore.setLoading(false)
+    // 关闭全局加载指示器
+    loadingInstance.close()
   }
 }
 
@@ -392,14 +407,33 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
         pages: pages
       }
     } else {
+      // 处理API返回的错误
+      const errorMsg = response.data?.message || response.data?.detail || '生成失败'
+      console.error('API返回错误:', errorMsg)
       return {
         success: false,
-        error: response.data?.message || '生成失败'
+        error: errorMsg
       }
     }
   } catch (error: any) {
+    // 处理网络错误、超时等
     console.error('生成大纲失败:', error)
-    throw error
+    let errorMsg = '网络错误，请重试'
+    
+    if (error.code === 'ECONNABORTED') {
+      errorMsg = '请求超时，请检查网络连接后重试'
+    } else if (error.response) {
+      // 服务器返回错误状态码
+      errorMsg = error.response.data?.message || error.response.data?.detail || `服务器错误 (${error.response.status})`
+    } else if (error.request) {
+      // 请求已发送但没有收到响应
+      errorMsg = '服务器无响应，请检查网络连接或稍后重试'
+    }
+    
+    return {
+      success: false,
+      error: errorMsg
+    }
   }
 }
 
