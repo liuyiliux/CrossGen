@@ -56,12 +56,11 @@ cd yiliu
 2. **后端设置**
 ```bash
 cd backend
-# 创建虚拟环境
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 安装依赖
+# 确保安装 uv
 pip install uv
+
+# 同步依赖 (会自动创建虚拟环境)
 uv sync
 
 # 配置环境变量
