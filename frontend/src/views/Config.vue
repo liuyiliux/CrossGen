@@ -526,16 +526,6 @@
                   <span class="help-text">指定API返回的图像格式</span>
                 </el-form-item>
                 
-                <el-form-item label="支持的尺寸">
-                  <el-input
-                    v-model="currentProvider.supported_sizes"
-                    type="textarea"
-                    placeholder='输入支持的尺寸列表，如 ["1024x1024", "1056x1584", "1584x1056"]'
-                    :rows="3"
-                  />
-                  <span class="help-text">JSON格式的尺寸列表，用于限制用户可选的尺寸</span>
-                </el-form-item>
-                
                 <el-form-item label="图像生成参数">
                   <el-input
                     v-model="currentProvider.image_parameters"
@@ -556,37 +546,11 @@
                   </el-select>
                   <span class="help-text">指定生成图像的质量级别</span>
                 </el-form-item>
-                
-                <el-form-item label="图像风格">
-                  <el-select v-model="currentProvider.image_style" placeholder="选择图像风格">
-                    <el-option label="生动风格" value="vivid" />
-                    <el-option label="自然风格" value="natural" />
-                  </el-select>
-                  <span class="help-text">指定生成图像的风格</span>
-                </el-form-item>
-                
-                <el-form-item label="支持的尺寸">
-                  <el-input
-                    v-model="currentProvider.supported_sizes"
-                    type="textarea"
-                    placeholder='输入支持的尺寸列表，如 ["1024x1024", "1056x1584", "1584x1056"]'
-                    :rows="3"
-                  />
-                  <span class="help-text">JSON格式的尺寸列表，用于限制用户可选的尺寸</span>
-                </el-form-item>
               </template>
               
               <!-- Gemini特有配置 -->
               <template v-if="currentProvider.type === 'gemini'">
-                <el-form-item label="支持的尺寸">
-                  <el-input
-                    v-model="currentProvider.supported_sizes"
-                    type="textarea"
-                    placeholder='输入支持的尺寸列表，如 ["1024x1024", "1056x1584", "1584x1056"]'
-                    :rows="3"
-                  />
-                  <span class="help-text">JSON格式的尺寸列表，用于限制用户可选的尺寸</span>
-                </el-form-item>
+                <!-- Gemini特有配置 -->
               </template>
             </template>
           </el-form>

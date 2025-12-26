@@ -356,8 +356,7 @@ class OpenAIProvider(BaseProvider):
                 "prompt": prompt,
                 "n": kwargs.get("n", 1),
                 "size": size,
-                "quality": kwargs.get("image_quality", "standard"),
-                "style": kwargs.get("image_style", "vivid")
+                "quality": kwargs.get("image_quality", "standard")
             }
             
             # 处理参考图

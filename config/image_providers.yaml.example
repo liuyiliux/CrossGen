@@ -16,7 +16,6 @@ providers:
       toutiao: ["1024x1024"]
     timeout: 60
     retry_count: 2
-    style: "vivid"  # vivid, natural
     headers:
       "Content-Type": "application/json"
       "Authorization": "Bearer ${OPENAI_API_KEY}"
