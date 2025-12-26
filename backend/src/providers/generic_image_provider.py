@@ -114,10 +114,21 @@ class GenericImageProvider(BaseProvider):
         
         try:
             # 构建测试请求参数
+            # 优先从supported_sizes获取测试尺寸，否则使用默认逻辑
+            test_size = None
+            if self.supported_sizes and len(self.supported_sizes) > 0:
+                test_size = self.supported_sizes[0]
+                print(f"  使用支持尺寸列表中的第一个尺寸: {test_size}")
+            
+            # 如果没有获取到尺寸，使用默认逻辑
+            if not test_size:
+                test_size = self.default_params.get("size", "1024*1024")
+                print(f"  使用默认尺寸: {test_size}")
+            
             test_params = {
                 "model": self.model,
                 "prompt": "测试图片生成",
-                "size": self.default_params.get("size", "1024*1024"),
+                "size": test_size,
                 "n": 1
             }
             

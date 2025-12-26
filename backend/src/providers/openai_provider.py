@@ -136,11 +136,17 @@ class OpenAIProvider(BaseProvider):
             if self.provider_type == "image":
                 # 图像生成提供商测试
                 test_prompt = "一只可爱的小猫，高清，真实感"
+                
+                # 从配置中获取支持的尺寸，如果没有则使用默认值
+                test_size = "1024x1024"
+                if self.supported_sizes and len(self.supported_sizes) > 0:
+                    test_size = self.supported_sizes[0]
+                
                 request_body = {
                     "model": self.model,
                     "prompt": test_prompt,
                     "n": 1,
-                    "size": "1024x1024"
+                    "size": test_size
                 }
                 
                 endpoint = self.api_endpoint or "/v1/images/generations"

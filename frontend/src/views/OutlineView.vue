@@ -386,12 +386,12 @@ onMounted(async () => {
       localStorage.removeItem('copiedHistory')
       
       // 使用复制的历史记录数据
-      if (historyData.outline) {
-        store.setOutline(historyData.outline.raw, historyData.outline.pages)
-        // 如果有主题，保存到store
-        if (historyData.topic) {
-          store.topic = historyData.topic
-        }
+        if (historyData.outline) {
+          store.setOutline(historyData.outline.raw, historyData.outline.pages, historyData.outline.title, historyData.outline.copywriting)
+          // 如果有主题，保存到store
+          if (historyData.topic) {
+            store.topic = historyData.topic
+          }
         // 如果有文本模型和图像模型，保存到store
         if (historyData.text_model) {
           store.textProviderId = historyData.text_model
