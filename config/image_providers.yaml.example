@@ -14,6 +14,7 @@ providers:
       douyin: ["1024x1792"]
       wechat: ["1792x1024"]
       toutiao: ["1024x1024"]
+    supported_sizes: ["1024x1024", "1024x1792", "1792x1024", "1920x1080", "1080x1920", "3840x2160"]
     timeout: 60
     retry_count: 2
     headers:
