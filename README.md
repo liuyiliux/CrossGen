@@ -266,7 +266,8 @@ docker-compose up -d
 
 - 项目主页: https://cnb.cool/yiliu/yiliu
 - 问题反馈: https://cnb.cool/yiliu/yiliu/issues
-- 邮箱: team@yiliu.com
+- 邮箱: 44165547@qq.com
+- 微信:liuyiliux 说明来意
 
 ## 🙏 致谢
 
