@@ -272,10 +272,9 @@ const router = useRouter()
 const store = useGeneratorStore()
 
 const dragOverIndex = ref<number | null>(null)
-const draggedIndex = ref<number | null>(null)
+const draggedIndex = ref<number | null>(null)// 图片服务商选择
 const imageProviderId = ref<string | null>(store.imageProviderId)
 const videoProviderId = ref<string | null>(store.videoProviderId)
-
 // 请求管理对象，用于存储和取消正在进行的请求
 const activeRequests = ref<Record<number, AbortController>>({})
 

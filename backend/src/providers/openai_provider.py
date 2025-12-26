@@ -5,6 +5,7 @@
 from typing import Dict, Any, Optional, List
 import httpx
 import json
+import jsonpath_ng
 from src.providers.base_provider import BaseProvider, ProviderConfig
 
 
@@ -20,6 +21,12 @@ class OpenAIProvider(BaseProvider):
         super().__init__(config)
         self.provider_type = config.provider_type  # 添加提供商类型属性
         self.client = None
+        # 响应配置，支持JSONPath提取图像，与通用提供商保持一致
+        self.response_config = getattr(config, 'response_config', {
+            'images_path': '$.data[*].url',
+            'error_path': '$.error.message',
+            'response_format': 'url'
+        })
     
     async def initialize(self) -> bool:
         """初始化OpenAI提供商
@@ -362,7 +369,8 @@ class OpenAIProvider(BaseProvider):
                 "prompt": prompt,
                 "n": kwargs.get("n", 1),
                 "size": size,
-                "quality": kwargs.get("image_quality", "standard")
+                "quality": kwargs.get("image_quality", "standard"),
+                "response_format": kwargs.get("response_format", "url")
             }
             
             # 处理参考图
@@ -410,12 +418,26 @@ class OpenAIProvider(BaseProvider):
             
             result = response.json()
             
-            # 提取图像URL
-            images = [item["url"] for item in result.get("data", [])]
+            # 提取图像，直接使用配置的JSONPath，与通用提供商保持一致
+            images = []
+            # 优先使用请求中的response_format，否则使用配置中的，最后使用默认值
+            response_format = kwargs.get("response_format", self.response_config.get("response_format", "url"))
+            
+            # 直接使用配置的images_path提取图像，不做任何字段映射
+            images_path = self.response_config.get("images_path", "$.data[*].url")
+            
+            print(f"使用JSONPath提取图像: {images_path}")
+            print(f"响应格式: {response_format}")
+            
+            # 直接使用JSONPath提取图像，与通用提供商保持一致
+            images = self._extract_from_response(result, images_path, is_list=True)
+            
+            print(f"最终提取到 {len(images)} 张图像")
             
             print(f"\n=== 图像生成成功 ===")
             print(f"成功生成 {len(images)} 张图像")
             print(f"使用模型: {result.get('model', self.model)}")
+            print(f"返回格式: {response_format}")
             
             return {
                 "success": True,
@@ -423,7 +445,8 @@ class OpenAIProvider(BaseProvider):
                 "usage": result.get("usage", {}),
                 "model": result.get("model", self.model),
                 "provider": self.name,
-                "seed": result.get("seed")
+                "seed": result.get("seed"),
+                "response_format": response_format
             }
             
         except httpx.HTTPStatusError as e:
@@ -450,6 +473,34 @@ class OpenAIProvider(BaseProvider):
                 "error": str(e),
                 "provider": self.name
             }
+    
+    def _extract_from_response(self, response: Dict[str, Any], path: str, is_list: bool = False) -> Any:
+        """从响应中提取字段
+        
+        Args:
+            response: 响应JSON
+            path: JSONPath路径
+            is_list: 是否返回列表
+            
+        Returns:
+            Any: 提取的值
+        """
+        if not path:
+            return None
+        
+        try:
+            expr = jsonpath_ng.parse(path)
+            matches = expr.find(response)
+            
+            if is_list:
+                return [match.value for match in matches]
+            elif matches:
+                return matches[0].value
+            else:
+                return None
+        except Exception as e:
+            print(f"JSONPath解析失败: {str(e)}")
+            return None
     
     async def close(self) -> None:
         """关闭HTTP客户端"""

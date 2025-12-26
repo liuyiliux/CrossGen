@@ -423,30 +423,6 @@
               <span class="help-text">使用Jinja2模板语法，可用变量: model, prompt, size, n等</span>
             </el-form-item>
             
-            <el-form-item label="响应图像路径" v-if="currentProvider.type === 'generic'">
-              <el-input
-                v-model="currentProvider.response_config.images_path"
-                placeholder="输入提取图像URL的JSONPath，如 $.output.choices[0].message.content[0].image"
-              />
-              <span class="help-text">使用JSONPath语法，从API响应中提取图像URL</span>
-            </el-form-item>
-            
-            <el-form-item label="响应使用路径" v-if="currentProvider.type === 'generic'">
-              <el-input
-                v-model="currentProvider.response_config.usage_path"
-                placeholder="输入提取使用信息的JSONPath，如 $.usage"
-              />
-              <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
-            </el-form-item>
-            
-            <el-form-item label="响应错误路径" v-if="currentProvider.type === 'generic'">
-              <el-input
-                v-model="currentProvider.response_config.error_path"
-                placeholder="输入提取错误信息的JSONPath，如 $.message"
-              />
-              <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
-            </el-form-item>
-            
 
             
             <el-form-item label="最大输出令牌数">
@@ -546,11 +522,79 @@
                   </el-select>
                   <span class="help-text">指定生成图像的质量级别</span>
                 </el-form-item>
+                
+                <!-- 响应配置 -->
+                <el-divider content-position="left">响应配置</el-divider>
+                
+                <el-form-item label="响应图像路径">
+                  <el-input
+                    v-model="currentProvider.response_config.images_path"
+                    placeholder="输入提取图像的JSONPath，如 $.data[*]"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取图像数据项</span>
+                </el-form-item>
+                
+                <el-form-item label="响应使用路径">
+                  <el-input
+                    v-model="currentProvider.response_config.usage_path"
+                    placeholder="输入提取使用信息的JSONPath，如 $.usage"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
+                </el-form-item>
+                
+                <el-form-item label="响应错误路径">
+                  <el-input
+                    v-model="currentProvider.response_config.error_path"
+                    placeholder="输入提取错误信息的JSONPath，如 $.error.message"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
+                </el-form-item>
+                
+                <el-form-item label="响应格式">
+                  <el-select v-model="currentProvider.response_config.response_format" placeholder="选择响应格式">
+                    <el-option label="URL链接" value="url" />
+                    <el-option label="Base64编码" value="base64" />
+                  </el-select>
+                  <span class="help-text">指定API返回的图像格式</span>
+                </el-form-item>
               </template>
               
               <!-- Gemini特有配置 -->
               <template v-if="currentProvider.type === 'gemini'">
-                <!-- Gemini特有配置 -->
+                <!-- 响应配置 -->
+                <el-divider content-position="left">响应配置</el-divider>
+                
+                <el-form-item label="响应图像路径">
+                  <el-input
+                    v-model="currentProvider.response_config.images_path"
+                    placeholder="输入提取图像的JSONPath，如 $.candidates[0].content.parts[0].inline_data.data"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取图像数据</span>
+                </el-form-item>
+                
+                <el-form-item label="响应使用路径">
+                  <el-input
+                    v-model="currentProvider.response_config.usage_path"
+                    placeholder="输入提取使用信息的JSONPath，如 $.usage_metadata"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
+                </el-form-item>
+                
+                <el-form-item label="响应错误路径">
+                  <el-input
+                    v-model="currentProvider.response_config.error_path"
+                    placeholder="输入提取错误信息的JSONPath，如 $.error.message"
+                  />
+                  <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
+                </el-form-item>
+                
+                <el-form-item label="响应格式">
+                  <el-select v-model="currentProvider.response_config.response_format" placeholder="选择响应格式">
+                    <el-option label="URL链接" value="url" />
+                    <el-option label="Base64编码" value="base64" />
+                  </el-select>
+                  <span class="help-text">指定API返回的图像格式</span>
+                </el-form-item>
               </template>
             </template>
           </el-form>
@@ -716,7 +760,11 @@ const currentProvider = ref<any>({
   response_config: {
     images_path: '',
     usage_path: '',
-    error_path: ''
+    error_path: '',
+    format_mapping: {
+      url: 'url',
+      base64: 'b64_json'
+    }
   }
 })
 const providerFormRef = ref()
@@ -1016,7 +1064,11 @@ const openProviderDialog = (type: 'text' | 'image', provider?: any) => {
         response_config: {
           images_path: '',
           usage_path: '',
-          error_path: ''
+          error_path: '',
+          format_mapping: {
+            url: 'url',
+            base64: 'b64_json'
+          }
         }
       }
     }
@@ -1391,6 +1443,20 @@ const testMysqlConnection = async () => {
 
 .template-config {
   padding: 16px 0;
+}
+
+.format-mapping-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--el-text-color-primary);
+}
+
+.format-mapping-config {
+  padding: 12px;
+  background-color: var(--el-fill-color-light);
+  border-radius: var(--el-border-radius-base);
+  margin-bottom: 8px;
 }
 
 .template-card {

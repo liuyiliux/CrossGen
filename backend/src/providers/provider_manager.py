@@ -25,21 +25,34 @@ class ProviderManager:
         self.text_loaded = False
         self.image_loaded = False
     
-    async def load_text_providers(self) -> bool:
+    async def load_text_providers(self, force_reload: bool = False) -> bool:
         """加载文本提供商配置
         
+        Args:
+            force_reload: 是否强制重新加载
+            
         Returns:
             bool: 加载是否成功
         """
         try:
+            # 如果已经加载过且不强制重新加载，直接返回
+            if self.text_loaded and not force_reload:
+                return True
+                
             # 获取文本提供商配置
             print("开始加载文本提供商配置...")
+            # 清除配置缓存，确保获取最新配置
+            self.config_service._text_providers_cache = None
             text_config = self.config_service.get_text_providers()
             providers_config = text_config.get("providers", {})
             
             # 获取平台映射配置
             self.text_platform_mapping = text_config.get("platform_mapping", {})
             print(f"加载到 {len(providers_config)} 个文本提供商配置")
+            
+            # 清空现有提供商
+            self.text_providers.clear()
+            self.available_text_providers.clear()
             
             # 注册提供商
             for name, config in providers_config.items():
@@ -57,21 +70,34 @@ class ProviderManager:
             print(f"加载文本提供商配置失败: {str(e)}")
             return False
     
-    async def load_image_providers(self) -> bool:
+    async def load_image_providers(self, force_reload: bool = False) -> bool:
         """加载图像提供商配置
         
+        Args:
+            force_reload: 是否强制重新加载
+            
         Returns:
             bool: 加载是否成功
         """
         try:
+            # 如果已经加载过且不强制重新加载，直接返回
+            if self.image_loaded and not force_reload:
+                return True
+                
             # 获取图像提供商配置
             print("开始加载图像提供商配置...")
+            # 清除配置缓存，确保获取最新配置
+            self.config_service._image_providers_cache = None
             image_config = self.config_service.get_image_providers()
             providers_config = image_config.get("providers", {})
             
             # 获取平台映射配置
             self.image_platform_mapping = image_config.get("platform_mapping", {})
             print(f"加载到 {len(providers_config)} 个图像提供商配置")
+            
+            # 清空现有提供商
+            self.image_providers.clear()
+            self.available_image_providers.clear()
             
             # 注册提供商
             for name, config in providers_config.items():
@@ -89,14 +115,17 @@ class ProviderManager:
             print(f"加载图像提供商配置失败: {str(e)}")
             return False
     
-    async def load_providers(self) -> bool:
+    async def load_providers(self, force_reload: bool = False) -> bool:
         """加载所有提供商配置
         
+        Args:
+            force_reload: 是否强制重新加载
+            
         Returns:
             bool: 加载是否成功
         """
-        text_result = await self.load_text_providers()
-        image_result = await self.load_image_providers()
+        text_result = await self.load_text_providers(force_reload)
+        image_result = await self.load_image_providers(force_reload)
         return text_result and image_result
     
     async def register_text_provider(self, name: str, config: Dict[str, Any]) -> bool:
@@ -207,6 +236,8 @@ class ProviderManager:
                     headers=config.get("headers"),
                     supported_sizes=supported_sizes  # 添加支持的尺寸
                 )
+                # 添加响应配置
+                provider_config.response_config = config.get("response_config", {})
                 provider = OpenAIProvider(provider_config)
             elif provider_type == "siliconflow":
                 # 为SiliconFlow创建ProviderConfig对象
@@ -255,6 +286,7 @@ class ProviderManager:
                 provider_config = ProviderConfig(
                     name=name,
                     enabled=config.get("enabled", True),
+                    provider_type="image",  # 设置为图像提供商
                     api_key=config.get("api_key"),
                     base_url=config.get("base_url"),
                     model=config.get("model"),
@@ -264,6 +296,8 @@ class ProviderManager:
                     headers=config.get("headers"),
                     supported_sizes=supported_sizes  # 添加支持的尺寸
                 )
+                # 添加响应配置
+                provider_config.response_config = config.get("response_config", {})
                 provider = GeminiProvider(provider_config)
             elif provider_type == "generic":
                 # 解析supported_sizes字段

@@ -56,9 +56,11 @@ class GeminiProvider(BaseProvider):
             self.base_url = resolved_config["base_url"].rstrip("/")  # 移除末尾斜杠
             self.headers = resolved_config["headers"] or {}
             
-            # 自动生成API密钥头（Gemini使用key查询参数）
+            # 自动生成Authorization头
             if self.api_key:
+                self.headers["Authorization"] = f"Bearer {self.api_key}"
                 print(f"  API Key: {self.api_key[:10]}...")
+                print(f"  自动生成Authorization头")
             
             # 打印解析后的配置
             print(f"\n2. 解析后的配置:")
@@ -120,13 +122,13 @@ class GeminiProvider(BaseProvider):
             # 1. 首先尝试使用/models端点测试（Gemini接口）
             print(f"\n1. 尝试使用/models端点测试...")
             models_url = f"/models"
-            full_url = f"{self.base_url}{models_url}?key={self.api_key}"
+            full_url = f"{self.base_url}{models_url}"
             
             print(f"请求URL: {full_url}")
             print(f"请求方法: GET")
             print(f"请求头: {dict(self.client.headers)}")
             
-            response = await self.client.get(f"{models_url}?key={self.api_key}")
+            response = await self.client.get(f"{models_url}")
             
             print(f"响应状态码: {response.status_code}")
             print(f"响应头: {dict(response.headers)}")
@@ -161,14 +163,14 @@ class GeminiProvider(BaseProvider):
             }
             
             endpoint = f"/models/{self.model}:generateContent"
-            full_url = f"{self.base_url}{endpoint}?key={self.api_key}"
+            full_url = f"{self.base_url}{endpoint}"
             
             print(f"请求URL: {full_url}")
             print(f"请求方法: POST")
             print(f"请求头: {dict(self.client.headers)}")
             print(f"请求体: {request_body}")
             
-            response = await self.client.post(f"{endpoint}?key={self.api_key}", json=request_body)
+            response = await self.client.post(f"{endpoint}", json=request_body)
             
             print(f"响应状态码: {response.status_code}")
             print(f"响应头: {dict(response.headers)}")
@@ -313,7 +315,7 @@ class GeminiProvider(BaseProvider):
             # 发送请求
             # 统一使用配置的model字段
             endpoint = f"/models/{self.model}:generateContent"
-            full_url = f"{self.base_url}{endpoint}?key={self.api_key}"
+            full_url = f"{self.base_url}{endpoint}"
             
             print(f"\n2. 发送图像生成请求:")
             print(f"  请求URL: {full_url}")
@@ -321,7 +323,7 @@ class GeminiProvider(BaseProvider):
             print(f"  请求头: {dict(self.client.headers)}")
             print(f"  请求体: {request_body}")
             
-            response = await self.client.post(f"{endpoint}?key={self.api_key}", json=request_body)
+            response = await self.client.post(f"{endpoint}", json=request_body)
             
             print(f"\n3. 处理响应:")
             print(f"  响应状态码: {response.status_code}")
