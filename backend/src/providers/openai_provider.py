@@ -363,6 +363,9 @@ class OpenAIProvider(BaseProvider):
             platform_sizes = kwargs.get("size_config", {}).get(platform, ["1024x1024"])
             size = kwargs.get("size", platform_sizes[0])
             
+            # 优先使用请求中的response_format，否则使用配置中的，最后使用默认值
+            response_format = kwargs.get("response_format", self.response_config.get("response_format", "url"))
+            
             # 构建请求参数
             request_body = {
                 "model": self.model,  # 统一使用配置的model字段
@@ -370,7 +373,7 @@ class OpenAIProvider(BaseProvider):
                 "n": kwargs.get("n", 1),
                 "size": size,
                 "quality": kwargs.get("image_quality", "standard"),
-                "response_format": kwargs.get("response_format", "url")
+                "response_format": response_format
             }
             
             # 处理参考图
@@ -431,6 +434,19 @@ class OpenAIProvider(BaseProvider):
             
             # 直接使用JSONPath提取图像，与通用提供商保持一致
             images = self._extract_from_response(result, images_path, is_list=True)
+            
+            # 处理base64数据
+            if response_format == "base64" and images:
+                processed_images = []
+                for img in images:
+                    if img and isinstance(img, str):
+                        # 如果是base64数据，转换为data URL格式
+                        if not img.startswith('data:'):
+                            img = f"data:image/png;base64,{img}"
+                        processed_images.append(img)
+                    else:
+                        processed_images.append(img)
+                images = processed_images
             
             print(f"最终提取到 {len(images)} 张图像")
             
