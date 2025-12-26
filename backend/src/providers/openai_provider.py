@@ -18,6 +18,7 @@ class OpenAIProvider(BaseProvider):
             config: 提供商配置
         """
         super().__init__(config)
+        self.provider_type = config.provider_type  # 添加提供商类型属性
         self.client = None
     
     async def initialize(self) -> bool:
@@ -108,6 +109,7 @@ class OpenAIProvider(BaseProvider):
         print(f"\n=== 开始测试OpenAI连接 ===")
         print(f"提供商: {self.name}")
         print(f"类型: {type(self).__name__}")
+        print(f"提供商类型: {self.provider_type}")
         print(f"模型: {self.model}")
         print(f"基础URL: {self.base_url}")
         print(f"API端点: {self.api_endpoint}")
@@ -128,20 +130,37 @@ class OpenAIProvider(BaseProvider):
             print(f"✗ 使用/models端点测试失败: {str(e)}")
         
         try:
-            # 2. 如果/models端点失败，尝试使用简单的聊天请求测试（兼容各种OpenAI风格接口）
-            print(f"\n2. 尝试使用聊天请求测试...")
-            test_prompt = "你好，这是一个连接测试"
-            request_body = {
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": "你是一个AI助手"},
-                    {"role": "user", "content": test_prompt}
-                ],
-                "max_tokens": 10,
-                "temperature": 0.1
-            }
+            # 2. 根据提供商类型使用不同的测试请求
+            print(f"\n2. 根据提供商类型使用不同的测试请求...")
             
-            endpoint = self.api_endpoint or "/v1/chat/completions"
+            if self.provider_type == "image":
+                # 图像生成提供商测试
+                test_prompt = "一只可爱的小猫，高清，真实感"
+                request_body = {
+                    "model": self.model,
+                    "prompt": test_prompt,
+                    "n": 1,
+                    "size": "1024x1024"
+                }
+                
+                endpoint = self.api_endpoint or "/v1/images/generations"
+                print(f"请求类型: 图像生成测试")
+            else:
+                # 文本生成提供商测试
+                test_prompt = "你好，这是一个连接测试"
+                request_body = {
+                    "model": self.model,
+                    "messages": [
+                        {"role": "system", "content": "你是一个AI助手"},
+                        {"role": "user", "content": test_prompt}
+                    ],
+                    "max_tokens": 10,
+                    "temperature": 0.1
+                }
+                
+                endpoint = self.api_endpoint or "/v1/chat/completions"
+                print(f"请求类型: 文本生成测试")
+            
             # 确保endpoint以斜杠开头
             if not endpoint.startswith('/'):
                 endpoint = f"/{endpoint}"
@@ -170,11 +189,18 @@ class OpenAIProvider(BaseProvider):
             # 检查响应状态码和响应格式
             if response.status_code == 200:
                 result = response.json()
-                if result.get("choices") and isinstance(result["choices"], list) and len(result["choices"]) > 0:
-                    print("✓ 聊天请求测试成功")
-                    return True
+                if self.provider_type == "image":
+                    # 图像生成响应检查
+                    if result.get("data") and isinstance(result["data"], list) and len(result["data"]) > 0:
+                        print("✓ 图像生成测试成功")
+                        return True
+                else:
+                    # 文本生成响应检查
+                    if result.get("choices") and isinstance(result["choices"], list) and len(result["choices"]) > 0:
+                        print("✓ 文本生成测试成功")
+                        return True
             
-            print(f"✗ 聊天请求测试失败")
+            print(f"✗ 请求测试失败")
             return False
         except Exception as e:
             print(f"✗ 测试OpenAI连接失败: {str(e)}")
