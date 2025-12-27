@@ -3,18 +3,18 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>历史记录</h1>
-          <p>查看之前生成的图文内容</p>
+          <h1>{{ $t('history.title') }}</h1>
+          <p>{{ $t('history.subtitle') }}</p>
         </div>
       </template>
-      
+
       <!-- 搜索和筛选 -->
       <div class="search-filter">
         <el-form :model="searchForm" inline class="search-form">
-          <el-form-item label="搜索">
+          <el-form-item :label="$t('history.search')">
             <el-input
               v-model="searchForm.keyword"
-              placeholder="请输入主题关键词"
+              :placeholder="$t('history.keywordPlaceholder')"
               clearable
               size="large"
               @keyup.enter="searchHistory"
@@ -24,16 +24,16 @@
               </template>
             </el-input>
           </el-form-item>
-          
-          <el-form-item label="平台">
+
+          <el-form-item :label="$t('history.selectPlatform')">
             <el-select
               v-model="searchForm.platform"
-              placeholder="选择平台"
+              :placeholder="$t('history.selectPlatform')"
               clearable
               size="large"
               style="width: 180px;"
             >
-              <el-option label="全部" value="" />
+              <el-option :label="$t('history.all')" value="" />
               <el-option
                 v-for="option in platformOptions"
                 :key="option.value"
@@ -42,12 +42,12 @@
               />
             </el-select>
           </el-form-item>
-          
-          <el-form-item label="生成时间">
+
+          <el-form-item :label="$t('history.dateRange')">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
-              range-separator="至"
+              :range-separator="$t('history.to')"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               format="YYYY-MM-DD"

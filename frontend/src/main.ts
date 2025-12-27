@@ -21,9 +21,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(createPinia())
 app.use(router)
 app.use(i18n)
-app.use(ElementPlus, {
-  i18n: i18n.global.t // Element Plus 国际化配置
-})
+app.use(ElementPlus)
 
 // 设置自动保存
 setupAutoSave()

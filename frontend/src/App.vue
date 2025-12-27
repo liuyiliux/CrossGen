@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-config-provider :locale="$i18n.locale">
+    <el-config-provider :locale="elementPlusLocale">
       <!-- 导航栏，首页隐藏，其他页面显示 -->
       <Navigation v-if="$route.path !== '/'" />
       <!-- 主内容区域 -->
@@ -12,7 +12,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Navigation from './components/Navigation.vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import en from 'element-plus/dist/locale/en.mjs'
+
+const { locale } = useI18n()
+
+// 根据当前语言获取Element Plus的locale
+const elementPlusLocale = computed(() => {
+  return locale.value === 'zh-CN' ? zhCn : en
+})
 </script>
 
 <style lang="scss">
