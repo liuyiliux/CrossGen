@@ -3,26 +3,26 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>批量生成</h1>
-          <p>批量生成多个主题的图文内容</p>
+          <h1>{{ $t('batch.title') }}</h1>
+          <p>{{ $t('batch.subtitle') }}</p>
         </div>
       </template>
-      
+
       <el-form ref="batchFormRef" :model="batchForm" label-width="120px" class="batch-form">
         <!-- 主题输入 -->
-        <el-form-item label="生成主题" required>
+        <el-form-item :label="$t('batch.topicLabel')" required>
           <el-input
             v-model="batchForm.topics"
             type="textarea"
             :rows="6"
-            placeholder="请输入多个生成主题，每行一个"
+            :placeholder="$t('batch.topicPlaceholder')"
             maxlength="2000"
             show-word-limit
           />
         </el-form-item>
-        
+
         <!-- 参考图上传 -->
-        <el-form-item label="参考图片">
+        <el-form-item :label="$t('batch.referenceImages')">
           <div class="reference-images">
             <el-upload
               v-model:file-list="referenceImages"
@@ -38,14 +38,14 @@
               <el-icon><Plus /></el-icon>
               <template #tip>
                 <div class="el-upload__tip">
-                  支持上传 JPG、PNG 格式图片，最多 5 张，单张不超过 5MB
+                  {{ $t('batch.formatTip') }}
                 </div>
               </template>
             </el-upload>
-            
+
             <!-- 已上传图片预览 -->
             <div class="image-preview-list" v-if="previewImages.length > 0">
-              <div class="preview-title">已选择 {{ previewImages.length }} 张参考图</div>
+              <div class="preview-title">{{ $t('batch.selectedImages', { count: previewImages.length }) }}</div>
               <div class="image-preview-container">
                 <div 
                   v-for="(image, index) in previewImages" 
