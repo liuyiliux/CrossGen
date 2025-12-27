@@ -3,31 +3,31 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>配置管理</h1>
-          <p>管理平台模板和AI提供商配置</p>
+          <h1>{{ $t('config.title') }}</h1>
+          <p>{{ $t('config.subtitle') }}</p>
         </div>
       </template>
       
       <!-- 配置标签页 -->
       <el-tabs v-model="activeTab" type="card" class="config-tabs">
         <!-- 通用设置 -->
-        <el-tab-pane label="通用设置" name="general">
+        <el-tab-pane :label="$t('config.generalSettings')" name="general">
           <div class="general-config">
             <el-card shadow="hover" class="general-config-card">
               <template #header>
-                <h3 class="card-subtitle">系统配置</h3>
+                <h3 class="card-subtitle">{{ $t('config.systemConfig') }}</h3>
               </template>
               
               <el-form ref="generalFormRef" :model="generalConfig" label-width="150px" class="general-form">
                 <!-- Redis 开关 -->
-                <el-form-item label="启用 Redis">
+                <el-form-item :label="$t('config.enableRedis')">
                   <el-switch v-model="generalConfig.redis_enabled" />
-                  <span class="help-text">启用或禁用 Redis 缓存功能</span>
+                  <span class="help-text">{{ $t('config.redisHelp') }}</span>
                 </el-form-item>
                 
                 <!-- Redis 连接信息 -->
-                <el-form-item label="Redis URL">
-                  <el-input v-model="generalConfig.redis_url" placeholder="Redis 连接 URL" />
+                <el-form-item :label="$t('config.redisUrl')">
+                  <el-input v-model="generalConfig.redis_url" :placeholder="$t('config.redisUrlPlaceholder')" />
                 </el-form-item>
                 
                 <!-- Redis 密码 -->

@@ -4,18 +4,18 @@
     <ShowcaseBackground />
     
     <!-- Hero Area -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <div class="brand-pill">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-          AI 驱动的逸流创作助手
+      <div class="hero-section">
+        <div class="hero-content">
+          <div class="brand-pill">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            {{ $t('home.brandPill') }}
+          </div>
+          <div class="platform-slogan">
+            {{ $t('home.platformSlogan') }}
+          </div>
+          <h1 class="page-title">{{ $t('home.pageTitle') }}</h1>
+          <p class="page-subtitle">{{ $t('home.pageSubtitle') }}</p>
         </div>
-        <div class="platform-slogan">
-          智能创作，一键生成，助力你的内容营销
-        </div>
-        <h1 class="page-title">创意无限，轻松生成</h1>
-        <p class="page-subtitle">输入你的创意主题，让 AI 帮你生成高质量的图文内容</p>
-      </div>
 
       <!-- 主题输入组合框 -->
       <ComposerInput
@@ -28,22 +28,22 @@
     </div>
     
     <!-- 生成结果 -->
-    <el-card v-if="generateResult" shadow="hover" class="result-card" transition="el-fade-in-down">
-      <template #header>
-        <div class="result-header">
-          <h2 class="card-title">生成结果</h2>
-          <div class="result-actions">
-            <el-button type="success" size="small" @click="copyResult">
-              <el-icon><CopyDocument /></el-icon>
-              复制
-            </el-button>
-            <el-button type="info" size="small" @click="regenerate">
-              <el-icon><RefreshRight /></el-icon>
-              重新生成
-            </el-button>
+      <el-card v-if="generateResult" shadow="hover" class="result-card" transition="el-fade-in-down">
+        <template #header>
+          <div class="result-header">
+            <h2 class="card-title">{{ $t('home.resultTitle') }}</h2>
+            <div class="result-actions">
+              <el-button type="success" size="small" @click="copyResult">
+                <el-icon><CopyDocument /></el-icon>
+                {{ $t('home.copy') }}
+              </el-button>
+              <el-button type="info" size="small" @click="regenerate">
+                <el-icon><RefreshRight /></el-icon>
+                {{ $t('home.regenerate') }}
+              </el-button>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
       
       <div class="result-content">
         <!-- 平台标签 -->
@@ -52,7 +52,7 @@
             {{ getPlatformLabel(generateResult.platform) }}
           </el-tag>
           <span class="generation-time">
-            生成用时：{{ generateResult.generation_time.toFixed(2) }}s
+            {{ $t('home.generationTime') }}{{ generateResult.generation_time.toFixed(2) }}s
           </span>
         </div>
         
@@ -61,13 +61,13 @@
         
         <!-- 正文内容 -->
         <div class="result-text">
-          <el-divider content-position="left">正文内容</el-divider>
+          <el-divider content-position="left">{{ $t('home.contentText') }}</el-divider>
           <div class="content-text">{{ generateResult.content }}</div>
         </div>
         
         <!-- 生成图片 -->
         <div v-if="generateResult.images.length > 0" class="result-images">
-          <el-divider content-position="left">生成图片</el-divider>
+          <el-divider content-position="left">{{ $t('home.generatedImages') }}</el-divider>
           <el-image-viewer
             v-if="showImageViewer"
             :url-list="generateResult.images"
@@ -95,7 +95,7 @@
         <!-- 生成时间 -->
         <div class="result-footer">
           <span class="create-time">
-            生成时间：{{ formatTime(generateResult.created_at) }}
+            {{ $t('home.createTime') }}{{ formatTime(generateResult.created_at) }}
           </span>
         </div>
       </div>
@@ -103,16 +103,16 @@
     
     <!-- 快速操作 -->
     <div class="quick-actions">
-      <h3 class="section-title">快速操作</h3>
+      <h3 class="section-title">{{ $t('home.quickActions') }}</h3>
       <div class="action-cards">
         <el-card shadow="hover" @click="$router.push('/batch')" class="action-card">
           <div class="action-card-content">
             <div class="action-icon batch-icon">
               <el-icon><List /></el-icon>
             </div>
-            <h4>批量生成</h4>
-            <p>同时生成多个主题的图文内容</p>
-            <el-button type="primary" size="small" link>前往</el-button>
+            <h4>{{ $t('home.batchGenerate') }}</h4>
+            <p>{{ $t('home.batchDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -121,9 +121,9 @@
             <div class="action-icon config-icon">
               <el-icon><Setting /></el-icon>
             </div>
-            <h4>配置管理</h4>
-            <p>管理平台模板和AI提供商配置</p>
-            <el-button type="primary" size="small" link>前往</el-button>
+            <h4>{{ $t('home.configManagement') }}</h4>
+            <p>{{ $t('home.configDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -132,9 +132,9 @@
             <div class="action-icon history-icon">
               <el-icon><Clock /></el-icon>
             </div>
-            <h4>历史记录</h4>
-            <p>查看和管理之前的生成结果</p>
-            <el-button type="primary" size="small" link>前往</el-button>
+            <h4>{{ $t('home.historyRecords') }}</h4>
+            <p>{{ $t('home.historyDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
           </div>
         </el-card>
       </div>
@@ -146,6 +146,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import {
   Document,
   ChatLineRound,
@@ -166,6 +167,7 @@ import ShowcaseBackground from '../components/home/ShowcaseBackground.vue'
 import ComposerInput from '../components/home/ComposerInput.vue'
 
 const router = useRouter()
+const { t } = useI18n()
 
 // 表单引用
 const composerRef = ref<InstanceType<typeof ComposerInput> | null>(null)
@@ -258,7 +260,7 @@ function handleImagesChange(images: File[]) {
 const handleGenerate = async () => {
   // 防止重复提交
   if (generatorStore.loading) {
-    console.log('生成请求已在处理中，请勿重复点击')
+    console.log(t('home.generatingInProgress'))
     return
   }
   
@@ -270,7 +272,7 @@ const handleGenerate = async () => {
   // 创建全局加载指示器
   const loadingInstance = ElLoading.service({
     lock: true,
-    text: '正在生成大纲，请稍候...',
+    text: t('home.generatingOutline'),
     background: 'rgba(255, 255, 255, 0.8)'
   })
 
@@ -306,7 +308,7 @@ const handleGenerate = async () => {
       // 使用状态管理存储结果，传递title和copywriting
       generatorStore.setOutline(content, result.pages, title, copywriting)
       
-      ElMessage.success('生成成功，正在跳转到大纲编辑页面...')
+      ElMessage.success(t('home.generateSuccess'))
       
       // 清理预览
       composerRef.value?.clearPreviews()
@@ -444,10 +446,10 @@ const copyResult = () => {
   const resultText = `${generateResult.value.title}\n\n${generateResult.value.content}`
   navigator.clipboard.writeText(resultText)
     .then(() => {
-      ElMessage.success('结果已复制到剪贴板')
+      ElMessage.success(t('home.copySuccess'))
     })
     .catch(() => {
-      ElMessage.error('复制失败，请手动复制')
+      ElMessage.error(t('home.copyFailed'))
     })
 }
 

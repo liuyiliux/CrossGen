@@ -9,6 +9,7 @@ import App from './App.vue'
 import router from './router'
 import './styles/main.scss'
 import { setupAutoSave } from './stores/generator'
+import { i18n } from './locales'
 
 const app = createApp(App)
 
@@ -19,7 +20,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus)
+app.use(i18n)
+app.use(ElementPlus, {
+  i18n: i18n.global.t // Element Plus 国际化配置
+})
 
 // 设置自动保存
 setupAutoSave()

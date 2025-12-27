@@ -13,7 +13,7 @@
         :value="modelValue"
         @input="handleInput"
         class="composer-textarea"
-        placeholder="输入主题，例如：鉴定白水晶..."
+        :placeholder="t('composer.placeholder')"
         @keydown.enter.prevent="handleEnter"
         :disabled="loading"
         rows="1"
@@ -23,10 +23,10 @@
     <!-- 模板和模型选择 -->
     <div class="template-model-selector">
       <div class="selector-item">
-        <label class="selector-label">平台选择</label>
+        <label class="selector-label">{{ t('composer.platformSelect') }}</label>
         <el-select 
           v-model="generatorStore.selectedPlatform" 
-          placeholder="请选择平台"
+          :placeholder="t('composer.selectPlatform')"
           size="large"
           class="selector-input"
           :loading="loading"
@@ -41,10 +41,10 @@
       </div>
 
       <div class="selector-item">
-        <label class="selector-label">文本服务商</label>
+        <label class="selector-label">{{ t('composer.textProvider') }}</label>
         <el-select 
           v-model="generatorStore.textProviderId" 
-          placeholder="请选择文本服务商"
+          :placeholder="t('composer.selectTextProvider')"
           size="large"
           clearable
           class="selector-input"
@@ -83,14 +83,14 @@
         </button>
       </div>
       <div class="upload-hint">
-        这些图片将用于生成封面和内容参考
+        {{ t('composer.uploadHint') }}
       </div>
     </div>
 
     <!-- 工具栏 -->
     <div class="composer-toolbar">
       <div class="toolbar-left">
-        <label class="tool-btn" :class="{ 'active': uploadedImages.length > 0 }" title="上传参考图">
+        <label class="tool-btn" :class="{ 'active': uploadedImages.length > 0 }" :title="t('composer.uploadReference')">
           <input
             type="file"
             accept="image/*"
@@ -114,7 +114,7 @@
               :disabled="!modelValue.trim() || loading"
             >
               <span v-if="loading" class="spinner-sm"></span>
-              <span v-else>生成大纲</span>
+              <span v-else>{{ t('composer.generateOutline') }}</span>
             </button>
       </div>
     </div>
@@ -124,6 +124,9 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted } from 'vue'
 import axios from 'axios'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 /**
  * 主题输入组合框组件
