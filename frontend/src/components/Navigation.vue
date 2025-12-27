@@ -42,7 +42,12 @@
           <!-- 语言切换 -->
           <el-dropdown @command="handleLanguageChange">
             <span class="language-trigger">
-              <el-icon><Language /></el-icon>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20"/>
+                <path d="m12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1 4-10"/>
+                <path d="M12 2v20"/>
+              </svg>
               <span>{{ $t('common.language') }}</span>
               <el-icon class="el-icon--right"><ArrowDown /></el-icon>
             </span>
@@ -63,7 +68,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { HomeFilled, Setting, Clock, List, Language, ArrowDown } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Clock, List, ArrowDown } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
