@@ -3,18 +3,18 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>{{ $t('history.title') }}</h1>
-          <p>{{ $t('history.subtitle') }}</p>
+          <h1>{{ t('history.title') }}</h1>
+<p>{{ t('history.subtitle') }}</p>
         </div>
       </template>
 
       <!-- 搜索和筛选 -->
       <div class="search-filter">
         <el-form :model="searchForm" inline class="search-form">
-          <el-form-item :label="$t('history.search')">
+          <el-form-item :label="t('history.search')">
             <el-input
               v-model="searchForm.keyword"
-              :placeholder="$t('history.keywordPlaceholder')"
+              :placeholder="t('history.keywordPlaceholder')"
               clearable
               size="large"
               @keyup.enter="searchHistory"
@@ -25,15 +25,15 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item :label="$t('history.selectPlatform')">
+          <el-form-item :label="t('history.selectPlatform')">
             <el-select
               v-model="searchForm.platform"
-              :placeholder="$t('history.selectPlatform')"
+              :placeholder="t('history.selectPlatform')" 
               clearable
               size="large"
               style="width: 180px;"
             >
-              <el-option :label="$t('history.all')" value="" />
+              <el-option :label="t('history.all')" value="" />
               <el-option
                 v-for="option in platformOptions"
                 :key="option.value"
@@ -43,13 +43,13 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item :label="$t('history.dateRange')">
+          <el-form-item :label="t('history.dateRange')">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
-              :range-separator="$t('history.to')"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
+              :range-separator="t('history.to')"
+              :start-placeholder="t('history.startDate')"
+              :end-placeholder="t('history.endDate')"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
               size="large"
@@ -59,11 +59,11 @@
           <el-form-item>
             <el-button type="primary" @click="searchHistory" size="large">
               <el-icon><Search /></el-icon>
-              搜索
+              {{ t('history.search') }}
             </el-button>
             <el-button @click="resetSearch" size="large">
               <el-icon><RefreshRight /></el-icon>
-              重置
+              {{ t('common.reset') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -73,19 +73,19 @@
           <el-dropdown @command="handleBatchAction">
             <el-button type="warning" size="large">
               <el-icon><MoreFilled /></el-icon>
-              批量操作
+              {{ t('history.batchOperation') }}
               <el-icon class="el-icon--right"><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="delete">
-                  <el-icon><Delete /></el-icon>
-                  批量删除
-                </el-dropdown-item>
-                <el-dropdown-item command="export">
-                  <el-icon><Download /></el-icon>
-                  批量导出
-                </el-dropdown-item>
+                <el-icon><Delete /></el-icon>
+                {{ t('history.batchDelete') }}
+              </el-dropdown-item>
+              <el-dropdown-item command="export">
+                <el-icon><Download /></el-icon>
+                {{ t('history.batchExport') }}
+              </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -106,10 +106,10 @@
           <el-table-column type="selection" width="55" />
           
           <!-- 序号 -->
-          <el-table-column type="index" label="序号" width="80" />
+          <el-table-column type="index" :label="t('common.index')" width="80" />
           
           <!-- 主题 -->
-          <el-table-column prop="topic" label="生成主题" min-width="200" show-overflow-tooltip>
+          <el-table-column prop="topic" :label="t('history.topic')" min-width="200" show-overflow-tooltip>
             <template #default="scope">
               <div class="topic-cell">
                 <span class="topic-text">{{ scope.row.topic }}</span>
@@ -121,14 +121,14 @@
           </el-table-column>
           
           <!-- 生成时间 -->
-          <el-table-column prop="created_at" label="生成时间" width="200" show-overflow-tooltip>
+          <el-table-column prop="created_at" :label="t('history.createdAt')" width="200" show-overflow-tooltip>
             <template #default="scope">
               {{ formatTime(scope.row.created_at) }}
             </template>
           </el-table-column>
           
           <!-- 状态 -->
-          <el-table-column prop="status" label="状态" width="120">
+          <el-table-column prop="status" :label="t('history.status')" width="120">
             <template #default="scope">
               <el-tag :type="getStatusType(scope.row.status)" effect="light">
                 {{ getStatusLabel(scope.row.status) }}
@@ -137,19 +137,19 @@
           </el-table-column>
           
           <!-- 操作 -->
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column :label="t('common.action')" width="200" fixed="right">
             <template #default="scope">
               <el-button type="primary" size="small" @click="viewHistory(scope.row)" :disabled="false">
                 <el-icon><View /></el-icon>
-                查看
+                {{ t('common.view') }}
               </el-button>
               <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
                 <el-icon><CopyDocument /></el-icon>
-                复制
+                {{ t('common.copy') }}
               </el-button>
               <el-button type="danger" size="small" @click="deleteHistory(scope.row.id)">
                 <el-icon><Delete /></el-icon>
-                删除
+                {{ t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -171,7 +171,7 @@
         <!-- 空状态 -->
         <el-empty
           v-if="filteredHistory.length === 0"
-          description="暂无历史记录"
+          :description="t('history.noHistory')"
           :image-size="200"
         />
       </div>
@@ -180,40 +180,40 @@
     <!-- 历史详情对话框 -->
     <el-dialog
       v-model="historyDialogVisible"
-      :title="`历史详情 - ${selectedHistory?.topic || ''}`"
+      :title="`${t('history.detail')} - ${selectedHistory?.topic || ''}`"
       width="80%"
       class="history-dialog"
     >
       <div v-if="selectedHistory" class="history-detail">
         <!-- 基本信息 -->
         <el-descriptions :column="3" border class="detail-info">
-          <el-descriptions-item label="主题">{{ selectedHistory.topic }}</el-descriptions-item>
-          <el-descriptions-item label="平台">
-            <el-tag :type="getPlatformType(selectedHistory.platform)">
-              {{ getPlatformLabel(selectedHistory.platform) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="生成时间">{{ formatTime(selectedHistory.created_at) }}</el-descriptions-item>
-          <el-descriptions-item label="生成用时">{{ selectedHistory.generation_time?.toFixed(2) }}秒</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="getStatusType(selectedHistory.status)">
-              {{ getStatusLabel(selectedHistory.status) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="文本模型">{{ selectedHistory.text_model || '默认模型' }}</el-descriptions-item>
-          <el-descriptions-item label="图像模型">{{ selectedHistory.image_model || '默认模型' }}</el-descriptions-item>
-          <el-descriptions-item label="结果数量">{{ selectedHistory.images?.length || 0 }}</el-descriptions-item>
-        </el-descriptions>
+            <el-descriptions-item :label="t('history.topic')">{{ selectedHistory.topic }}</el-descriptions-item>
+            <el-descriptions-item :label="t('history.platform')">
+              <el-tag :type="getPlatformType(selectedHistory.platform)">
+                {{ getPlatformLabel(selectedHistory.platform) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item :label="t('history.createdAt')">{{ formatTime(selectedHistory.created_at) }}</el-descriptions-item>
+            <el-descriptions-item :label="t('history.generationTime')">{{ selectedHistory.generation_time?.toFixed(2) }}秒</el-descriptions-item>
+            <el-descriptions-item :label="t('history.status')">
+              <el-tag :type="getStatusType(selectedHistory.status)">
+                {{ getStatusLabel(selectedHistory.status) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item :label="t('history.textModel')">{{ selectedHistory.text_model || t('history.defaultModel') }}</el-descriptions-item>
+            <el-descriptions-item :label="t('history.imageModel')">{{ selectedHistory.image_model || t('history.defaultModel') }}</el-descriptions-item>
+            <el-descriptions-item :label="t('history.resultCount')">{{ selectedHistory.images?.length || 0 }}</el-descriptions-item>
+          </el-descriptions>
         
         <!-- 生成结果 -->
             <div class="detail-results">
-              <h3 class="results-title">生成结果</h3>
+              <h3 class="results-title">{{ t('history.generationResults') }}</h3>
               
               <el-tabs v-model="activeResultTab" type="card" class="result-tabs">
                 <!-- 大纲视图选项卡 -->
-                <el-tab-pane label="大纲视图" name="outline">
+                <el-tab-pane :label="t('history.outlineView')" name="outline">
                   <div class="outline-view" v-if="selectedHistory.outline">
-                    <h4 class="outline-title">生成大纲</h4>
+                    <h4 class="outline-title">{{ t('history.generatedOutline') }}</h4>
                     <div class="outline-pages">
                       <div 
                         v-for="page in selectedHistory.outline.pages" 
@@ -235,7 +235,7 @@
                     
                     <!-- 原始大纲文本 -->
                     <div class="outline-raw">
-                      <h5>原始大纲文本</h5>
+                      <h5>{{ t('history.rawOutlineText') }}</h5>
                       <el-input
                         type="textarea"
                         :value="selectedHistory.outline.raw"
@@ -249,7 +249,7 @@
                 </el-tab-pane>
                 
                 <!-- 图片视图选项卡 -->
-                <el-tab-pane label="生成图片" name="images">
+                <el-tab-pane :label="t('history.generatedImages')" name="images">
                   <div class="images-view" v-if="selectedHistory.images && selectedHistory.images.length > 0">
                     <div class="image-grid">
                       <div 
@@ -261,8 +261,8 @@
                         <template v-if="selectedHistory.outline && selectedHistory.outline.pages[imgIndex]">
                           <div class="image-outline-info">
                             <div class="page-type" :class="selectedHistory.outline.pages[imgIndex].type">
-                              {{ selectedHistory.outline.pages[imgIndex].type === 'cover' ? '封面' : 
-                                 selectedHistory.outline.pages[imgIndex].type === 'summary' ? '总结' : '内容页' }}
+                              {{ selectedHistory.outline.pages[imgIndex].type === 'cover' ? t('history.cover') : 
+                                 selectedHistory.outline.pages[imgIndex].type === 'summary' ? t('history.summary') : t('history.contentPage') }}
                             </div>
                             <div class="image-page-content-preview">
                               {{ selectedHistory.outline.pages[imgIndex].content }}
@@ -279,26 +279,26 @@
                           lazy
                         >
                           <!-- 加载占位符 -->
-                          <template #loading>
-                            <div class="image-placeholder">
-                              <el-icon><PictureRounded /></el-icon>
-                              <span>加载中...</span>
-                            </div>
-                          </template>
-                          <!-- 错误占位符 -->
-                          <template #error>
-                            <div class="image-placeholder error">
-                              <el-icon><PictureRounded /></el-icon>
-                              <span>加载失败</span>
-                            </div>
-                          </template>
+                <template #loading>
+                  <div class="image-placeholder">
+                    <el-icon><PictureRounded /></el-icon>
+                    <span>{{ t('common.loading') }}</span>
+                  </div>
+                </template>
+                <!-- 错误占位符 -->
+                <template #error>
+                  <div class="image-placeholder error">
+                    <el-icon><PictureRounded /></el-icon>
+                    <span>{{ t('common.loadFailed') }}</span>
+                  </div>
+                </template>
                         </el-image>
                         
                         <!-- 图片状态 -->
                         <div class="image-status">
                           <el-tag :type="image.status === 'done' ? 'success' : image.status === 'error' ? 'danger' : 'warning'" size="small">
-                            {{ image.status === 'done' ? '成功' : image.status === 'error' ? '失败' : image.status || '未知' }}
-                          </el-tag>
+                              {{ image.status === 'done' ? t('common.success') : image.status === 'error' ? t('common.failed') : image.status || t('common.unknown') }}
+                            </el-tag>
                         </div>
                       </div>
                     </div>
@@ -319,7 +319,7 @@
                     
                     <!-- 生成图片 -->
                     <div v-if="result.images && result.images.length > 0" class="result-images">
-                      <h5>生成图片：</h5>
+                      <h5>{{ t('history.generatedImages') }}：</h5>
                       <div class="image-grid">
                         <el-image
                           v-for="(image, imgIndex) in result.images"
@@ -331,19 +331,19 @@
                           lazy
                         >
                           <!-- 加载占位符 -->
-                          <template #loading>
-                            <div class="image-placeholder">
-                              <el-icon><PictureRounded /></el-icon>
-                              <span>加载中...</span>
-                            </div>
-                          </template>
-                          <!-- 错误占位符 -->
-                          <template #error>
-                            <div class="image-placeholder error">
-                              <el-icon><PictureRounded /></el-icon>
-                              <span>加载失败</span>
-                            </div>
-                          </template>
+                              <template #loading>
+                                <div class="image-placeholder">
+                                  <el-icon><PictureRounded /></el-icon>
+                                  <span>{{ t('common.loading') }}</span>
+                                </div>
+                              </template>
+                              <!-- 错误占位符 -->
+                              <template #error>
+                                <div class="image-placeholder error">
+                                  <el-icon><PictureRounded /></el-icon>
+                                  <span>{{ t('common.loadFailed') }}</span>
+                                </div>
+                              </template>
                         </el-image>
                       </div>
                     </div>
@@ -366,6 +366,10 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 import {
   Search,
   RefreshRight,
@@ -483,16 +487,16 @@ const getStatusType = (status: string) => {
 // 获取状态标签
 const getStatusLabel = (status: string) => {
   const labelMap: Record<string, any> = {
-    success: '成功',
-    failed: '失败',
-    processing: '处理中',
-    cancelled: '已取消',
-    image_generating: '图片生成中',
-    image_success: '图片生成成功',
-    image_failed: '图片生成失败',
-    outline_generating: '大纲生成中',
-    outline_success: '大纲生成成功',
-    outline_failed: '大纲生成失败'
+    success: t('common.success'),
+    failed: t('common.failed'),
+    processing: t('common.processing'),
+    cancelled: t('common.cancelled'),
+    image_generating: t('history.imageGenerating'),
+    image_success: t('history.imageSuccess'),
+    image_failed: t('history.imageFailed'),
+    outline_generating: t('history.outlineGenerating'),
+    outline_success: t('history.outlineSuccess'),
+    outline_failed: t('history.outlineFailed')
   }
   return labelMap[status] || status
 }
@@ -510,9 +514,9 @@ const getPageType = (type: string) => {
 // 获取页面类型名称
 const getPageTypeName = (type: string) => {
   const nameMap: Record<string, any> = {
-    cover: '封面',
-    content: '内容',
-    summary: '总结'
+    cover: t('history.cover'),
+    content: t('history.content'),
+    summary: t('history.summary')
   }
   return nameMap[type] || type
 }
@@ -552,7 +556,7 @@ const handleCurrentChange = (current: number) => {
 // 批量操作
 const handleBatchAction = (command: string) => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择要操作的历史记录')
+    ElMessage.warning(t('history.pleaseSelectHistory'))
     return
   }
   
@@ -569,11 +573,11 @@ const handleBatchAction = (command: string) => {
 // 批量删除
 const batchDelete = async () => {
   ElMessageBox.confirm(
-    `确定要删除选中的 ${selectedRows.value.length} 条历史记录吗？`,
-    '批量删除',
+    t('history.confirmBatchDelete', { count: selectedRows.value.length }),
+    t('history.batchDelete'),
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     }
   )
@@ -609,7 +613,7 @@ const batchExport = () => {
   const url = URL.createObjectURL(dataBlob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `history-export-${dayjs().format('YYYYMMDD-HHmmss')}.json`
+  link.download = `${t('history.historyExport')}-${dayjs().format('YYYYMMDD-HHmmss')}.json`
   link.click()
   URL.revokeObjectURL(url)
   ElMessage.success('批量导出成功')
@@ -629,9 +633,9 @@ const viewHistory = async (history: any) => {
 
 // 删除历史记录
 const deleteHistory = async (id: string) => {
-  ElMessageBox.confirm('确定要删除这条历史记录吗？', '删除确认', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('history.confirmDelete'), t('common.confirmDelete'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   })
   .then(async () => {
@@ -657,7 +661,7 @@ const handleSelectionChange = (selection: any[]) => {
 // 复制历史记录并跳转到大纲页
 const copyAndEdit = (history: any) => {
   if (!history.outline) {
-    ElMessage.warning('无大纲可复制')
+    ElMessage.warning(t('history.noOutlineToCopy'))
     return
   }
   

@@ -8,13 +8,13 @@
         <div class="hero-content">
           <div class="brand-pill">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-            {{ $t('home.brandPill') }}
+            {{ t('home.brandPill') }}
           </div>
           <div class="platform-slogan">
-            {{ $t('home.platformSlogan') }}
+            {{ t('home.platformSlogan') }}
           </div>
-          <h1 class="page-title">{{ $t('home.pageTitle') }}</h1>
-          <p class="page-subtitle">{{ $t('home.pageSubtitle') }}</p>
+          <h1 class="page-title">{{ t('home.pageTitle') }}</h1>
+          <p class="page-subtitle">{{ t('home.pageSubtitle') }}</p>
         </div>
 
       <!-- 主题输入组合框 -->
@@ -31,15 +31,15 @@
       <el-card v-if="generateResult" shadow="hover" class="result-card" transition="el-fade-in-down">
         <template #header>
           <div class="result-header">
-            <h2 class="card-title">{{ $t('home.resultTitle') }}</h2>
+            <h2 class="card-title">{{ t('home.resultTitle') }}</h2>
             <div class="result-actions">
               <el-button type="success" size="small" @click="copyResult">
                 <el-icon><CopyDocument /></el-icon>
-                {{ $t('home.copy') }}
+                {{ t('home.copy') }}
               </el-button>
               <el-button type="info" size="small" @click="regenerate">
                 <el-icon><RefreshRight /></el-icon>
-                {{ $t('home.regenerate') }}
+                {{ t('home.regenerate') }}
               </el-button>
             </div>
           </div>
@@ -52,7 +52,7 @@
             {{ getPlatformLabel(generateResult.platform) }}
           </el-tag>
           <span class="generation-time">
-            {{ $t('home.generationTime') }}{{ generateResult.generation_time.toFixed(2) }}s
+            {{ t('home.generationTime') }}{{ generateResult.generation_time.toFixed(2) }}s
           </span>
         </div>
         
@@ -61,13 +61,13 @@
         
         <!-- 正文内容 -->
         <div class="result-text">
-          <el-divider content-position="left">{{ $t('home.contentText') }}</el-divider>
+          <el-divider content-position="left">{{ t('home.contentText') }}</el-divider>
           <div class="content-text">{{ generateResult.content }}</div>
         </div>
         
         <!-- 生成图片 -->
         <div v-if="generateResult.images.length > 0" class="result-images">
-          <el-divider content-position="left">{{ $t('home.generatedImages') }}</el-divider>
+          <el-divider content-position="left">{{ t('home.generatedImages') }}</el-divider>
           <el-image-viewer
             v-if="showImageViewer"
             :url-list="generateResult.images"
@@ -95,7 +95,7 @@
         <!-- 生成时间 -->
         <div class="result-footer">
           <span class="create-time">
-            {{ $t('home.createTime') }}{{ formatTime(generateResult.created_at) }}
+            {{ t('home.createTime') }}{{ formatTime(generateResult.created_at) }}
           </span>
         </div>
       </div>
@@ -103,16 +103,16 @@
     
     <!-- 快速操作 -->
     <div class="quick-actions">
-      <h3 class="section-title">{{ $t('home.quickActions') }}</h3>
+      <h3 class="section-title">{{ t('home.quickActions') }}</h3>
       <div class="action-cards">
         <el-card shadow="hover" @click="$router.push('/batch')" class="action-card">
           <div class="action-card-content">
             <div class="action-icon batch-icon">
               <el-icon><List /></el-icon>
             </div>
-            <h4>{{ $t('home.batchGenerate') }}</h4>
-            <p>{{ $t('home.batchDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
+            <h4>{{ t('home.batchGenerate') }}</h4>
+            <p>{{ t('home.batchDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -121,9 +121,9 @@
             <div class="action-icon config-icon">
               <el-icon><Setting /></el-icon>
             </div>
-            <h4>{{ $t('home.configManagement') }}</h4>
-            <p>{{ $t('home.configDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
+            <h4>{{ t('home.configManagement') }}</h4>
+            <p>{{ t('home.configDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -132,9 +132,9 @@
             <div class="action-icon history-icon">
               <el-icon><Clock /></el-icon>
             </div>
-            <h4>{{ $t('home.historyRecords') }}</h4>
-            <p>{{ $t('home.historyDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ $t('home.goTo') }}</el-button>
+            <h4>{{ t('home.historyRecords') }}</h4>
+            <p>{{ t('home.historyDesc') }}</p>
+            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
       </div>

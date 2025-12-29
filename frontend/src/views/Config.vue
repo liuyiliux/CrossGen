@@ -3,40 +3,40 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>{{ $t('config.title') }}</h1>
-          <p>{{ $t('config.subtitle') }}</p>
+          <h1>{{ t('config.title') }}</h1>
+          <p>{{ t('config.subtitle') }}</p>
         </div>
       </template>
       
       <!-- 配置标签页 -->
       <el-tabs v-model="activeTab" type="card" class="config-tabs">
         <!-- 通用设置 -->
-        <el-tab-pane :label="$t('config.generalSettings')" name="general">
+        <el-tab-pane :label="t('config.generalSettings')" name="general">
           <div class="general-config">
             <el-card shadow="hover" class="general-config-card">
               <template #header>
-                <h3 class="card-subtitle">{{ $t('config.systemConfig') }}</h3>
+                <h3 class="card-subtitle">{{ t('config.systemConfig') }}</h3>
               </template>
               
               <el-form ref="generalFormRef" :model="generalConfig" label-width="150px" class="general-form">
                 <!-- Redis 开关 -->
-                <el-form-item :label="$t('config.enableRedis')">
+                <el-form-item :label="t('config.enableRedis')">
                   <el-switch v-model="generalConfig.redis_enabled" />
-                  <span class="help-text">{{ $t('config.redisHelp') }}</span>
+                  <span class="help-text">{{ t('config.redisHelp') }}</span>
                 </el-form-item>
                 
                 <!-- Redis 连接信息 -->
-                <el-form-item :label="$t('config.redisUrl')">
-                  <el-input v-model="generalConfig.redis_url" :placeholder="$t('config.redisUrlPlaceholder')" />
+                <el-form-item :label="t('config.redisUrl')">
+                  <el-input v-model="generalConfig.redis_url" :placeholder="t('config.redisUrlPlaceholder')" />
                 </el-form-item>
                 
                 <!-- Redis 密码 -->
-                <el-form-item label="Redis 密码">
+                <el-form-item :label="t('config.redisPassword')">
                   <el-input
                     v-model="generalConfig.redis_password"
                     type="password"
                     show-password
-                    placeholder="Redis 连接密码"
+                    :placeholder="t('config.redisPasswordPlaceholder')"
                   />
                 </el-form-item>
                 
@@ -46,48 +46,48 @@
                     type="primary" 
                     @click="testRedisConnection" 
                     :loading="testingRedis"
-                    icon="Connection"
                   >
-                    测试Redis连接
+                    <el-icon><Connection /></el-icon>
+                    {{ t('config.testRedisConnection') }}
                   </el-button>
                 </el-form-item>
                 
                 <!-- MySQL 配置 -->
                 <el-collapse v-model="mysqlCollapse" class="mysql-collapse">
-                  <el-collapse-item title="MySQL 配置" name="mysql">
-                    <el-form-item label="启用 MySQL">
+                  <el-collapse-item :title="t('config.mysqlConfig')" name="mysql">
+                    <el-form-item :label="t('config.enableMysql')">
                       <el-switch v-model="generalConfig.mysql_enabled" />
-                      <span class="help-text">启用或禁用 MySQL 数据库功能</span>
+                      <span class="help-text">{{ t('config.mysqlHelp') }}</span>
                     </el-form-item>
                     
-                    <el-form-item label="MySQL 主机">
-                      <el-input v-model="generalConfig.mysql_host" placeholder="MySQL 主机地址" />
+                    <el-form-item :label="t('config.mysqlHost')">
+                      <el-input v-model="generalConfig.mysql_host" :placeholder="t('config.mysqlHostPlaceholder')" />
                     </el-form-item>
                     
-                    <el-form-item label="MySQL 端口">
+                    <el-form-item :label="t('config.mysqlPort')">
                       <el-input-number
                         v-model="generalConfig.mysql_port"
                         :min="1"
                         :max="65535"
                         :step="1"
-                        placeholder="MySQL 端口"
+                        :placeholder="t('config.mysqlPortPlaceholder')"
                       />
                     </el-form-item>
                     
-                    <el-form-item label="MySQL 数据库名">
-                      <el-input v-model="generalConfig.mysql_database" placeholder="MySQL 数据库名" />
+                    <el-form-item :label="t('config.mysqlDatabase')">
+                      <el-input v-model="generalConfig.mysql_database" :placeholder="t('config.mysqlDatabasePlaceholder')" />
                     </el-form-item>
                     
-                    <el-form-item label="MySQL 用户名">
-                      <el-input v-model="generalConfig.mysql_username" placeholder="MySQL 用户名" />
+                    <el-form-item :label="t('config.mysqlUsername')">
+                      <el-input v-model="generalConfig.mysql_username" :placeholder="t('config.mysqlUsernamePlaceholder')" />
                     </el-form-item>
                     
-                    <el-form-item label="MySQL 密码">
+                    <el-form-item :label="t('config.mysqlPassword')">
                       <el-input
                         v-model="generalConfig.mysql_password"
                         type="password"
                         show-password
-                        placeholder="MySQL 密码"
+                        :placeholder="t('config.mysqlPasswordPlaceholder')"
                       />
                     </el-form-item>
 
@@ -97,9 +97,9 @@
                         type="primary" 
                         @click="testMysqlConnection" 
                         :loading="testingMysql"
-                        icon="Connection"
                       >
-                        测试MySQL连接
+                        <el-icon><Connection /></el-icon>
+                        {{ t('config.testMysqlConnection') }}
                       </el-button>
                     </el-form-item>
                   </el-collapse-item>
@@ -109,11 +109,11 @@
                 <div class="form-actions">
                   <el-button type="primary" @click="saveGeneralConfig" :loading="savingGeneral" size="large">
                     <el-icon><Upload /></el-icon>
-                    保存配置
+                    {{ t('common.save') }}
                   </el-button>
                   <el-button @click="resetGeneralConfig" :loading="savingGeneral">
                     <el-icon><RefreshRight /></el-icon>
-                    重置
+                    {{ t('common.reset') }}
                   </el-button>
                 </div>
               </el-form>
@@ -122,13 +122,13 @@
         </el-tab-pane>
         
         <!-- 平台模板配置 -->
-        <el-tab-pane label="平台模板" name="templates">
+        <el-tab-pane :label="t('config.platformTemplates')" name="templates">
           <div class="template-config">
             <!-- 平台选择 -->
-            <el-form-item label="选择平台">
+            <el-form-item :label="t('config.selectPlatform')">
               <el-select
                 v-model="selectedPlatform"
-                placeholder="请选择平台"
+                :placeholder="t('config.platformPlaceholder')"
                 size="large"
                 @change="loadPlatformTemplate"
               >
@@ -145,15 +145,15 @@
             <el-card v-if="currentTemplate" shadow="hover" class="template-card">
               <template #header>
                 <div class="template-card-header">
-                  <h3 class="card-subtitle">模板配置</h3>
+                  <h3 class="card-subtitle">{{ t('config.templateConfig') }}</h3>
                   <div class="template-actions">
                     <el-button size="small" @click="copyTemplate">
                       <el-icon><CopyDocument /></el-icon>
-                      复制模板
+                      {{ t('config.copyTemplate') }}
                     </el-button>
                     <el-button size="small" type="danger" @click="deleteTemplate">
                       <el-icon><Delete /></el-icon>
-                      删除模板
+                      {{ t('config.deleteTemplate') }}
                     </el-button>
                   </div>
                 </div>
@@ -161,32 +161,32 @@
               
               <el-form ref="templateFormRef" :model="currentTemplate" label-width="120px" class="template-form">
                 <!-- 大纲模板 -->
-                <el-form-item label="大纲模板">
+                <el-form-item :label="t('config.outlineTemplate')">
                   <el-input
                     v-model="currentTemplate.outline_template"
                     type="textarea"
                     :rows="15"
-                    placeholder="请输入大纲生成模板"
+                    :placeholder="t('config.outlineTemplatePlaceholder')"
                   />
                 </el-form-item>
                 
                 <!-- 图片模板 -->
-                <el-form-item label="图片模板">
+                <el-form-item :label="t('config.imageTemplate')">
                   <el-input
                     v-model="currentTemplate.image_template"
                     type="textarea"
                     :rows="15"
-                    placeholder="请输入图片生成模板"
+                    :placeholder="t('config.imageTemplatePlaceholder')"
                   />
                 </el-form-item>
                 
                 <!-- 视频模板 -->
-                <el-form-item label="视频模板">
+                <el-form-item :label="t('config.videoTemplate')">
                   <el-input
                     v-model="currentTemplate.video_template"
                     type="textarea"
                     :rows="15"
-                    placeholder="请输入视频生成模板"
+                    :placeholder="t('config.videoTemplatePlaceholder')"
                   />
                 </el-form-item>
                 
@@ -196,11 +196,11 @@
                 <div class="form-actions">
                   <el-button type="primary" @click="saveTemplate" :loading="saving" size="large">
                     <el-icon><Upload /></el-icon>
-                    保存配置
+                    {{ t('common.save') }}
                   </el-button>
                   <el-button @click="resetTemplate" :loading="saving">
                     <el-icon><RefreshRight /></el-icon>
-                    重置
+                    {{ t('common.reset') }}
                   </el-button>
                 </div>
               </el-form>
@@ -209,25 +209,25 @@
             <!-- 未选择平台提示 -->
             <el-empty
               v-else
-              description="请选择一个平台查看或编辑配置"
+              :description="t('config.noPlatformSelected')"
               :image-size="200"
             />
           </div>
         </el-tab-pane>
         
         <!-- AI提供商配置 -->
-        <el-tab-pane label="AI提供商" name="providers">
+        <el-tab-pane :label="t('config.aiProviders')" name="providers">
           <div class="ai-config-container">
             
             <!-- 文本生成配置 -->
             <el-card shadow="hover" class="ai-config-card" style="margin-top: 20px;">
               <template #header>
                 <div class="ai-config-header">
-                  <h3>文本生成配置</h3>
-                  <p>用于生成小红书、抖音等平台的文案内容</p>
+                  <h3>{{ t('config.textGeneration') }}</h3>
+                  <p>{{ t('config.textGenerationDesc') }}</p>
                   <el-button type="primary" size="small" @click="openProviderDialog('text')">
                     <el-icon><Plus /></el-icon>
-                    添加
+                    {{ t('common.add') }}
                   </el-button>
                 </div>
               </template>
@@ -251,19 +251,19 @@
                 :disabled="testingProviders[`text_${provider.name}`]"
               >
                 <el-icon><Connection /></el-icon>
-                测试
+                {{ t('common.test') }}
               </el-button>
               <el-button size="small" @click="openProviderDialog('text', provider)">
                 <el-icon><Edit /></el-icon>
-                编辑
+                {{ t('common.edit') }}
               </el-button>
               <el-button size="small" @click="copyProvider('text', provider)">
                 <el-icon><CopyDocument /></el-icon>
-                复制
+                {{ t('common.copy') }}
               </el-button>
               <el-button size="small" type="danger" @click="deleteProvider('text', provider.name)">
                 <el-icon><Delete /></el-icon>
-                删除
+                {{ t('common.delete') }}
               </el-button>
             </div>
                   </div>
@@ -283,7 +283,7 @@
                   </div>
                 </div>
                 
-                <el-empty v-if="textProviders.length === 0" description="暂无文本提供商配置" />
+                <el-empty v-if="textProviders.length === 0" :description="t('config.noTextProviders')" />
               </div>
             </el-card>
             
@@ -291,11 +291,11 @@
             <el-card shadow="hover" class="ai-config-card" style="margin-top: 20px;">
               <template #header>
                 <div class="ai-config-header">
-                  <h3>图片生成配置</h3>
-                  <p>用于生成小红书、抖音等平台的配图</p>
+                  <h3>{{ t('config.imageGeneration') }}</h3>
+                  <p>{{ t('config.imageGenerationDesc') }}</p>
                   <el-button type="primary" size="small" @click="openProviderDialog('image')">
                     <el-icon><Plus /></el-icon>
-                    添加
+                    {{ t('common.add') }}
                   </el-button>
                 </div>
               </template>
@@ -319,19 +319,19 @@
                 :disabled="testingProviders[`image_${provider.name}`]"
               >
                 <el-icon><Connection /></el-icon>
-                测试
+                {{ t('common.test') }}
               </el-button>
               <el-button size="small" @click="openProviderDialog('image', provider)">
                 <el-icon><Edit /></el-icon>
-                编辑
+                {{ t('common.edit') }}
               </el-button>
               <el-button size="small" @click="copyProvider('image', provider)">
                 <el-icon><CopyDocument /></el-icon>
-                复制
+                {{ t('common.copy') }}
               </el-button>
               <el-button size="small" type="danger" @click="deleteProvider('image', provider.name)">
                 <el-icon><Delete /></el-icon>
-                删除
+                {{ t('common.delete') }}
               </el-button>
             </div>
                   </div>
@@ -342,7 +342,7 @@
                   <div class="provider-config-item">
                     <span class="config-label">状态：</span>
                     <el-tag :type="provider.status === 'connected' ? 'success' : 'warning'">
-                      {{ provider.status === 'connected' ? '已连接' : '未连接' }}
+                      {{ provider.status === 'connected' ? t('common.connected') : t('common.disconnected') }}
                     </el-tag>
                   </div>
                   <div class="provider-config-item">
@@ -351,7 +351,7 @@
                   </div>
                 </div>
                 
-                <el-empty v-if="imageProviders.length === 0" description="暂无图像提供商配置" />
+                <el-empty v-if="imageProviders.length === 0" :description="t('config.noImageProviders')" />
               </div>
             </el-card>
           </div>
@@ -360,240 +360,240 @@
         <!-- 提供商编辑弹窗 -->
         <el-dialog
           v-model="providerDialogVisible"
-          :title="isEditing ? '编辑提供商' : '添加提供商'"
+          :title="isEditing ? t('config.editProvider') : t('config.addProvider')"
           width="600px"
         >
           <el-form ref="providerFormRef" :model="currentProvider" label-width="120px" class="provider-form">
-            <el-form-item label="类型" required>
-              <el-select v-model="currentProvider.type" placeholder="请选择提供商类型">
-                <el-option label="OpenAI API接口" value="openai" />
+            <el-form-item :label="t('config.type')" required>
+              <el-select v-model="currentProvider.type" :placeholder="t('config.typePlaceholder')">
+                <el-option label="OpenAI API" value="openai" />
                 <el-option label="Google-Gemini" value="gemini" />
                 <el-option label="SiliconFlow" value="siliconflow" />
-                <el-option label="通用配置" value="generic" />
+                <el-option label="Generic Config" value="generic" />
               </el-select>
             </el-form-item>
             
-            <el-form-item label="服务商名称" required>
+            <el-form-item :label="t('config.providerName')" required>
               <el-input
                 v-model="currentProvider.name"
-                placeholder="输入服务商名称，如 'openai-chat' 或 'gemini-pro'"
+                :placeholder="t('config.providerNamePlaceholder')"
               />
-              <span class="help-text">服务商名称必须唯一，用于标识不同的服务商配置</span>
+              <span class="help-text">{{ t('config.providerNameHelp') }}</span>
             </el-form-item>
             
-            <el-form-item label="API Key" required>
+            <el-form-item :label="t('config.apiKey')" required>
               <el-input
                 v-model="currentProvider.api_key"
                 type="password"
                 show-password
-                placeholder="输入API Key"
+                :placeholder="t('config.apiKeyPlaceholder')"
               />
             </el-form-item>
             
-            <el-form-item label="Base URL" required>
+            <el-form-item :label="t('config.baseUrl')" required>
               <el-input
                 v-model="currentProvider.base_url"
-                placeholder="输入Base URL"
+                :placeholder="t('config.baseUrlPlaceholder')"
               />
             </el-form-item>
             
-            <el-form-item label="模型" required>
+            <el-form-item :label="t('config.model')" required>
               <el-input
                 v-model="currentProvider.model"
-                placeholder="输入模型名称"
+                :placeholder="t('config.modelPlaceholder')"
               />
             </el-form-item>
             
-            <el-form-item label="API端点路径" v-if="currentProvider.type === 'openai'">
+            <el-form-item :label="t('config.apiEndpoint')" v-if="currentProvider.type === 'openai'">
               <el-input
                 v-model="currentProvider.api_endpoint"
-                placeholder="输入API端点路径，如 /v1/chat/completions"
+                :placeholder="t('config.apiEndpointPlaceholder')"
               />
-              <span class="help-text">默认端点: /v1/chat/completions (文本生成) 或 /v1/images/generations (图像生成)</span>
+              <span class="help-text">{{ t('config.apiEndpointHelp') }}</span>
             </el-form-item>
             
             <!-- 通用配置相关字段 -->
-            <el-form-item label="请求模板" v-if="currentProvider.type === 'generic'">
+            <el-form-item :label="t('config.requestTemplate')" v-if="currentProvider.type === 'generic'">
               <el-input
                 v-model="currentProvider.request_config.template"
                 type="textarea"
                 :rows="10"
-                placeholder='输入Jinja2模板，如 {"role": "user", "content": [{"text": "{{ prompt }}"}]}'
+                :placeholder="t('config.requestTemplatePlaceholder')"
               />
-              <span class="help-text">使用Jinja2模板语法，可用变量: model, prompt, size, n等</span>
+              <span class="help-text">{{ t('config.requestTemplateHelp') }}</span>
             </el-form-item>
             
 
             
-            <el-form-item label="最大输出令牌数">
+            <el-form-item :label="t('config.maxOutputTokens')">
               <el-input-number
                 v-model="currentProvider.max_output_tokens"
                 :min="100"
                 :max="100000"
                 :step="100"
-                placeholder="输入最大输出令牌数"
+                :placeholder="t('config.maxOutputTokensPlaceholder')"
               />
-              <span class="help-text">控制AI生成内容的最大令牌数，参考值：8000</span>
+              <span class="help-text">{{ t('config.maxOutputTokensHelp') }}</span>
             </el-form-item>
             
-            <el-form-item label="超时时间（秒）">
+            <el-form-item :label="t('config.timeout')">
               <el-input-number
                 v-model="currentProvider.timeout"
                 :min="5"
                 :max="300"
                 :step="5"
-                placeholder="输入超时时间"
+                :placeholder="t('config.timeoutPlaceholder')"
               />
-              <span class="help-text">控制API请求的超时时间，根据不同模型和提供商调整，默认值：30秒</span>
+              <span class="help-text">{{ t('config.timeoutHelp') }}</span>
             </el-form-item>
             
-            <el-form-item label="启用状态">
+            <el-form-item :label="t('config.enabled')">
               <el-switch v-model="currentProvider.enabled" />
-              <span class="help-text">启用或禁用该提供商</span>
+              <span class="help-text">{{ t('config.enabledHelp') }}</span>
             </el-form-item>
             
             <!-- 图片提供商特有配置 -->
             <template v-if="providerType === 'image'">
               <!-- 参考图配置 -->
-              <el-form-item label="支持参考图">
+              <el-form-item :label="t('config.supportReferenceImage')">
                 <el-switch v-model="currentProvider.support_reference_image" />
-                <span class="help-text">是否支持使用参考图生成图像</span>
+                <span class="help-text">{{ t('config.supportReferenceImageHelp') }}</span>
               </el-form-item>
               
-              <el-form-item label="参考图字段名">
+              <el-form-item :label="t('config.referenceImageField')">
                 <el-input
                   v-model="currentProvider.reference_image_field"
-                  placeholder="输入API请求中参考图的字段名"
+                  :placeholder="t('config.referenceImageFieldPlaceholder')"
                 />
-                <span class="help-text">API请求中用于传递参考图的字段名，如image_urls、images、init_images等</span>
+                <span class="help-text">{{ t('config.referenceImageFieldHelp') }}</span>
               </el-form-item>
               
-              <el-form-item label="支持多图参考">
+              <el-form-item :label="t('config.supportMultipleReferenceImages')">
                 <el-switch v-model="currentProvider.support_multiple_reference_images" />
-                <span class="help-text">是否支持使用多张参考图，单图模型会取第一张</span>
+                <span class="help-text">{{ t('config.supportMultipleReferenceImagesHelp') }}</span>
               </el-form-item>
               
               <!-- 支持的尺寸 - 所有类型提供商都显示 -->
-              <el-form-item label="支持的尺寸">
+              <el-form-item :label="t('config.supportedSizes')">
                 <el-input
                   v-model="currentProvider.supported_sizes"
                   type="textarea"
-                  placeholder='输入支持的尺寸列表，如 ["1024x1024", "1056x1584", "1584x1056"]'
+                  :placeholder="t('config.supportedSizesPlaceholder')"
                   :rows="3"
                 />
-                <span class="help-text">JSON格式的尺寸列表，用于限制用户可选的尺寸</span>
+                <span class="help-text">{{ t('config.supportedSizesHelp') }}</span>
               </el-form-item>
               
               <!-- SiliconFlow特有配置 -->
               <template v-if="currentProvider.type === 'siliconflow'">
-                <el-form-item label="图像JSONPath" required>
+                <el-form-item :label="t('config.imageJsonPath')" required>
                   <el-input
                     v-model="currentProvider.image_jsonpath"
-                    placeholder="输入图像提取的JSONPath，如 $.images[*].url"
+                    :placeholder="t('config.imageJsonPathPlaceholder')"
                   />
-                  <span class="help-text">用于从API响应中提取图像URL或Base64数据的JSONPath表达式</span>
+                  <span class="help-text">{{ t('config.imageJsonPathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="返回格式" required>
-                  <el-select v-model="currentProvider.return_format" placeholder="选择返回格式">
+                <el-form-item :label="t('config.returnFormat')" required>
+                  <el-select v-model="currentProvider.return_format" :placeholder="t('config.returnFormatPlaceholder')">
                     <el-option label="URL链接" value="url" />
                     <el-option label="Base64编码" value="base64" />
                   </el-select>
-                  <span class="help-text">指定API返回的图像格式</span>
+                  <span class="help-text">{{ t('config.returnFormatHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="图像生成参数">
+                <el-form-item :label="t('config.imageParameters')">
                   <el-input
                     v-model="currentProvider.image_parameters"
                     type="textarea"
-                    placeholder="输入图像生成的额外参数，如 {'guidance_scale': 7.5, 'steps': 50}"
+                    :placeholder="t('config.imageParametersPlaceholder')"
                     :rows="4"
                   />
-                  <span class="help-text">JSON格式的图像生成额外参数，不同模型支持的参数不同</span>
+                  <span class="help-text">{{ t('config.imageParametersHelp') }}</span>
                 </el-form-item>
               </template>
               
               <!-- OpenAI特有配置 -->
               <template v-if="currentProvider.type === 'openai'">
-                <el-form-item label="图像质量">
-                  <el-select v-model="currentProvider.image_quality" placeholder="选择图像质量">
+                <el-form-item :label="t('config.imageQuality')">
+                  <el-select v-model="currentProvider.image_quality" :placeholder="t('config.imageQualityPlaceholder')">
                     <el-option label="标准质量" value="standard" />
                     <el-option label="高清质量" value="hd" />
                   </el-select>
-                  <span class="help-text">指定生成图像的质量级别</span>
+                  <span class="help-text">{{ t('config.imageQualityHelp') }}</span>
                 </el-form-item>
                 
                 <!-- 响应配置 -->
-                <el-divider content-position="left">响应配置</el-divider>
+                <el-divider :content="t('config.responseConfig')" content-position="left" />
                 
-                <el-form-item label="响应图像路径">
+                <el-form-item :label="t('config.responseImagesPath')">
                   <el-input
                     v-model="currentProvider.response_config.images_path"
-                    placeholder="输入提取图像的JSONPath，如 $.data[*]"
+                    :placeholder="t('config.responseImagesPathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取图像数据项</span>
+                  <span class="help-text">{{ t('config.responseImagesPathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应使用路径">
+                <el-form-item :label="t('config.responseUsagePath')">
                   <el-input
                     v-model="currentProvider.response_config.usage_path"
-                    placeholder="输入提取使用信息的JSONPath，如 $.usage"
+                    :placeholder="t('config.responseUsagePathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
+                  <span class="help-text">{{ t('config.responseUsagePathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应错误路径">
+                <el-form-item :label="t('config.responseErrorPath')">
                   <el-input
                     v-model="currentProvider.response_config.error_path"
-                    placeholder="输入提取错误信息的JSONPath，如 $.error.message"
+                    :placeholder="t('config.responseErrorPathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
+                  <span class="help-text">{{ t('config.responseErrorPathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应格式">
-                  <el-select v-model="currentProvider.response_config.response_format" placeholder="选择响应格式">
+                <el-form-item :label="t('config.responseFormat')">
+                  <el-select v-model="currentProvider.response_config.response_format" :placeholder="t('config.responseFormatPlaceholder')">
                     <el-option label="URL链接" value="url" />
                     <el-option label="Base64编码" value="base64" />
                   </el-select>
-                  <span class="help-text">指定API返回的图像格式</span>
+                  <span class="help-text">{{ t('config.responseFormatHelp') }}</span>
                 </el-form-item>
               </template>
               
               <!-- Gemini特有配置 -->
               <template v-if="currentProvider.type === 'gemini'">
                 <!-- 响应配置 -->
-                <el-divider content-position="left">响应配置</el-divider>
+                <el-divider :content="t('config.responseConfig')" content-position="left" />
                 
-                <el-form-item label="响应图像路径">
+                <el-form-item :label="t('config.responseImagesPath')">
                   <el-input
                     v-model="currentProvider.response_config.images_path"
-                    placeholder="输入提取图像的JSONPath，如 $.candidates[0].content.parts[0].inline_data.data"
+                    :placeholder="t('config.responseImagesPathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取图像数据</span>
+                  <span class="help-text">{{ t('config.responseImagesPathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应使用路径">
+                <el-form-item :label="t('config.responseUsagePath')">
                   <el-input
                     v-model="currentProvider.response_config.usage_path"
-                    placeholder="输入提取使用信息的JSONPath，如 $.usage_metadata"
+                    :placeholder="t('config.responseUsagePathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取使用信息</span>
+                  <span class="help-text">{{ t('config.responseUsagePathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应错误路径">
+                <el-form-item :label="t('config.responseErrorPath')">
                   <el-input
                     v-model="currentProvider.response_config.error_path"
-                    placeholder="输入提取错误信息的JSONPath，如 $.error.message"
+                    :placeholder="t('config.responseErrorPathPlaceholder')"
                   />
-                  <span class="help-text">使用JSONPath语法，从API响应中提取错误信息</span>
+                  <span class="help-text">{{ t('config.responseErrorPathHelp') }}</span>
                 </el-form-item>
                 
-                <el-form-item label="响应格式">
-                  <el-select v-model="currentProvider.response_config.response_format" placeholder="选择响应格式">
+                <el-form-item :label="t('config.responseFormat')">
+                  <el-select v-model="currentProvider.response_config.response_format" :placeholder="t('config.responseFormatPlaceholder')">
                     <el-option label="URL链接" value="url" />
                     <el-option label="Base64编码" value="base64" />
                   </el-select>
-                  <span class="help-text">指定API返回的图像格式</span>
+                  <span class="help-text">{{ t('config.responseFormatHelp') }}</span>
                 </el-form-item>
               </template>
             </template>
@@ -601,9 +601,9 @@
           
           <template #footer>
             <span class="dialog-footer">
-              <el-button @click="providerDialogVisible = false">取消</el-button>
-              <el-button type="primary" @click="testProviderConnection(providerType, currentProvider, true)" :loading="testingConnection">测试连接</el-button>
-              <el-button type="primary" @click="saveProviderConfig" :loading="savingProvider">保存</el-button>
+              <el-button @click="providerDialogVisible = false">{{ t('common.cancel') }}</el-button>
+              <el-button type="primary" @click="testProviderConnection(providerType, currentProvider, true)" :loading="testingConnection">{{ t('config.testConnection') }}</el-button>
+              <el-button type="primary" @click="saveProviderConfig" :loading="savingProvider">{{ t('common.save') }}</el-button>
             </span>
           </template>
         </el-dialog>
@@ -611,29 +611,29 @@
         <!-- 复制模板弹窗 -->
         <el-dialog
           v-model="copyTemplateVisible"
-          title="复制模板"
+          :title="t('config.copyTemplate')"
           width="500px"
         >
           <el-form ref="copyTemplateFormRef" :model="copyTemplateForm" :rules="copyTemplateRules" label-width="120px" class="copy-template-form">
-            <el-form-item label="平台英文ID" prop="platformId" required>
+            <el-form-item :label="t('config.platformId')" prop="platformId" required>
               <el-input
                 v-model="copyTemplateForm.platformId"
-                placeholder="请输入平台英文ID，如：custom_platform"
+                :placeholder="t('config.platformIdPlaceholder')"
               />
             </el-form-item>
             
-            <el-form-item label="平台中文名称" prop="platformName" required>
+            <el-form-item :label="t('config.platformName')" prop="platformName" required>
               <el-input
                 v-model="copyTemplateForm.platformName"
-                placeholder="请输入平台中文名称，如：自定义平台"
+                :placeholder="t('config.platformNamePlaceholder')"
               />
             </el-form-item>
           </el-form>
           
           <template #footer>
             <span class="dialog-footer">
-              <el-button @click="copyTemplateVisible = false">取消</el-button>
-              <el-button type="primary" @click="handleCopyTemplate" :loading="copyingTemplate">确定</el-button>
+              <el-button @click="copyTemplateVisible = false">{{ t('common.cancel') }}</el-button>
+              <el-button type="primary" @click="handleCopyTemplate" :loading="copyingTemplate">{{ t('common.confirm') }}</el-button>
             </span>
           </template>
         </el-dialog>
@@ -645,6 +645,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch, h } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 import { Upload, RefreshRight, Refresh, Plus, Edit, Delete, Connection, CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
 
@@ -1189,7 +1193,7 @@ const testProviderConnection = async (
 const saveProviderConfig = async () => {
   // 表单验证
   if (!currentProvider.value.name || !currentProvider.value.api_key || !currentProvider.value.base_url || !currentProvider.value.model) {
-    ElMessage.error('请填写完整的提供商配置')
+    ElMessage.error(t('config.fillCompleteProviderConfig'))
     return
   }
   
@@ -1209,7 +1213,7 @@ const saveProviderConfig = async () => {
           providerConfig.supported_sizes = JSON.parse(providerConfig.supported_sizes)
         }
       } catch (e) {
-        ElMessage.error('支持的尺寸格式错误，请输入有效的JSON数组')
+        ElMessage.error(t('config.supportedSizesFormatError'))
         savingProvider.value = false
         return
       }
@@ -1314,11 +1318,11 @@ const getProviderStatusColor = (status: string) => {
 // 获取提供商状态文本
 const getProviderStatusText = (status: string) => {
   const textMap: Record<string, any> = {
-    connected: '已连接',
-    disconnected: '未连接',
-    testing: '测试中'
+    connected: t('common.connected'),
+    disconnected: t('common.disconnected'),
+    testing: t('common.testing')
   }
-  return textMap[status] || '未知状态'
+  return textMap[status] || t('common.unknownStatus')
 }
 
 // 加载通用配置

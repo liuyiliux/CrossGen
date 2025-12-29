@@ -3,26 +3,26 @@
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <h1>{{ $t('batch.title') }}</h1>
-          <p>{{ $t('batch.subtitle') }}</p>
+          <h1>{{ t('batch.title') }}</h1>
+          <p>{{ t('batch.subtitle') }}</p>
         </div>
       </template>
 
       <el-form ref="batchFormRef" :model="batchForm" label-width="120px" class="batch-form">
         <!-- 主题输入 -->
-        <el-form-item :label="$t('batch.topicLabel')" required>
+        <el-form-item :label="t('batch.topicLabel')" required>
           <el-input
             v-model="batchForm.topics"
             type="textarea"
             :rows="6"
-            :placeholder="$t('batch.topicPlaceholder')"
+            :placeholder="t('batch.topicPlaceholder')"
             maxlength="2000"
             show-word-limit
           />
         </el-form-item>
 
         <!-- 参考图上传 -->
-        <el-form-item :label="$t('batch.referenceImages')">
+        <el-form-item :label="t('batch.referenceImages')">
           <div class="reference-images">
             <el-upload
               v-model:file-list="referenceImages"
@@ -38,14 +38,14 @@
               <el-icon><Plus /></el-icon>
               <template #tip>
                 <div class="el-upload__tip">
-                  {{ $t('batch.formatTip') }}
+                  {{ t('batch.formatTip') }}
                 </div>
               </template>
             </el-upload>
 
             <!-- 已上传图片预览 -->
             <div class="image-preview-list" v-if="previewImages.length > 0">
-              <div class="preview-title">{{ $t('batch.selectedImages', { count: previewImages.length }) }}</div>
+              <div class="preview-title">{{ t('batch.selectedImages', { count: previewImages.length }) }}</div>
               <div class="image-preview-container">
                 <div 
                   v-for="(image, index) in previewImages" 
@@ -67,12 +67,12 @@
         </el-form-item>
         
         <!-- 平台选择 -->
-        <el-form-item label="目标平台" required>
+        <el-form-item :label="t('batch.targetPlatforms')" required>
           <el-checkbox-group v-model="batchForm.platforms">
-            <el-checkbox label="xiaohongshu">小红书</el-checkbox>
-            <el-checkbox label="douyin">抖音</el-checkbox>
-            <el-checkbox label="wechat">微信</el-checkbox>
-            <el-checkbox label="toutiao">头条</el-checkbox>
+            <el-checkbox label="xiaohongshu">{{ t('batch.platform.xiaohongshu') }}</el-checkbox>
+            <el-checkbox label="douyin">{{ t('batch.platform.douyin') }}</el-checkbox>
+            <el-checkbox label="wechat">{{ t('batch.platform.wechat') }}</el-checkbox>
+            <el-checkbox label="toutiao">{{ t('batch.platform.toutiao') }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         
@@ -81,9 +81,9 @@
           <el-button type="primary" @click="generateBatch" :loading="generating" size="large">
             <el-icon v-if="!generating"><Plus /></el-icon>
             <el-icon v-else><Loading /></el-icon>
-            开始批量生成
+            {{ t('batch.startBatchGenerate') }}
           </el-button>
-          <el-button @click="resetForm" :loading="generating">重置</el-button>
+          <el-button @click="resetForm" :loading="generating">{{ t('common.reset') }}</el-button>
         </el-form-item>
       </el-form>
       
@@ -91,24 +91,24 @@
       <el-card v-if="jobInfo" shadow="hover" class="status-card">
         <template #header>
           <div class="status-header">
-            <h3>生成状态</h3>
+            <h3>{{ t('batch.generationStatus') }}</h3>
             <el-tag :type="getStatusType(jobInfo.status)">{{ jobInfo.status }}</el-tag>
           </div>
         </template>
         
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="任务ID">{{ jobInfo.job_id }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatTime(jobInfo.created_at) }}</el-descriptions-item>
-          <el-descriptions-item label="完成进度">
+          <el-descriptions-item :label="t('batch.jobId')">{{ jobInfo.job_id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('batch.createdAt')">{{ formatTime(jobInfo.created_at) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('batch.completionProgress')">
             <el-progress 
               :percentage="calculateProgress(jobInfo)" 
               :status="getStatusProgress(jobInfo.status)"
             />
           </el-descriptions-item>
-          <el-descriptions-item label="处理结果">
-            <span v-if="jobInfo.completed > 0">{{ jobInfo.completed }} 个成功</span>
-            <span v-if="jobInfo.failed > 0" class="failed-count">{{ jobInfo.failed }} 个失败</span>
-            <span v-if="jobInfo.completed === 0 && jobInfo.failed === 0">处理中...</span>
+          <el-descriptions-item :label="t('batch.processingResults')">
+            <span v-if="jobInfo.completed > 0">{{ jobInfo.completed }} {{ t('batch.successCount') }}</span>
+            <span v-if="jobInfo.failed > 0" class="failed-count">{{ jobInfo.failed }} {{ t('batch.failedCount') }}</span>
+            <span v-if="jobInfo.completed === 0 && jobInfo.failed === 0">{{ t('batch.processing') }}</span>
           </el-descriptions-item>
         </el-descriptions>
         
@@ -120,7 +120,7 @@
             :loading="checkingStatus"
           >
             <el-icon><Refresh /></el-icon>
-            刷新状态
+            {{ t('batch.refreshStatus') }}
           </el-button>
           <el-button 
             v-if="jobInfo.status === 'processing'" 
@@ -129,7 +129,7 @@
             @click="cancelJob"
           >
             <el-icon><Close /></el-icon>
-            取消任务
+            {{ t('batch.cancelJob') }}
           </el-button>
         </div>
       </el-card>
@@ -138,10 +138,10 @@
       <el-card v-if="results.length > 0" shadow="hover" class="results-card">
         <template #header>
           <div class="results-header">
-            <h3>生成结果</h3>
+            <h3>{{ t('batch.generationResults') }}</h3>
             <el-button type="success" size="small" @click="downloadResults">
               <el-icon><Download /></el-icon>
-              下载结果
+              {{ t('batch.downloadResults') }}
             </el-button>
           </div>
         </template>
@@ -156,7 +156,7 @@
               <h4>{{ result.title }}</h4>
               <div class="content">{{ result.content }}</div>
               <div v-if="result.images.length > 0" class="images">
-                <h5>生成图片：</h5>
+                <h5>{{ t('batch.generatedImages') }}：</h5>
                 <div class="image-list">
                   <el-image 
                     v-for="(image, imgIndex) in result.images" 
@@ -183,6 +183,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 import { Plus, Loading, Refresh, Close, Download } from '@element-plus/icons-vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -209,10 +213,10 @@ const activeNames = ref(['0'])
 
 // 平台标签映射
 const platformLabels: Record<string, string> = {
-  xiaohongshu: '小红书',
-  douyin: '抖音',
-  wechat: '微信',
-  toutiao: '头条'
+  xiaohongshu: t('batch.platform.xiaohongshu'),
+  douyin: t('batch.platform.douyin'),
+  wechat: t('batch.platform.wechat'),
+  toutiao: t('batch.platform.toutiao')
 }
 
 // 获取平台标签
@@ -262,12 +266,12 @@ const resetForm = () => {
 const generateBatch = async () => {
   // 表单验证
   if (!batchForm.topics.trim()) {
-    ElMessage.error('请输入生成主题')
+    ElMessage.error(t('batch.pleaseEnterTopics'))
     return
   }
   
   if (batchForm.platforms.length === 0) {
-    ElMessage.error('请选择目标平台')
+    ElMessage.error(t('batch.pleaseSelectPlatforms'))
     return
   }
   
@@ -278,7 +282,7 @@ const generateBatch = async () => {
     .filter(topic => topic)
     
   if (topics.length === 0) {
-    ElMessage.error('请输入有效的生成主题')
+    ElMessage.error(t('batch.pleaseEnterValidTopics'))
     return
   }
   
@@ -361,11 +365,11 @@ const getResults = async () => {
 // 取消任务
 const cancelJob = async () => {
   if (!jobInfo.value?.job_id) return
-  
+// 取消任务
   try {
-    await ElMessageBox.confirm('确定要取消这个批量生成任务吗？', '取消任务', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('batch.confirmCancelJob'), t('batch.cancelJob'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
     
@@ -416,7 +420,7 @@ const handleImageRemove = (file: any, fileList: any[]) => {
 }
 
 const handleExceed = () => {
-  ElMessage.error('最多只能上传 5 张图片')
+  ElMessage.error(t('batch.maxImagesError'))
 }
 
 const removePreviewImage = (index: number) => {
@@ -428,7 +432,7 @@ const removePreviewImage = (index: number) => {
 // 下载结果
 const downloadResults = () => {
   if (results.value.length === 0) {
-    ElMessage.warning('没有可下载的结果')
+    ElMessage.warning(t('batch.noResultsToDownload'))
     return
   }
   
@@ -438,7 +442,7 @@ const downloadResults = () => {
   const url = URL.createObjectURL(dataBlob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `batch-results-${dayjs().format('YYYYMMDD-HHmmss')}.json`
+  link.download = `${t('batch.batchResults')}-${dayjs().format('YYYYMMDD-HHmmss')}.json`
   link.click()
   URL.revokeObjectURL(url)
 }

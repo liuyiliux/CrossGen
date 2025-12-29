@@ -7,7 +7,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
           </svg>
-          <span class="brand-name">{{ $t('navigation.brand') }}</span>
+          <span class="brand-name">{{ t('navigation.brand') }}</span>
         </div>
         
         <div class="nav-right">
@@ -23,19 +23,19 @@
           >
             <el-menu-item index="/">
               <el-icon><HomeFilled /></el-icon>
-              <span>{{ $t('common.home') }}</span>
+              <span>{{ t('common.home') }}</span>
             </el-menu-item>
             <el-menu-item index="/config">
               <el-icon><Setting /></el-icon>
-              <span>{{ $t('common.config') }}</span>
+              <span>{{ t('common.config') }}</span>
             </el-menu-item>
             <el-menu-item index="/history">
               <el-icon><Clock /></el-icon>
-              <span>{{ $t('common.history') }}</span>
+              <span>{{ t('common.history') }}</span>
             </el-menu-item>
             <el-menu-item index="/batch">
               <el-icon><List /></el-icon>
-              <span>{{ $t('common.batch') }}</span>
+              <span>{{ t('common.batch') }}</span>
             </el-menu-item>
           </el-menu>
           
@@ -48,13 +48,13 @@
                 <path d="m12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1 4-10"/>
                 <path d="M12 2v20"/>
               </svg>
-              <span>{{ $t('common.language') }}</span>
+              <span>{{ t('common.language') }}</span>
               <el-icon class="el-icon--right"><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="zh-CN">{{ $t('common.chinese') }}</el-dropdown-item>
-                <el-dropdown-item command="en">{{ $t('common.english') }}</el-dropdown-item>
+                <el-dropdown-item command="zh-CN">{{ t('common.chinese') }}</el-dropdown-item>
+                <el-dropdown-item command="en">{{ t('common.english') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -72,7 +72,7 @@ import { HomeFilled, Setting, Clock, List, ArrowDown } from '@element-plus/icons
 
 const router = useRouter()
 const route = useRoute()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 // 计算当前激活的菜单项
 const activeIndex = computed(() => {
