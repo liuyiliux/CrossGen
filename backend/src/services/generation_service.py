@@ -463,85 +463,26 @@ class GenerationService:
                     page_index = 0
                     
                     for result in results:
-                        # 解析内容中的<page>标签
-                        content = result.content
+                        # 使用之前已经提取好的title、copywriting和image_prompts
+                        title = result.title.strip()
+                        copywriting = result.metadata.get("copywriting", "").strip()
+                        pages_data = result.metadata.get("pages", [])
                         
-                        # 查找第一个[标签]作为页面类型，没有则默认为content
-                        page_type = "content"
-                        type_match = re.search(r'\[(\w+)\]', content)
-                        if type_match:
-                            page_type = type_match.group(1)
-                        
-                        # 处理单页情况
-                        if "<page>" not in content:
-                            # 解析文案和图片提示词
-                            copywriting = ""
-                            image_prompt = ""
-                            
-                            # 查找文案部分
-                            copywriting_match = re.search(r'【文案】：(.*?)(?=【图片提示词】：|$)', content, re.DOTALL)
-                            if copywriting_match:
-                                copywriting = copywriting_match.group(1).strip()
-                            
-                            # 查找图片提示词部分
-                            image_prompt_match = re.search(r'【图片提示词】：(.*?)$', content, re.DOTALL)
-                            if image_prompt_match:
-                                image_prompt = image_prompt_match.group(1).strip()
-                            
-                            # 如果没有解析到图片提示词，将整个内容作为图片提示词
-                            if not image_prompt:
-                                image_prompt = content.strip()
-                            
+                        # 直接使用metadata中的pages数据构建outline_pages
+                        for page_data in pages_data:
                             outline_pages.append(Page(
                                 index=page_index,
-                                type=page_type,
-                                content=image_prompt,
-                                image_prompt=image_prompt
+                                type=page_data.get("type", "content"),
+                                content=page_data.get("content", "").strip(),
+                                image_prompt=page_data.get("image_prompt", "").strip()
                             ))
                             page_index += 1
-                        else:
-                            # 处理多页情况，分割<page>标签
-                            pages = content.split("<page>")
-                            for page_content in pages:
-                                page_content = page_content.strip()
-                                if page_content:
-                                    # 查找当前页面的类型
-                                    current_type = page_type
-                                    type_match = re.search(r'\[(\w+)\]', page_content)
-                                    if type_match:
-                                        current_type = type_match.group(1)
-                                    
-                                    # 解析文案和图片提示词
-                                    copywriting = ""
-                                    image_prompt = ""
-                                    
-                                    # 查找文案部分
-                                    copywriting_match = re.search(r'【文案】：(.*?)(?=【图片提示词】：|$)', page_content, re.DOTALL)
-                                    if copywriting_match:
-                                        copywriting = copywriting_match.group(1).strip()
-                                    
-                                    # 查找图片提示词部分
-                                    image_prompt_match = re.search(r'【图片提示词】：(.*?)$', page_content, re.DOTALL)
-                                    if image_prompt_match:
-                                        image_prompt = image_prompt_match.group(1).strip()
-                                    
-                                    # 如果没有解析到图片提示词，将整个内容作为图片提示词
-                                    if not image_prompt:
-                                        image_prompt = page_content.strip()
-                                    
-                                    outline_pages.append(Page(
-                                        index=page_index,
-                                        type=current_type,
-                                        content=image_prompt,
-                                        image_prompt=image_prompt
-                                    ))
-                                    page_index += 1
                     
                     # 更新历史记录，状态为outline_success
                     final_outline = Outline(
                         raw=result.content.strip(),
-                        title=result.title.strip(),
-                        copywriting=copywriting.strip(),  # 直接使用解析得到的文案
+                        title=title,
+                        copywriting=copywriting,
                         pages=outline_pages
                     )
                     
@@ -695,13 +636,17 @@ class GenerationService:
             return status.results
         return None
 
-    async def generate_single_image(self, prompt: str, image_provider: str, reference_images: List[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """生成单张图片
+    async def generate_single_image(self, prompt: str, image_provider: str, reference_images: List[Dict[str, Any]] = None, history_id: Optional[str] = None, page_index: Optional[int] = None, image_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        生成单张图片
         
         Args:
             prompt: 生成图片的提示词
             image_provider: 使用的图像提供商名称
             reference_images: 参考图片列表，base64编码或URL
+            history_id: 历史记录ID，用于保存图片到指定目录
+            page_index: 页面索引，用于命名图片
+            image_id: 图片ID，用于替换原有图片
             
         Returns:
             Dict[str, Any]: 生成结果
@@ -709,6 +654,9 @@ class GenerationService:
         print(f"\n=== 开始生成单张图片 ===")
         print(f"提示词: {prompt[:100]}...")
         print(f"使用提供商: {image_provider}")
+        print(f"历史记录ID: {history_id}")
+        print(f"页面索引: {page_index}")
+        print(f"图片ID: {image_id}")
         
         # 添加参考图片处理日志
         if reference_images:
@@ -779,14 +727,77 @@ class GenerationService:
 
             if image_result and image_result.get("success") and image_result.get("images"):
                 # 生成成功
-                image_url = image_result["images"][0]
-                print(f"图像生成成功，URL: {image_url}")
+                generated_image_data = image_result["images"][0]
+                print(f"图像生成成功")
+                
+                # 保存图片到本地文件夹
+                from src.utils.image_utils import process_image, replace_image
+                from pathlib import Path
+                import uuid
+                
+                image_path = None
+                
+                # 确定保存目录
+                if history_id:
+                    # 保存到历史记录对应的图片目录
+                    save_dir = Path(__file__).parent.parent.parent / "history" / f"{history_id}_images"
+                else:
+                    # 保存到默认上传目录，但添加前缀，便于清理
+                    from uuid import uuid4
+                    temp_prefix = f"temp_{uuid4().hex[:8]}"
+                    save_dir = Path(__file__).parent.parent.parent / "uploads" / temp_prefix
+                
+                # 确保保存目录存在
+                save_dir.mkdir(exist_ok=True, parents=True)
+                
+                # 生成文件名
+                if image_id:
+                    # 替换原有图片，使用相同的文件名
+                    filename = f"{image_id}.png"
+                else:
+                    # 新生成图片，生成唯一文件名
+                    filename = f"{uuid.uuid4()}.png"
+                
+                # 处理生成的图片
+                if generated_image_data.startswith("http://") or generated_image_data.startswith("https://"):
+                    # URL类型，下载保存
+                    if image_id and history_id:
+                        # 替换原有图片
+                        old_image_path = str(save_dir / filename)
+                        image_path = replace_image(old_image_path, generated_image_data)
+                    else:
+                        # 新保存图片
+                        image_path = process_image(generated_image_data, save_dir, filename)
+                elif generated_image_data.startswith("data:image/"):
+                    # Base64类型，解码保存
+                    image_path = process_image(generated_image_data, save_dir, filename)
+                else:
+                    # 其他格式，尝试处理为相对URL
+                    # 生成完整的文件路径
+                    save_path = save_dir / filename
+                    # 将生成的数据写入文件
+                    with open(save_path, 'wb') as f:
+                        if isinstance(generated_image_data, bytes):
+                            f.write(generated_image_data)
+                        else:
+                            f.write(generated_image_data.encode('utf-8'))
+                    # 返回相对URL
+                    if save_dir.name.endswith('_images'):
+                        # 历史记录图片，返回 /history/xxx_images/filename.png 格式
+                        image_path = f"/history/{save_dir.name}/{filename}"
+                    else:
+                        # 上传图片，返回 /uploads/filename.png 格式
+                        image_path = f"/uploads/{save_dir.name}/{filename}"
+                
+                # 生成成功，返回结果
+                print(f"图片保存成功，路径: {image_path}")
                 return {
                     "success": True,
-                    "image_url": image_url,
+                    "image_url": image_path,
+                    "image_id": image_id or filename.split('.')[0],
                     "provider": image_provider,
-                    "model": provider.model,
-                    "generation_time": generation_time
+                    "generation_time": generation_time,
+                    "images": image_result.get("images", [])
                 }
             else:
                 # 生成失败

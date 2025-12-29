@@ -380,13 +380,12 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
           image_prompt: page.content  // 将content复制到image_prompt
         }))
       } else {
-        // 如果没有拆分的页面信息，将整个内容作为一页
-        pages = [{
-          index: 0,
-          type: 'content',
-          content: firstResult.content,
-          image_prompt: firstResult.content  // 将content复制到image_prompt
-        }]
+        // 没有拆分的页面信息，返回失败
+        console.error('API返回成功但没有页面信息')
+        return {
+          success: false,
+          error: '生成失败：未获取到有效的页面信息'
+        }
       }
       
       // 保存历史记录ID到store

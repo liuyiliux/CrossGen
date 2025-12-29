@@ -8,6 +8,7 @@ export default {
     language: 'Language',
     chinese: 'Chinese',
     english: 'English',
+    save: 'Save',
     reset: 'Reset',
     test: 'Test',
     copy: 'Copy',
@@ -19,7 +20,15 @@ export default {
     testing: 'Testing',
     unknownStatus: 'Unknown Status',
     action: 'Action',
-    index: 'Index'
+    index: 'Index',
+    view: 'View',
+    success: 'Success',
+    failed: 'Failed',
+    processing: 'Processing',
+    cancelled: 'Cancelled',
+    edit: 'Edit',
+    loadFailed: 'Load Failed',
+    loading: 'Loading'
   },
   navigation: {
     brand: 'YiLiu'

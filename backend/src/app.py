@@ -31,6 +31,7 @@ async def lifespan(app: FastAPI):
     # 创建必要的目录
     os.makedirs("uploads", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
+    os.makedirs("history", exist_ok=True)
     
     # 初始化提供商管理器
     try:
@@ -46,6 +47,12 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"初始化提供商管理器失败: {str(e)}")
     
+    # 启动定期清理任务
+    import asyncio
+    from src.utils.cleanup_utils import start_cleanup_task
+    cleanup_task = asyncio.create_task(start_cleanup_task())
+    logger.info("定期清理任务启动")
+    
     yield
     
     # 关闭时执行
@@ -53,6 +60,13 @@ async def lifespan(app: FastAPI):
     if hasattr(app.state, 'provider_manager'):
         await app.state.provider_manager.close_all()
         logger.info("提供商管理器连接已关闭")
+    
+    # 取消定期清理任务
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        logger.info("定期清理任务已取消")
     
     logger.info("逸流后端服务关闭")
 
@@ -80,6 +94,8 @@ def create_app() -> FastAPI:
     # 静态文件服务
     if Path("uploads").exists():
         app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+    if Path("history").exists():
+        app.mount("/history", StaticFiles(directory="history"), name="history")
     
     # 注册路由
     app.include_router(health.router, prefix="/api", tags=["健康检查"])

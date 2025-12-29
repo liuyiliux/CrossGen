@@ -20,7 +20,15 @@ export default {
     testing: '测试中',
     unknownStatus: '未知状态',
     action: '操作',
-    index: '序号'
+    index: '序号',
+    view: '查看',
+    success: '成功',
+    failed: '失败',
+    processing: '处理中',
+    cancelled: '已取消',
+    edit: '编辑',
+    loadFailed: '加载失败',
+    loading: '加载中'
   },
   navigation: {
     brand: '逸流'

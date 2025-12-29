@@ -4,6 +4,16 @@
       <div>
         <h1 class="page-title">编辑大纲</h1>
         <p class="page-subtitle">调整页面顺序，修改文案，打造完美内容</p>
+        
+        <!-- 整体生成状态提示 -->
+        <div v-if="store.progress.status === 'done' && store.images.length > 0" class="overall-status success">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>所有图片生成成功！</span>
+        </div>
+        
         <!-- 主题编辑输入框容器，使用两列布局 -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; max-width: 1200px;">
           <!-- 生成主题输入框 -->
@@ -376,6 +386,8 @@ onMounted(async () => {
   // 加载平台配置
   await loadPlatformConfig()
   
+  // 检查是否有编辑的历史记录ID
+  const editHistoryId = localStorage.getItem('editHistoryId')
   // 检查是否有复制的历史记录
   const copiedHistory = localStorage.getItem('copiedHistory')
   if (copiedHistory) {
@@ -398,8 +410,16 @@ onMounted(async () => {
         if (historyData.image_model) {
           store.imageProviderId = historyData.image_model
         }
-        // 清空recordId，确保复制的记录生成新的历史记录
-        store.recordId = null
+        // 根据是否是编辑模式设置recordId
+        if (editHistoryId) {
+          // 编辑模式，使用原有的历史记录ID
+          store.recordId = editHistoryId
+          // 清空编辑模式标记
+          localStorage.removeItem('editHistoryId')
+        } else {
+          // 复制模式，创建新记录
+          store.recordId = null
+        }
       }
     } catch (e) {
       console.error('解析复制的历史记录失败:', e)
@@ -566,18 +586,32 @@ const generateSingleImage = async (index: number) => {
     console.log('API响应:', response.data)
     
     if (response.data.success) {
-      // 更新图片状态
-      store.images[index].status = 'done'
-      store.images[index].url = response.data.image_url
-      ElMessage.success(`第${index + 1}页图片生成成功`)
-      console.log('生成成功，图片URL:', response.data.image_url)
-    } else {
-      // 处理生成失败
-      store.images[index].status = 'error'
-      store.images[index].error = response.data.error || '生成失败'
-      ElMessage.error(`第${index + 1}页图片生成失败: ${response.data.error || '生成失败'}`)
-      console.error('生成失败:', response.data.error)
-    }
+        // 更新图片状态
+        store.images[index].status = 'done'
+        // 处理图片URL，确保格式正确并添加代理
+        const processedUrl = store.processImageUrl(response.data.image_url)
+        store.images[index].url = processedUrl
+        ElMessage.success(`第${index + 1}页图片生成成功`)
+        console.log('生成成功，图片URL:', response.data.image_url)
+        console.log('处理后图片URL:', processedUrl)
+        
+        // 检查所有图片是否都已完成
+        const allImagesDone = store.outline.pages.every(page => {
+          const image = store.images[page.index]
+          return image && image.status === 'done' && image.url
+        })
+        
+        if (allImagesDone) {
+          // 所有图片都已完成，显示整体成功状态
+          ElMessage.success('所有图片生成成功！')
+        }
+      } else {
+        // 处理生成失败
+        store.images[index].status = 'error'
+        store.images[index].error = response.data.error || '生成失败'
+        ElMessage.error(`第${index + 1}页图片生成失败: ${response.data.error || '生成失败'}`)
+        console.error('生成失败:', response.data.error)
+      }
   } catch (error: any) {
     // 处理网络错误
     if (error.name === 'AbortError') {
@@ -1059,6 +1093,36 @@ const generateSingleVideo = (index: number) => {
   font-weight: 300;
   margin-bottom: 12px;
   line-height: 1;
+}
+
+/* 整体生成状态 */
+.overall-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+.overall-status.success {
+  background: #F6FFED;
+  color: #52C41A;
+  border: 1px solid #B7EB8F;
+}
+
+.overall-status.processing {
+  background: #E6F7FF;
+  color: #1890FF;
+  border: 1px solid #91D5FF;
+}
+
+.overall-status.error {
+  background: #FFF1F0;
+  color: #FF4D4F;
+  border: 1px solid #FFCCC7;
 }
 
 /* 页面头部 */

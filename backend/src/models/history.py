@@ -2,6 +2,7 @@
 历史记录数据模型
 """
 
+import uuid
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -57,6 +58,7 @@ class Outline(BaseModel):
 
 class GeneratedImage(BaseModel):
     """生成图片数据模型"""
+    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), description="图片唯一标识符")
     index: int
     url: str
     status: str

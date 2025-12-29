@@ -185,6 +185,7 @@ async def generate_single_image(
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象
             generated_image = GeneratedImage(
+                id=result.get("image_id"),  # 使用生成服务返回的image_id
                 index=page_index,
                 url=result.get("image_url"),
                 status="success"

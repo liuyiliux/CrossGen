@@ -450,13 +450,24 @@ export const useGeneratorStore = defineStore('generator', {
       // 确保URL是完整的绝对URL
       let processedUrl = url
       
+      // 如果是base64编码的图片，直接返回，不添加任何前缀
+      if (processedUrl.startsWith('data:image/')) {
+        return processedUrl
+      }
+      
       // 如果是阿里云百炼的URL，添加代理前缀
       if (processedUrl.includes('dashscope.aliyuncs.com')) {
         // 使用本地代理，解决跨域问题
         processedUrl = processedUrl.replace('https://dashscope.aliyuncs.com', '/image-proxy')
       } else if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
-        // 如果不是完整URL，添加https前缀
-        processedUrl = `https://${processedUrl}`
+        // 如果是相对路径，指向后端静态文件服务
+        if (processedUrl.startsWith('/')) {
+          // 是相对路径，添加后端服务器地址
+          processedUrl = `http://localhost:8000${processedUrl}`
+        } else {
+          // 如果不是完整URL，添加https前缀
+          processedUrl = `https://${processedUrl}`
+        }
       }
       
       return processedUrl
@@ -477,6 +488,19 @@ export const useGeneratorStore = defineStore('generator', {
       }
       if (status === 'done') {
         this.progress.current++
+        
+        // 检查所有图片是否都已完成
+        const allDone = this.outline.pages.every(page => {
+          const img = this.images.find(img => img.index === page.index)
+          return img && img.status === 'done' && img.url
+        })
+        
+        if (allDone) {
+          this.progress.status = 'done'
+        }
+      } else if (status === 'generating' || status === 'retrying') {
+        // 如果有图片正在生成或重试，设置进度状态为生成中
+        this.progress.status = 'generating'
       }
     },
 
@@ -593,6 +617,21 @@ export const useGeneratorStore = defineStore('generator', {
   },
 
   getters: {
+    /**
+     * 获取所有图片是否都已成功生成
+     */
+    allImagesDone: (state) => {
+      // 确保有大纲页面和对应的图片
+      if (state.outline.pages.length === 0 || state.images.length === 0) {
+        return false
+      }
+      // 检查所有大纲页面是否都有对应的成功图片
+      return state.outline.pages.every(page => {
+        const image = state.images.find(img => img.index === page.index)
+        return image && image.status === 'done' && image.url
+      })
+    },
+
     /**
      * 获取是否有生成结果
      */

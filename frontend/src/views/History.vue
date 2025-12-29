@@ -272,8 +272,8 @@
                         
                         <!-- 图片 -->
                         <el-image
-                          :src="image.url || ''"
-                          :preview-src-list="selectedHistory.images.filter(img => img.url).map(img => img.url)"
+                          :src="store.processImageUrl(image.url) || ''"
+                          :preview-src-list="selectedHistory.images.filter(img => img.url).map(img => store.processImageUrl(img.url))"
                           fit="cover"
                           class="result-image"
                           lazy
@@ -324,8 +324,8 @@
                         <el-image
                           v-for="(image, imgIndex) in result.images"
                           :key="imgIndex"
-                          :src="image"
-                          :preview-src-list="result.images"
+                          :src="store.processImageUrl(image)"
+                          :preview-src-list="result.images.map(img => store.processImageUrl(img))"
                           fit="cover"
                           class="result-image"
                           lazy
@@ -367,6 +367,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { useGeneratorStore } from '../stores/generator'
 
 // 国际化
 const { t } = useI18n()
@@ -378,10 +379,14 @@ import {
   Delete,
   Download,
   View,
-  CopyDocument
+  CopyDocument,
+  EditPen
 } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import axios from 'axios'
+
+// 创建store实例
+const store = useGeneratorStore()
 
 // 搜索和筛选
 const searchForm = reactive({
