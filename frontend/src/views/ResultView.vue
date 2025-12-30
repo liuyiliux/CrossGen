@@ -25,10 +25,10 @@
             style="position: relative; aspect-ratio: 3/4; overflow: hidden; cursor: pointer;" 
           >
             <el-image
-              :src="image.url"
+              :src="store.processImageUrl(image.url)"
               :alt="`第 ${image.index + 1} 页`"
               style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
-              :preview-src-list="store.images.filter(img => img.url).map(img => img.url)"
+              :preview-src-list="store.images.filter(img => img.url).map(img => store.processImageUrl(img.url))"
               :initial-index="image.index"
               @error="onImageError($event)"
             />
