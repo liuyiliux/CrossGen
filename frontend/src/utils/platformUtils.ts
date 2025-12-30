@@ -85,7 +85,8 @@ export const getPlatformLabel = (platform: string | null | undefined): string =>
  * @param platform 平台英文名称
  * @returns Element Plus 标签类型
  */
-export const getPlatformType = (platform: string): string => {
+export const getPlatformType = (platform: string | null | undefined): string => {
+  if (!platform) return 'info'
   return platformTypes[platform] || 'info'
 }
 

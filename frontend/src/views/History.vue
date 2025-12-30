@@ -137,11 +137,15 @@
           </el-table-column>
           
           <!-- 操作 -->
-          <el-table-column :label="t('common.action')" width="200" fixed="right">
+          <el-table-column :label="t('common.action')" width="250" fixed="right">
             <template #default="scope">
               <el-button type="primary" size="small" @click="viewHistory(scope.row)" :disabled="false">
                 <el-icon><View /></el-icon>
                 {{ t('common.view') }}
+              </el-button>
+              <el-button type="success" size="small" @click="editHistory(scope.row)" :disabled="!scope.row.outline">
+                <el-icon><EditPen /></el-icon>
+                {{ t('common.edit') }}
               </el-button>
               <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
                 <el-icon><CopyDocument /></el-icon>
@@ -273,7 +277,7 @@
                         <!-- 图片 -->
                         <el-image
                           :src="store.processImageUrl(image.url) || ''"
-                          :preview-src-list="selectedHistory.images.filter(img => img.url).map(img => store.processImageUrl(img.url))"
+                          :preview-src-list="selectedHistory.images.filter((img: any) => img.url).map((img: any) => store.processImageUrl(img.url))"
                           fit="cover"
                           class="result-image"
                           lazy
@@ -325,7 +329,7 @@
                           v-for="(image, imgIndex) in result.images"
                           :key="imgIndex"
                           :src="store.processImageUrl(image)"
-                          :preview-src-list="result.images.map(img => store.processImageUrl(img))"
+                          :preview-src-list="result.images.map((img: any) => store.processImageUrl(img))"
                           fit="cover"
                           class="result-image"
                           lazy
@@ -463,7 +467,6 @@ onMounted(() => {
 })
 
 // 导入共享平台映射工具
-import { ref, onMounted } from 'vue'
 import { getPlatformLabel, getPlatformType, getPlatformOptions, loadPlatformConfig } from '../utils/platformUtils'
 
 // 平台选项
@@ -677,6 +680,18 @@ const copyAndEdit = (history: any) => {
   window.location.href = '/outline'
 }
 
+// 编辑历史记录
+const editHistory = (history: any) => {
+  if (!history.outline) {
+    ElMessage.warning(t('history.noOutlineToCopy'))
+    return
+  }
+  // 保存历史记录ID和内容到本地存储
+  localStorage.setItem('editHistoryId', history.id)
+  localStorage.setItem('copiedHistory', JSON.stringify(history))
+  // 跳转到大纲页
+  window.location.href = '/outline'
+}
 
 </script>
 

@@ -365,13 +365,13 @@ class GenerationService:
                             copywriting = ""
                             image_prompts = []
                             
-                            # 查找总标题
-                            title_match = re.search(r'【标题】：(.*?)\n(?=【文案】：|$)', generated_text, re.DOTALL)
+                            # 查找总标题 - 使用更灵活的正则表达式，不依赖换行符
+                            title_match = re.search(r'【标题】：(.*?)(?=【文案】：|【图片提示词】：|$)', generated_text, re.DOTALL)
                             if title_match:
                                 title = title_match.group(1).strip()
                             
-                            # 查找总文案
-                            copywriting_match = re.search(r'【文案】：(.*?)\n(?=【图片提示词】：|$)', generated_text, re.DOTALL)
+                            # 查找总文案 - 使用更灵活的正则表达式，不依赖换行符
+                            copywriting_match = re.search(r'【文案】：(.*?)(?=【标题】：|【图片提示词】：|$)', generated_text, re.DOTALL)
                             if copywriting_match:
                                 copywriting = copywriting_match.group(1).strip()
                             
