@@ -1,0 +1,167 @@
+// 小红书风格设计变量
+// 基于 frontend-design skill 指导：避免通用美学，创造独特视觉语言
+
+:root {
+  // === 颜色系统 ===
+  // 主品牌色：小红书风格的红色系
+  --xhs-primary: #FF2442;
+  --xhs-primary-light: #FF4D6A;
+  --xhs-primary-dark: #D91B35;
+  
+  // 温暖粉色系（营造亲和感）
+  --xhs-pink-1: #FFE5EC;
+  --xhs-pink-2: #FFB3C1;
+  --xhs-pink-3: #FF7AA2;
+  --xhs-pink-4: #FF4D80;
+  
+  // 渐变配色
+  --xhs-gradient-start: #FF2442;
+  --xhs-gradient-end: #FF6B9D;
+  
+  // 背景色系
+  --xhs-bg-primary: #FAFAFA;
+  --xhs-bg-secondary: #F5F5F5;
+  --xhs-bg-elevated: #FFFFFF;
+  
+  // 文字颜色
+  --xhs-text-primary: #1A1A1A;
+  --xhs-text-secondary: #5A5A5A;
+  --xhs-text-tertiary: #8A8A8A;
+  
+  // 功能色
+  --xhs-success: #52C41A;
+  --xhs-warning: #FAAD14;
+  --xhs-error: #FF4D4F;
+  --xhs-info: #1890FF;
+  
+  // === 圆角系统 ===
+  // 大圆角营造友好感
+  --xhs-radius-xs: 4px;
+  --xhs-radius-sm: 8px;
+  --xhs-radius-md: 12px;
+  --xhs-radius-lg: 16px;
+  --xhs-radius-xl: 20px;
+  --xhs-radius-2xl: 24px;
+  --xhs-radius-full: 9999px;
+  
+  // === 阴影系统 ===
+  // 多层阴影创造深度感
+  --xhs-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --xhs-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --xhs-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --xhs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --xhs-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.12);
+  
+  // 悬浮阴影（带颜色）
+  --xhs-shadow-hover: 0 8px 24px rgba(255, 36, 66, 0.20);
+  --xhs-shadow-active: 0 4px 12px rgba(255, 36, 66, 0.15);
+  
+  // === 间距系统 ===
+  --xhs-space-xs: 4px;
+  --xhs-space-sm: 8px;
+  --xhs-space-md: 16px;
+  --xhs-space-lg: 24px;
+  --xhs-space-xl: 32px;
+  --xhs-space-2xl: 48px;
+  
+  // === 字体系统 ===
+  // 避免通用字体，选择有特色的字体栈
+  --xhs-font-family-display: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, sans-serif;
+  --xhs-font-family-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  
+  --xhs-font-size-xs: 12px;
+  --xhs-font-size-sm: 14px;
+  --xhs-font-size-base: 16px;
+  --xhs-font-size-lg: 18px;
+  --xhs-font-size-xl: 20px;
+  --xhs-font-size-2xl: 24px;
+  --xhs-font-size-3xl: 32px;
+  
+  --xhs-font-weight-regular: 400;
+  --xhs-font-weight-medium: 500;
+  --xhs-font-weight-semibold: 600;
+  --xhs-font-weight-bold: 700;
+  
+  // === 动画 ===
+  --xhs-duration-fast: 0.2s;
+  --xhs-duration-normal: 0.3s;
+  --xhs-duration-slow: 0.5s;
+  
+  --xhs-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --xhs-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --xhs-easing-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  // === 过渡 ===
+  --xhs-transition-default: all var(--xhs-duration-normal) var(--xhs-easing-default);
+  --xhs-transition-bounce: all var(--xhs-duration-normal) var(--xhs-easing-bounce);
+  --xhs-transition-elastic: all var(--xhs-duration-normal) var(--xhs-easing-elastic);
+}
+
+// 暗色主题
+html.dark {
+  --xhs-bg-primary: #121212;
+  --xhs-bg-secondary: #1E1E1E;
+  --xhs-bg-elevated: #2D2D2D;
+  
+  --xhs-text-primary: #FFFFFF;
+  --xhs-text-secondary: #A0A0A0;
+  --xhs-text-tertiary: #6A6A6A;
+  
+  --xhs-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --xhs-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --xhs-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --xhs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+// === 渐变定义 ===
+@mixin xhs-gradient-primary {
+  background: linear-gradient(135deg, var(--xhs-gradient-start) 0%, var(--xhs-gradient-end) 100%);
+}
+
+@mixin xhs-gradient-warm {
+  background: linear-gradient(135deg, #FFB3C1 0%, #FF7AA2 50%, #FF4D80 100%);
+}
+
+@mixin xhs-gradient-soft {
+  background: linear-gradient(180deg, #FFE5EC 0%, #FFFFFF 100%);
+}
+
+// === 工具类 ===
+.text-gradient-primary {
+  @include xhs-gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-elevated {
+  background: var(--xhs-bg-elevated);
+  border-radius: var(--xhs-radius-xl);
+  box-shadow: var(--xhs-shadow-md);
+  transition: var(--xhs-transition-default);
+  
+  &:hover {
+    box-shadow: var(--xhs-shadow-lg);
+    transform: translateY(-2px);
+  }
+}
+
+.button-primary {
+  @include xhs-gradient-primary;
+  border: none;
+  border-radius: var(--xhs-radius-lg);
+  color: white;
+  font-weight: var(--xhs-font-weight-semibold);
+  box-shadow: var(--xhs-shadow-sm);
+  transition: var(--xhs-transition-default);
+  
+  &:hover {
+    box-shadow: var(--xhs-shadow-hover);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    box-shadow: var(--xhs-shadow-active);
+    transform: translateY(0);
+  }
+}

@@ -1,27 +1,134 @@
-// Element Plus 变量覆盖
+// 逸流设计系统 - 小红书风格
+// Design Tokens: Xiaohongshu-Inspired Aesthetic
+// ============================================
+
+@use './design-tokens.scss' as *;
+
+// ============================================
+// Element Plus 变量覆盖 - 小红书风格主题
+// Element Plus Theme Override: Xiaohongshu Style
+// ============================================
+
 :root {
-  --el-color-primary: #409eff;
-  --el-color-success: #67c23a;
-  --el-color-warning: #e6a23c;
-  --el-color-danger: #f56c6c;
-  --el-color-info: #909399;
-  
-  --el-bg-color-page: #f5f7fa;
-  --el-bg-color-overlay: #ffffff;
-  
-  --el-text-color-primary: #303133;
-  --el-text-color-regular: #606266;
-  --el-text-color-secondary: #909399;
-  --el-text-color-placeholder: #c0c4cc;
+  // 品牌色系 / Brand Colors
+  --el-color-primary: #FF2442;
+  --el-color-primary-light-3: #FFE5E9;
+  --el-color-primary-light-5: #FFB3BD;
+  --el-color-primary-light-7: #FF808F;
+  --el-color-primary-light-8: #FF4D66;
+  --el-color-primary-light-9: #FF1A3D;
+  --el-color-primary-dark-2: #E01A35;
+
+  // 功能色系 / Functional Colors
+  --el-color-success: #00C853;
+  --el-color-success-light-3: #E8F5E9;
+  --el-color-success-light-5: #81C784;
+  --el-color-success-light-7: #4CAF50;
+  --el-color-success-light-8: #388E3C;
+  --el-color-success-light-9: #2E7D32;
+
+  --el-color-warning: #FFA000;
+  --el-color-warning-light-3: #FFF8E1;
+  --el-color-warning-light-5: #FFD54F;
+  --el-color-warning-light-7: #FFB74D;
+  --el-color-warning-light-8: #FF9800;
+  --el-color-warning-light-9: #F57C00;
+
+  --el-color-danger: #FF2442;
+  --el-color-danger-light-3: #FFEBEE;
+  --el-color-danger-light-5: #EF9A9A;
+  --el-color-danger-light-7: #EF5350;
+  --el-color-danger-light-8: #F44336;
+  --el-color-danger-light-9: #E53935;
+
+  --el-color-info: #2196F3;
+  --el-color-info-light-3: #E3F2FD;
+  --el-color-info-light-5: #90CAF9;
+  --el-color-info-light-7: #42A5F5;
+  --el-color-info-light-8: #2196F3;
+  --el-color-info-light-9: #1E88E5;
+
+  // 背景色系 / Background Colors
+  --el-bg-color-page: #F8F9FA;
+  --el-bg-color: #FFFFFF;
+  --el-bg-color-overlay: #FFFFFF;
+
+  // 文本色系 / Text Colors
+  --el-text-color-primary: #1A1A1A;
+  --el-text-color-regular: #5A5A5A;
+  --el-text-color-secondary: #999999;
+  --el-text-color-placeholder: #CCCCCC;
+
+  // 边框色系 / Border Colors
+  --el-border-color: #E8E8E8;
+  --el-border-color-light: #F0F0F0;
+  --el-border-color-lighter: #F5F5F5;
+  --el-border-color-extra-light: #FAFAFA;
+  --el-border-color-dark: #D4D4D4D;
+  --el-border-color-darker: #C0C0C0;
+
+  // 填充色系 / Fill Colors
+  --el-fill-color: #F8F9FA;
+  --el-fill-color-light: #FFFFFF;
+  --el-fill-color-lighter: #FAFAFA;
+  --el-fill-color-extra-light: #FCFCFC;
+  --el-fill-color-dark: #F0F2F5;
+  --el-fill-color-darker: #E8E8E8;
+  --el-fill-color-blank: #FFFFFF;
+
+  // 圆角系统 / Border Radius
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: 20px;
+  --el-border-radius-circle: 100%;
+
+  // 字体系统 / Typography
+  --el-font-size-base: 14px;
+  --el-font-size-small: 12px;
+  --el-font-size-large: 16px;
+  --el-font-size-extra-large: 18px;
+
+  // 阴影系统 / Box Shadows
+  --el-box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+  --el-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --el-box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --el-box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.12);
+
+  // 过渡动画 / Transitions
+  --el-transition-duration: 0.25s;
+  --el-transition-duration-fast: 0.15s;
 }
 
-// 暗色主题变量
-html.dark {
-  --el-bg-color-page: #1a1a1a;
-  --el-bg-color-overlay: #2d2d2d;
-  
-  --el-text-color-primary: #e5eaf3;
-  --el-text-color-regular: #cfd3dc;
-  --el-text-color-secondary: #a3a6ad;
-  --el-text-color-placeholder: #8d9095;
+// 🌙 暗色主题 / Dark Mode
+// ------------------------------------------------
+
+.dark {
+  --el-bg-color-page: #1A1A1A;
+  --el-bg-color: #2D2D2D;
+  --el-bg-color-overlay: #2D2D2D;
+
+  --el-text-color-primary: #FFFFFF;
+  --el-text-color-regular: #E5E5E5;
+  --el-text-color-secondary: #A3A3A3A;
+  --el-text-color-placeholder: #6D6D6D;
+
+  --el-border-color: #3D3D3D;
+  --el-border-color-light: #4D4D4D;
+  --el-border-color-lighter: #5D5D5D;
+  --el-border-color-extra-light: #6D6D6D;
+  --el-border-color-dark: #2D2D2D;
+  --el-border-color-darker: #1D1D1D;
+
+  --el-fill-color: #2D2D2D;
+  --el-fill-color-light: #3D3D3D;
+  --el-fill-color-lighter: #4D4D4D;
+  --el-fill-color-extra-light: #5D5D5D;
+  --el-fill-color-dark: #1D1D1D;
+  --el-fill-color-darker: #0D0D0D;
+  --el-fill-color-blank: #2D2D2D;
+
+  --el-box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.16);
+  --el-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
+  --el-box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.16);
+  --el-box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.24);
 }

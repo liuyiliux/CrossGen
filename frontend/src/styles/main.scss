@@ -1,6 +1,51 @@
-// 全局样式文件
+// ============================================
+// 逸流全局样式 / Yiliu Global Styles
+// 小红书风格设计系统 - Xiaohongshu-Inspired Aesthetic
+// ============================================
 
-// 通用工具类
+// 引入设计令牌
+@use './variables.scss' as *;
+
+// ============================================
+// 全局重置 / Global Reset
+// ============================================
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--xhs-font-body);
+  font-size: var(--xhs-text-base);
+  font-weight: var(--xhs-font-weight-regular);
+  line-height: var(--xhs-leading-normal);
+  color: var(--xhs-text-primary);
+  background: var(--xhs-bg-primary);
+  background-image: var(--xhs-gradient-bg-1);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
+}
+
+// ============================================
+// 通用工具类 / Utility Classes
+// ============================================
+
 .flex {
   display: flex;
 }
@@ -42,37 +87,112 @@
   margin: 16px;
 }
 
-// 自定义组件样式
+// ============================================
+// 自定义组件样式 / Custom Components
+// ============================================
+
+// 页面容器 / Page Container
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--xhs-space-lg);
 }
 
-.card-container {
-  background: var(--el-bg-color-overlay);
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  margin-bottom: 24px;
+// 品牌卡片 / Brand Card
+.xhs-card {
+  background: var(--xhs-bg-primary);
+  border-radius: var(--xhs-radius-xl);
+  box-shadow: var(--xhs-shadow-md);
+  padding: var(--xhs-space-lg);
+  margin-bottom: var(--xhs-space-lg);
+  transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--xhs-shadow-lg);
+  }
 }
 
-// 响应式设计
+// 品牌按钮 / Brand Button
+.xhs-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  border-radius: var(--xhs-radius-button);
+  background: var(--xhs-gradient-button);
+  color: #FFFFFF;
+  font-size: var(--xhs-text-md);
+  font-weight: var(--xhs-font-weight-semibold);
+  border: none;
+  cursor: pointer;
+  transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+  box-shadow: 0 2px 8px rgba(255, 36, 66, 0.24);
+
+  &:hover {
+    background: var(--xhs-gradient-button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 36, 66, 0.32);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: var(--xhs-shadow-active);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// 品牌标签 / Brand Tag
+.xhs-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--xhs-radius-lg);
+  font-size: var(--xhs-text-xs);
+  font-weight: var(--xhs-font-weight-semibold);
+  background: var(--xhs-primary-soft);
+  color: var(--xhs-primary);
+}
+
+// 渐变文字 / Gradient Text
+.xhs-gradient-text {
+  background: var(--xhs-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// ============================================
+// 响应式设计 / Responsive Design
+// ============================================
+
 @media (max-width: 768px) {
-  .page-container {
-    padding: 16px;
+  html {
+    font-size: 13px;
   }
-  
-  .card-container {
-    padding: 16px;
-    margin-bottom: 16px;
+
+  .page-container {
+    padding: var(--xhs-space-md);
+  }
+
+  .xhs-card {
+    padding: var(--xhs-space-md);
+    margin-bottom: var(--xhs-space-md);
   }
 }
 
-// 动画效果
+// ============================================
+// 动画效果 / Animations
+// ============================================
+
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--xhs-duration-base) var(--xhs-ease-default);
 }
 
 .fade-enter-from,
@@ -80,21 +200,82 @@
   opacity: 0;
 }
 
-// 滚动条样式
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all var(--xhs-duration-slow) var(--xhs-ease-default);
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+// 闪烁动画 / Pulse Animation
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.xhs-pulse {
+  animation: pulse 2s var(--xhs-ease-default) infinite;
+}
+
+// 浮动动画 / Float Animation
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.xhs-float {
+  animation: float 3s var(--xhs-ease-default) infinite;
+}
+
+// ============================================
+// 滚动条样式 / Scrollbar Styles
+// ============================================
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--el-bg-color-page);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--el-text-color-secondary);
-  border-radius: 3px;
+  background: var(--xhs-text-tertiary);
+  border-radius: var(--xhs-radius-sm);
+  transition: background var(--xhs-duration-fast) var(--xhs-ease-default);
+
+  &:hover {
+    background: var(--xhs-text-secondary);
+  }
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--el-text-color-regular);
+// ============================================
+// 选择样式 / Selection Styles
+// ============================================
+
+::selection {
+  background: var(--xhs-primary-soft);
+  color: var(--xhs-primary);
+}
+
+::-moz-selection {
+  background: var(--xhs-primary-soft);
+  color: var(--xhs-primary);
 }

@@ -1,0 +1,544 @@
+// Element Plus 主题覆盖 - 小红书风格
+// Element Plus Theme Override - Xiaohongshu-Inspired Customization
+
+// ============================================
+// 按钮组件 / Button Component
+// ============================================
+
+.el-button {
+  border-radius: var(--xhs-radius-lg) !important;
+  font-weight: var(--xhs-font-weight-semibold) !important;
+  transition: var(--xhs-transition-default) !important;
+  box-shadow: var(--xhs-shadow-sm) !important;
+  border: 2px solid transparent !important;
+  
+  &:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: var(--xhs-shadow-md) !important;
+  }
+  
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// 主按钮 - 柔和红粉渐变
+.el-button--primary {
+  background: linear-gradient(135deg, #E6203A 0%, #E85D7C 100%) !important;
+  border-color: transparent !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #FF2A48 0%, #F06D8F 100%) !important;
+    box-shadow: 0 4px 16px rgba(230, 32, 58, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  &:active {
+    box-shadow: 0 2px 8px rgba(230, 32, 58, 0.18) !important;
+    transform: translateY(0) !important;
+  }
+}
+
+// 成功按钮 - 柔和翠绿渐变
+.el-button--success {
+  background: linear-gradient(135deg, #34A853 0%, #57BB8A 100%) !important;
+  border-color: transparent !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%) !important;
+    box-shadow: 0 4px 16px rgba(52, 168, 83, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// 警告按钮 - 柔和橙金渐变
+.el-button--warning {
+  background: linear-gradient(135deg, #F57C00 0%, #FFB74D 100%) !important;
+  border-color: transparent !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #EF6C00 0%, #FF9800 100%) !important;
+    box-shadow: 0 4px 16px rgba(245, 124, 0, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// 危险按钮 - 柔和珊瑚红渐变
+.el-button--danger {
+  background: linear-gradient(135deg, #E53935 0%, #EF5350 100%) !important;
+  border-color: transparent !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #C62828 0%, #E53935 100%) !important;
+    box-shadow: 0 4px 16px rgba(229, 57, 53, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// 信息按钮 - 柔和天蓝渐变
+.el-button--info {
+  background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%) !important;
+  border-color: transparent !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #1565C0 0%, #2196F3 100%) !important;
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+// ============================================
+// 输入框组件 / Input Component
+// ============================================
+
+.el-input__wrapper {
+  border-radius: var(--xhs-radius-lg) !important;
+  box-shadow: var(--xhs-shadow-inset) !important;
+  transition: var(--xhs-transition-default) !important;
+  border: 2px solid var(--xhs-bg-tertiary) !important;
+  background: var(--xhs-bg-primary) !important;
+  
+  &:hover {
+    border-color: var(--xhs-primary) !important;
+  }
+  
+  &.is-focus {
+    border-color: var(--xhs-primary) !important;
+    box-shadow: 
+      0 0 0 3px rgba(255, 36, 66, 0.1),
+      var(--xhs-shadow-inset) !important;
+  }
+}
+
+.el-input__inner {
+  font-size: var(--xhs-text-base) !important;
+  font-family: var(--xhs-font-body) !important;
+  color: var(--xhs-text-primary) !important;
+  
+  &::placeholder {
+    color: var(--xhs-text-placeholder) !important;
+    font-weight: 300 !important;
+  }
+}
+
+// 大尺寸输入框
+.el-input--large {
+  .el-input__wrapper {
+    padding: var(--xhs-space-sm) !important;
+  }
+  
+  .el-input__inner {
+    font-size: var(--xhs-text-md) !important;
+  }
+}
+
+// ============================================
+// 文本域组件 / Textarea Component
+// ============================================
+
+.el-textarea__inner {
+  border-radius: var(--xhs-radius-lg) !important;
+  border: 2px solid var(--xhs-bg-tertiary) !important;
+  box-shadow: var(--xhs-shadow-inset) !important;
+  background: linear-gradient(145deg, #FAFAFA 0%, #FFFFFF 100%) !important;
+  font-size: var(--xhs-text-base) !important;
+  font-family: var(--xhs-font-body) !important;
+  color: var(--xhs-text-primary) !important;
+  line-height: var(--xhs-leading-relaxed) !important;
+  transition: var(--xhs-transition-default) !important;
+  
+  &:focus {
+    border-color: var(--xhs-primary) !important;
+    box-shadow: 
+      0 0 0 3px rgba(255, 36, 66, 0.1),
+      var(--xhs-shadow-inset) !important;
+  }
+  
+  &::placeholder {
+    color: var(--xhs-text-placeholder) !important;
+    font-style: italic !important;
+  }
+}
+
+// ============================================
+// 选择器组件 / Select Component
+// ============================================
+
+.el-select {
+  .el-input__wrapper {
+    border-radius: var(--xhs-radius-lg) !important;
+    cursor: pointer !important;
+    
+    &:hover {
+      border-color: var(--xhs-primary) !important;
+    }
+  }
+}
+
+.el-select-dropdown {
+  border: none !important;
+  border-radius: var(--xhs-radius-lg) !important;
+  box-shadow: var(--xhs-shadow-xl) !important;
+  padding: var(--xhs-space-sm) !important;
+  background: white !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.el-select-dropdown__item {
+  border-radius: var(--xhs-radius-md) !important;
+  margin: 4px 0 !important;
+  padding: 10px 16px !important;
+  transition: var(--xhs-duration-fast) !important;
+  
+  &:hover {
+    background: var(--xhs-primary-soft) !important;
+    color: var(--xhs-primary) !important;
+    transform: translateX(4px);
+  }
+  
+  &.is-selected {
+    background: var(--xhs-gradient-primary) !important;
+    color: white !important;
+    font-weight: var(--xhs-font-weight-semibold) !important;
+  }
+}
+
+// ============================================
+// 卡片组件 / Card Component
+// ============================================
+
+.el-card {
+  border: none !important;
+  border-radius: var(--xhs-radius-2xl) !important;
+  box-shadow: 
+    var(--xhs-shadow-md),
+    0 0 0 1px rgba(255, 36, 66, 0.02) !important;
+  background: linear-gradient(145deg, #FFFFFF 0%, #FAFAFA 100%) !important;
+  overflow: hidden !important;
+  
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    border-radius: var(--xhs-radius-2xl) !important;
+    padding: 2px !important;
+    background: linear-gradient(135deg, rgba(255, 36, 66, 0.08) 0%, rgba(255, 107, 157, 0.04) 100%) !important;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
+    -webkit-mask-composite: xor !important;
+    mask-composite: exclude !important;
+    pointer-events: none !important;
+  }
+  
+  &:hover {
+    box-shadow: 
+      var(--xhs-shadow-lg),
+      0 0 0 1px rgba(255, 36, 66, 0.06) !important;
+    transform: translateY(-2px) !important;
+  }
+}
+
+.el-card__header {
+  border-bottom: 2px solid var(--xhs-bg-tertiary) !important;
+  padding: var(--xhs-space-lg) !important;
+  font-weight: var(--xhs-font-weight-semibold) !important;
+  font-size: var(--xhs-text-lg) !important;
+}
+
+.el-card__body {
+  padding: var(--xhs-space-lg) !important;
+}
+
+// ============================================
+// 标签组件 / Tag Component
+// ============================================
+
+.el-tag {
+  border-radius: var(--xhs-radius-button) !important;
+  font-weight: var(--xhs-font-weight-semibold) !important;
+  border: none !important;
+  padding: 6px 16px !important;
+  font-size: var(--xhs-text-sm) !important;
+  box-shadow: var(--xhs-shadow-xs) !important;
+}
+
+.el-tag--primary {
+  background: linear-gradient(135deg, #E6203A 0%, #E85D7C 100%) !important;
+  color: white !important;
+}
+
+.el-tag--success {
+  background: linear-gradient(135deg, #34A853 0%, #57BB8A 100%) !important;
+  color: white !important;
+}
+
+.el-tag--warning {
+  background: linear-gradient(135deg, #F57C00 0%, #FFB74D 100%) !important;
+  color: white !important;
+}
+
+.el-tag--danger {
+  background: linear-gradient(135deg, #E53935 0%, #EF5350 100%) !important;
+  color: white !important;
+}
+
+.el-tag--info {
+  background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%) !important;
+  color: white !important;
+}
+
+// ============================================
+// 对话框组件 / Dialog Component
+// ============================================
+
+.el-dialog {
+  border-radius: var(--xhs-radius-2xl) !important;
+  box-shadow: var(--xhs-shadow-2xl) !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.el-dialog__header {
+  padding: var(--xhs-space-lg) !important;
+  border-bottom: 2px solid var(--xhs-bg-tertiary) !important;
+  font-weight: var(--xhs-font-weight-bold) !important;
+  font-size: var(--xhs-text-xl) !important;
+}
+
+.el-dialog__body {
+  padding: var(--xhs-space-lg) !important;
+}
+
+.el-dialog__footer {
+  padding: var(--xhs-space-lg) !important;
+  border-top: 2px solid var(--xhs-bg-tertiary) !important;
+}
+
+// ============================================
+// 消息提示组件 / Message Component
+// ============================================
+
+.el-message {
+  border-radius: var(--xhs-radius-lg) !important;
+  box-shadow: var(--xhs-shadow-lg) !important;
+  padding: var(--xhs-space-md) var(--xhs-space-lg) !important;
+  border: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.el-message--success {
+  background: linear-gradient(135deg, #F6FFED 0%, #E8F5E9 100%) !important;
+  color: var(--xhs-success) !important;
+  border-left: 4px solid var(--xhs-success) !important;
+}
+
+.el-message--warning {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%) !important;
+  color: var(--xhs-warning) !important;
+  border-left: 4px solid var(--xhs-warning) !important;
+}
+
+.el-message--error {
+  background: linear-gradient(135deg, #FFF1F0 0%, #FFD4D4 100%) !important;
+  color: var(--xhs-danger) !important;
+  border-left: 4px solid var(--xhs-danger) !important;
+}
+
+.el-message--info {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%) !important;
+  color: var(--xhs-info) !important;
+  border-left: 4px solid var(--xhs-info) !important;
+}
+
+// ============================================
+// 图片组件 / Image Component
+// ============================================
+
+.el-image {
+  border-radius: var(--xhs-radius-lg) !important;
+  overflow: hidden !important;
+  box-shadow: var(--xhs-shadow-sm) !important;
+  transition: var(--xhs-transition-default) !important;
+  
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: var(--xhs-shadow-hover);
+  }
+}
+
+.el-image__inner {
+  border-radius: var(--xhs-radius-lg) !important;
+}
+
+// ============================================
+// 图标组件 / Icon Component
+// ============================================
+
+.el-icon {
+  transition: var(--xhs-transition-default) !important;
+}
+
+// ============================================
+// 滚动条美化 / Scrollbar Styling
+// ============================================
+
+.el-scrollbar__wrap {
+  overflow-x: hidden !important;
+}
+
+.el-scrollbar__thumb {
+  background: var(--xhs-text-tertiary) !important;
+  border-radius: var(--xhs-radius-sm) !important;
+  
+  &:hover {
+    background: var(--xhs-text-secondary) !important;
+  }
+}
+
+// ============================================
+// 工具提示组件 / Tooltip Component
+// ============================================
+
+.el-tooltip__popper {
+  border-radius: var(--xhs-radius-md) !important;
+  box-shadow: var(--xhs-shadow-md) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+// ============================================
+// 加载组件 / Loading Component
+// ============================================
+
+.el-loading-mask {
+  backdrop-filter: blur(4px) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.el-loading-spinner {
+  border: 3px solid var(--xhs-primary) !important;
+  border-top-color: transparent !important;
+  border-radius: 50% !important;
+}
+
+// ============================================
+// 分隔线组件 / Divider Component
+// ============================================
+
+.el-divider {
+  background-color: var(--xhs-bg-tertiary) !important;
+  border-top: none !important;
+}
+
+.el-divider__text {
+  background-color: transparent !important;
+  color: var(--xhs-text-secondary) !important;
+  font-weight: var(--xhs-font-weight-semibold) !important;
+}
+
+// ============================================
+// 复选框组件 / Checkbox Component
+// ============================================
+
+.el-checkbox__inner {
+  border-radius: var(--xhs-radius-sm) !important;
+  border-color: var(--xhs-bg-tertiary) !important;
+  transition: var(--xhs-transition-default) !important;
+  
+  &:hover {
+    border-color: var(--xhs-primary) !important;
+  }
+}
+
+.el-checkbox__input:checked + .el-checkbox__inner {
+  background-color: var(--xhs-primary) !important;
+  border-color: var(--xhs-primary) !important;
+}
+
+// ============================================
+// 开关组件 / Switch Component
+// ============================================
+
+.el-switch__core {
+  border-radius: var(--xhs-radius-button) !important;
+  border-color: var(--xhs-bg-tertiary) !important;
+}
+
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--xhs-primary) !important;
+  border-color: var(--xhs-primary) !important;
+}
+
+// ============================================
+// 单选框组件 / Radio Component
+// ============================================
+
+.el-radio__inner {
+  border-radius: 50% !important;
+  border-color: var(--xhs-bg-tertiary) !important;
+  transition: var(--xhs-transition-default) !important;
+  
+  &:hover {
+    border-color: var(--xhs-primary) !important;
+  }
+}
+
+.el-radio__input:checked + .el-radio__inner {
+  background-color: var(--xhs-primary) !important;
+  border-color: var(--xhs-primary) !important;
+  box-shadow: 0 0 0 3px rgba(255, 36, 66, 0.2);
+}
+
+// ============================================
+// 菜单组件 / Menu Component
+// ============================================
+
+.el-menu-item {
+  border-radius: var(--xhs-radius-md) !important;
+  margin: 4px 8px !important;
+  transition: var(--xhs-duration-fast) !important;
+  
+  &:hover {
+    background: var(--xhs-primary-soft) !important;
+    color: var(--xhs-primary) !important;
+    transform: translateX(4px);
+  }
+  
+  &.is-active {
+    background: var(--xhs-gradient-primary) !important;
+    color: white !important;
+    font-weight: var(--xhs-font-weight-semibold) !important;
+  }
+}
+
+// ============================================
+// 面包屑组件 / Breadcrumb Component
+// ============================================
+
+.el-breadcrumb__item {
+  &:hover {
+    color: var(--xhs-primary) !important;
+  }
+}
+
+.el-breadcrumb__item.is-active {
+  color: var(--xhs-text-primary) !important;
+  font-weight: var(--xhs-font-weight-semibold) !important;
+}

@@ -8,6 +8,8 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import './styles/main.scss'
+import './styles/element-plus-xhs-theme.scss'
+import './styles/animations.scss'
 import { setupAutoSave } from './stores/generator'
 import { i18n } from './locales'
 

@@ -137,24 +137,26 @@
           </el-table-column>
           
           <!-- 操作 -->
-          <el-table-column :label="t('common.action')" width="250" fixed="right">
+          <el-table-column :label="t('common.action')" width="360" fixed="right">
             <template #default="scope">
-              <el-button type="primary" size="small" @click="viewHistory(scope.row)" :disabled="false">
-                <el-icon><View /></el-icon>
-                {{ t('common.view') }}
-              </el-button>
-              <el-button type="success" size="small" @click="editHistory(scope.row)" :disabled="!scope.row.outline">
-                <el-icon><EditPen /></el-icon>
-                {{ t('common.edit') }}
-              </el-button>
-              <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
-                <el-icon><CopyDocument /></el-icon>
-                {{ t('common.copy') }}
-              </el-button>
-              <el-button type="danger" size="small" @click="deleteHistory(scope.row.id)">
-                <el-icon><Delete /></el-icon>
-                {{ t('common.delete') }}
-              </el-button>
+              <div class="action-buttons-group">
+                <el-button type="primary" size="small" @click="viewHistory(scope.row)">
+                  <el-icon><View /></el-icon>
+                  {{ t('common.view') }}
+                </el-button>
+                <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
+                  <el-icon><CopyDocument /></el-icon>
+                  {{ t('common.copy') }}
+                </el-button>
+                <el-button type="success" size="small" @click="editHistory(scope.row)" :disabled="!scope.row.outline">
+                  <el-icon><EditPen /></el-icon>
+                  {{ t('common.edit') }}
+                </el-button>
+                <el-button type="danger" size="small" @click="deleteHistory(scope.row.id)">
+                  <el-icon><Delete /></el-icon>
+                  {{ t('common.delete') }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -779,6 +781,49 @@ const editHistory = (history: any) => {
     
     .platform-tag {
       flex-shrink: 0;
+    }
+  }
+  
+  // 按钮组样式 - 小红书风格
+  .action-buttons-group {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: stretch;
+    width: 100%;
+    
+    .el-button {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      
+      .el-icon {
+        margin-right: 4px;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+      
+      .el-button__content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+      
+      &:hover {
+        transform: translateY(-1px) !important;
+      }
+      
+      &:active {
+        transform: translateY(0) !important;
+      }
     }
   }
 }

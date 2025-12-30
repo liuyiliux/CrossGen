@@ -97,13 +97,16 @@ const handleLanguageChange = (lang: string) => {
 </script>
 
 <style scoped lang="scss">
+// 导航栏容器 / Navigation Container
 .nav-header {
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--xhs-shadow-sm);
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: all var(--xhs-duration-base) var(--xhs-ease-default);
 }
 
 .nav-container {
@@ -112,80 +115,161 @@ const handleLanguageChange = (lang: string) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 60px;
+  padding: 0 var(--xhs-space-lg);
+  height: 72px;
 }
 
+// 右侧导航区域 / Navigation Right
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--xhs-space-md);
 }
 
+// 品牌标识 / Brand Identity
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--xhs-space-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  color: var(--el-color-primary);
-  font-size: 18px;
-  
+  transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+  font-weight: var(--xhs-font-weight-semibold);
+  color: var(--xhs-primary);
+  font-size: var(--xhs-text-lg);
+  padding: 8px 16px;
+  border-radius: var(--xhs-radius-xl);
+  background: var(--xhs-primary-soft);
+
+  svg {
+    color: var(--xhs-primary);
+    transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+  }
+
   &:hover {
-    opacity: 0.8;
+    transform: translateY(-2px);
+    background: rgba(255, 36, 66, 0.12);
+    box-shadow: var(--xhs-shadow-md);
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
 .brand-name {
-  font-weight: 600;
-  font-size: 20px;
+  font-weight: var(--xhs-font-weight-bold);
+  font-size: var(--xhs-text-xl);
+  letter-spacing: 0.5px;
 }
 
+// 导航菜单 / Navigation Menu
 .nav-menu {
   border-bottom: none;
-  
+  background: transparent;
+
   &:not(.el-menu--collapse) {
     width: auto;
   }
+
+  // 菜单项样式 / Menu Item Styles
+  :deep(.el-menu-item) {
+    padding: 0 var(--xhs-space-md);
+    margin: 0 4px;
+    border-radius: var(--xhs-radius-lg);
+    height: 40px;
+    line-height: 40px;
+    transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+    font-weight: var(--xhs-font-weight-medium);
+    color: var(--xhs-text-secondary);
+
+    &:hover {
+      background: var(--xhs-bg-secondary);
+      color: var(--xhs-primary);
+    }
+
+    &.is-active {
+      background: linear-gradient(135deg, var(--xhs-primary) 0%, #FF6B9D 100%);
+      color: #FFFFFF;
+      font-weight: var(--xhs-font-weight-semibold);
+      box-shadow: 0 2px 8px rgba(255, 36, 66, 0.25);
+    }
+  }
+
+  // 图标样式 / Icon Styles
+  :deep(.el-menu-item .el-icon) {
+    font-size: 18px;
+    margin-right: 6px;
+    transition: transform var(--xhs-duration-fast) var(--xhs-ease-default);
+  }
+
+  :deep(.el-menu-item:hover .el-icon) {
+    transform: scale(1.15);
+  }
 }
 
+// 语言切换触发器 / Language Trigger
 .language-trigger {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  color: var(--el-text-color-primary);
-  
+  padding: 10px 16px;
+  border-radius: var(--xhs-radius-lg);
+  transition: all var(--xhs-duration-base) var(--xhs-ease-default);
+  color: var(--xhs-text-secondary);
+  background: var(--xhs-bg-secondary);
+  font-weight: var(--xhs-font-weight-medium);
+
+  svg {
+    transition: transform var(--xhs-duration-fast) var(--xhs-ease-default);
+  }
+
   &:hover {
-    background-color: var(--el-bg-color-overlay);
-    color: var(--el-color-primary);
+    background: var(--xhs-primary-soft);
+    color: var(--xhs-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--xhs-shadow-sm);
+
+    svg {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
+// 响应式设计 / Responsive Design
 @media (max-width: 768px) {
   .nav-container {
-    padding: 0 16px;
+    padding: 0 var(--xhs-space-md);
+    height: 64px;
   }
-  
+
   .nav-menu {
     display: none;
   }
-  
+
+  .brand {
+    padding: 6px 12px;
+  }
+
   .brand-name {
-    font-size: 16px;
+    font-size: var(--xhs-text-base);
   }
-  
+
   .nav-right {
-    gap: 12px;
+    gap: var(--xhs-space-sm);
   }
-  
+
   .language-trigger {
-    padding: 6px 8px;
-    
+    padding: 8px 12px;
+
     span {
       display: none;
     }

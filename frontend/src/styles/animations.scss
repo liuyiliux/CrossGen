@@ -1,0 +1,554 @@
+// 微交互动画和过渡效果 - 小红书风格
+// Micro-Interactions & Animations - Xiaohongshu-Inspired Effects
+
+// ============================================
+// 页面加载动画 / Page Load Animations
+// ============================================
+
+@keyframes pageLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-load-enter-active {
+  animation: pageLoad 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// ============================================
+// 卡片浮动动画 / Card Float Animations
+// ============================================
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.card-float {
+  animation: cardFloat 3s ease-in-out infinite;
+}
+
+// ============================================
+// 按钮波纹效果 / Button Ripple Effect
+// ============================================
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s, opacity 0.6s;
+  }
+  
+  &:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+// ============================================
+// 悬浮发光效果 / Hover Glow Effect
+// ============================================
+
+.glow-hover {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, var(--xhs-primary) 0%, var(--xhs-accent-pink) 100%);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    filter: blur(8px);
+  }
+  
+  &:hover::before {
+    opacity: 0.4;
+  }
+}
+
+// ============================================
+// 图片缩放动画 / Image Scale Animation
+// ============================================
+
+.image-zoom {
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--xhs-transition-default);
+  
+  img,
+  .el-image__inner {
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: var(--xhs-shadow-hover);
+    
+    img,
+    .el-image__inner {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// ============================================
+// 文字渐变动画 / Text Gradient Animation
+// ============================================
+
+@keyframes textGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-gradient-animated {
+  background: linear-gradient(90deg, var(--xhs-primary), var(--xhs-accent-pink), var(--xhs-primary), var(--xhs-accent-orange), var(--xhs-primary));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textGradient 6s ease infinite;
+}
+
+// ============================================
+// 脉冲动画 / Pulse Animation
+// ============================================
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@keyframes pulse-strong {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 36, 66, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 10px rgba(255, 36, 66, 0);
+  }
+}
+
+.pulse-strong {
+  animation: pulse-strong 2s ease-in-out infinite;
+}
+
+// ============================================
+// 旋转动画 / Rotation Animation
+// ============================================
+
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+
+@keyframes rotate-fast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotate-fast {
+  animation: rotate-fast 1s linear infinite;
+}
+
+// ============================================
+// 弹跳动画 / Bounce Animation
+// ============================================
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(40px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-10px);
+  }
+  70% {
+    transform: scale(0.95) translateY(5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounce-out {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  20% {
+    transform: scale(0.95) translateY(5px);
+  }
+  40% {
+    transform: scale(1.02) translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) translateY(40px);
+  }
+}
+
+.bounce-out {
+  animation: bounce-out 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+// ============================================
+// 滑动动画 / Slide Animations
+// ============================================
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slide-down 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-left {
+  animation: slide-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-right {
+  animation: slide-right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ============================================
+// 渐变缩放动画 / Scale Gradient Animation
+// ============================================
+
+@keyframes scale-gradient {
+  0%, 100% {
+    background-size: 100% 100%;
+  }
+  50% {
+    background-size: 120% 120%;
+  }
+}
+
+.scale-gradient-bg {
+  background: var(--xhs-gradient-primary);
+  background-size: 100% 100%;
+  animation: scale-gradient 4s ease-in-out infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// ============================================
+// 悬浮抖动动画 / Shake Animation
+// ============================================
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+// ============================================
+// 闪烁动画 / Flash Animation
+// ============================================
+
+@keyframes flash {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.3;
+  }
+}
+
+.flash {
+  animation: flash 1.5s ease-in-out infinite;
+}
+
+// ============================================
+// 弹性缩放动画 / Elastic Scale
+// ============================================
+
+@keyframes elastic-scale {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.elastic-scale {
+  animation: elastic-scale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+// ============================================
+// 工具类 / Utility Classes
+// ============================================
+
+// 交互反馈
+.interaction-active {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+// 悬浮状态
+.hover-lift {
+  transition: var(--xhs-transition-default);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--xhs-shadow-hover);
+  }
+}
+
+// 点击反馈
+.click-press {
+  transition: var(--xhs-duration-fast);
+  
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// 拖拽状态
+.draggable {
+  cursor: grab;
+  transition: var(--xhs-transition-default);
+  
+  &:active {
+    cursor: grabbing;
+    transform: scale(1.02);
+  }
+}
+
+// 加载状态
+.loading-skeleton {
+  background: linear-gradient(90deg, var(--xhs-bg-secondary) 25%, var(--xhs-bg-tertiary) 50%, var(--xhs-bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// ============================================
+// 组件特定动画 / Component-Specific Animations
+// ============================================
+
+// 输入框聚焦动画
+.input-focus-ring {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--xhs-primary);
+    opacity: 0;
+    transform: scale(1.2);
+    transition: all 0.3s ease;
+  }
+  
+  &:focus-within::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 按钮加载动画
+.btn-loading {
+  position: relative;
+  
+  .btn-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+// 卡片悬浮光效
+.card-glow {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(circle, rgba(255, 36, 66, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// 列表项悬滑动
+.list-item-slide {
+  transition: var(--xhs-transition-default);
+  
+  &:hover {
+    background: var(--xhs-primary-soft);
+    transform: translateX(4px);
+    box-shadow: var(--xhs-shadow-sm);
+  }
+}
+
+// ============================================
+// 响应式动画优化 / Responsive Animation Optimization
+// ============================================
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  // 移动端减少动画复杂度
+  .card-glow::before {
+    background: radial-gradient(circle, rgba(255, 36, 66, 0.1) 0%, transparent 50%);
+  }
+}

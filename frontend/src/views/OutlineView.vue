@@ -681,7 +681,8 @@ const generateSingleVideo = (index: number) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '../styles/outline-xhs-style.scss' as *;
 /* 网格布局 */
 .outline-grid {
   display: grid;
