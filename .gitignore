@@ -363,3 +363,6 @@ test-results.xml
 
 # History records
 backend/history/
+
+# CodeBuddy AI assistant files
+.codebuddy/
