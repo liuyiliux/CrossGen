@@ -782,11 +782,11 @@ class GenerationService:
                         else:
                             f.write(generated_image_data.encode('utf-8'))
                     # 返回相对URL
-                    if save_dir.name.endswith('_images'):
+                    if history_id:
                         # 历史记录图片，返回 /history/xxx_images/filename.png 格式
                         image_path = f"/history/{save_dir.name}/{filename}"
                     else:
-                        # 上传图片，返回 /uploads/filename.png 格式
+                        # 上传图片，返回 /uploads/temp_xxx/filename.png 格式
                         image_path = f"/uploads/{save_dir.name}/{filename}"
                 
                 # 生成成功，返回结果

@@ -74,12 +74,13 @@ def download_image(image_url: str, save_dir: Path, filename: Optional[str] = Non
             f.write(response.content)
         
         # 返回相对URL，便于前端访问
-        if save_dir.name.endswith('_images'):
+        # 判断是否是历史记录目录
+        if 'history' in str(save_dir):
             # 历史记录图片，返回 /history/xxx_images/filename.png 格式
             return f"/history/{save_dir.name}/{filename}"
         else:
-            # 上传图片，返回 /uploads/filename.png 格式
-            return f"/uploads/{filename}"
+            # 上传图片，返回 /uploads/temp_xxx/filename.png 格式
+            return f"/uploads/{save_dir.name}/{filename}"
     except requests.exceptions.RequestException as e:
         logger.error(f"下载图片失败 {image_url}: 请求错误 - {str(e)}", exc_info=True)
         return None
@@ -124,12 +125,13 @@ def save_base64_image(base64_str: str, save_dir: Path, filename: Optional[str] =
             f.write(img_data)
         
         # 返回相对URL，便于前端访问
-        if save_dir.name.endswith('_images'):
+        # 判断是否是历史记录目录
+        if 'history' in str(save_dir):
             # 历史记录图片，返回 /history/xxx_images/filename.png 格式
             return f"/history/{save_dir.name}/{filename}"
         else:
-            # 上传图片，返回 /uploads/filename.png 格式
-            return f"/uploads/{filename}"
+            # 上传图片，返回 /uploads/temp_xxx/filename.png 格式
+            return f"/uploads/{save_dir.name}/{filename}"
     except base64.binascii.Error as e:
         logger.error(f"保存base64图片失败: Base64解码错误 - {str(e)}", exc_info=True)
         return None
@@ -224,12 +226,13 @@ def replace_image(old_image_path: str, new_image_url: str) -> Optional[str]:
         
         # 返回相对URL，便于前端访问
         old_path = Path(old_image_path)
-        if old_path.parent.name.endswith('_images'):
+        # 判断是否是历史记录目录
+        if 'history' in str(old_path):
             # 历史记录图片，返回 /history/xxx_images/filename.png 格式
             return f"/history/{old_path.parent.name}/{old_path.name}"
         else:
-            # 上传图片，返回 /uploads/filename.png 格式
-            return f"/uploads/{old_path.name}"
+            # 上传图片，返回 /uploads/temp_xxx/filename.png 格式
+            return f"/uploads/{old_path.parent.name}/{old_path.name}"
     except requests.exceptions.RequestException as e:
         logger.error(f"替换图片失败 {old_image_path}: 请求错误 - {str(e)}", exc_info=True)
         return None

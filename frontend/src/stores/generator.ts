@@ -460,10 +460,12 @@ export const useGeneratorStore = defineStore('generator', {
         // 使用本地代理，解决跨域问题
         processedUrl = processedUrl.replace('https://dashscope.aliyuncs.com', '/image-proxy')
       } else if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
-        // 如果是相对路径，直接返回，浏览器会自动使用当前域名和端口
-        // 这些路径对应后端静态文件服务配置：/uploads 和 /history
-        if (processedUrl.startsWith('/')) {
-          // 是相对路径，直接返回，由浏览器自动拼接当前域名和端口
+        // 如果是相对路径，需要拼接后端地址
+        if (processedUrl.startsWith('/uploads/') || processedUrl.startsWith('/history/')) {
+          // 后端静态文件路径，拼接后端地址
+          processedUrl = `http://localhost:8000${processedUrl}`
+        } else if (processedUrl.startsWith('/')) {
+          // 是其他相对路径，直接返回，由浏览器自动拼接当前域名和端口
           return processedUrl
         } else {
           // 如果不是完整URL，添加https前缀
