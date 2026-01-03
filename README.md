@@ -502,10 +502,15 @@ WantedBy=multi-user.target
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
+## 🌟 GitHub 地址
+
+- **GitHub 主页**: [https://github.com/liuyiliux/CrossGen](https://github.com/liuyiliux/CrossGen)
+- **GitHub Issues**: [https://github.com/liuyiliux/CrossGen/issues](https://github.com/liuyiliux/CrossGen/issues)
+
 ## 📞 联系我们
 
-- 项目主页: https://cnb.cool/yiliu/yiliu
-- 问题反馈: https://cnb.cool/yiliu/yiliu/issues
+- 项目主页: https://github.com/liuyiliux/CrossGen
+- 问题反馈: https://github.com/liuyiliux/CrossGen/issues
 - 邮箱: 44165547@qq.com
 - 微信:liuyiliux 说明来意
 
