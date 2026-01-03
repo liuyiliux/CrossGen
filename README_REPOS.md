@@ -6,7 +6,7 @@
 
 | 仓库名称 | 远程别名 | 仓库地址 | 用途 |
 |----------|----------|----------|------|
-| cnb仓库 | origin | https://cnb.cool/yiliu/yiliu | 主要开发仓库 |
+| cnb仓库 | cnb | https://cnb.cool/yiliu/yiliu | 主要开发仓库 |
 | GitHub仓库 | github | https://github.com/liuyiliux/CrossGen | 备份和开源分享仓库 |
 
 ## 🚀 同步方法
@@ -21,7 +21,7 @@
 
 2. 推送到cnb仓库：
    ```bash
-   git push origin master
+   git push cnb master
    ```
 
 3. 推送到GitHub仓库：
@@ -33,7 +33,7 @@
 
 1. 添加两个远程仓库（如果尚未添加）：
    ```bash
-   git remote add origin https://cnb.cool/yiliu/yiliu
+   git remote add cnb https://cnb.cool/yiliu/yiliu
    git remote add github https://github.com/liuyiliux/CrossGen
    ```
 
@@ -49,9 +49,9 @@
    git remote -v
    ```
 
-2. 为origin远程仓库添加GitHub的pushurl：
+2. 为cnb远程仓库添加GitHub的pushurl：
    ```bash
-   git remote set-url --add --push origin https://github.com/liuyiliux/CrossGen
+   git remote set-url --add --push cnb https://github.com/liuyiliux/CrossGen
    ```
 
 3. 查看更新后的配置：
@@ -61,7 +61,7 @@
 
 4. 推送代码到两个仓库：
    ```bash
-   git push origin master
+   git push cnb master
    ```
 
 ## 🛠️ 操作指南
@@ -70,7 +70,7 @@
 
 ```bash
 # 添加cnb仓库
-git remote add origin https://cnb.cool/yiliu/yiliu
+git remote add cnb https://cnb.cool/yiliu/yiliu
 
 # 添加GitHub仓库
 git remote add github https://github.com/liuyiliux/CrossGen
@@ -86,7 +86,7 @@ git remote -v
 
 ```bash
 # 删除cnb仓库
-git remote remove origin
+git remote remove cnb
 
 # 删除GitHub仓库
 git remote remove github
@@ -95,7 +95,7 @@ git remote remove github
 ### 查看远程仓库详情
 
 ```bash
-git remote show origin
+git remote show cnb
 ```
 
 ## ⚠️ 注意事项
