@@ -201,23 +201,34 @@
 }
 
 .el-select-dropdown__item {
-  border-radius: var(--xhs-radius-md) !important;
-  margin: 4px 0 !important;
-  padding: 10px 16px !important;
-  transition: var(--xhs-duration-fast) !important;
-  
-  &:hover {
-    background: var(--xhs-primary-soft) !important;
-    color: var(--xhs-primary) !important;
-    transform: translateX(4px);
-  }
-  
-  &.is-selected {
-    background: var(--xhs-gradient-primary) !important;
-    color: white !important;
-    font-weight: var(--xhs-font-weight-semibold) !important;
-  }
-}
+     border-radius: var(--xhs-radius-md) !important;
+     margin: 0 !important;
+     padding: 10px 16px !important;
+     transition: var(--xhs-duration-fast) !important;
+     text-align: left !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: flex-start !important;
+     height: auto !important;
+     line-height: normal !important;
+     
+     &:hover {
+       background: var(--xhs-primary-soft) !important;
+       color: var(--xhs-primary) !important;
+       transform: translateX(4px);
+       text-align: left !important;
+     }
+     
+     &.is-selected {
+       background: var(--xhs-gradient-primary) !important;
+       color: white !important;
+       font-weight: var(--xhs-font-weight-semibold) !important;
+       text-align: left !important;
+       display: flex !important;
+       align-items: center !important;
+       justify-content: flex-start !important;
+     }
+   }
 
 // ============================================
 // 卡片组件 / Card Component
