@@ -1,0 +1,11 @@
+mysql:
+  database: ''
+  enabled: false
+  host: localhost
+  password: ''
+  port: 3306
+  username: ''
+redis:
+  enabled: false
+  password: ''
+  url: redis://localhost:6379/0
