@@ -150,11 +150,14 @@ yiliu/
 │   ├── package.json        # Node.js依赖
 │   └── vite.config.ts      # Vite配置
 ├── config/                 # 配置文件
-│   ├── system_config.yaml          # 系统配置
-│   ├── system_config.yaml.example  # 系统配置示例
-│   ├── platform_templates.yaml     # 平台模板配置
-│   ├── text_providers.yaml         # 文本AI提供商配置
-│   └── image_providers.yaml        # 图像AI提供商配置
+│   ├── system_config.yaml                  # 系统配置
+│   ├── system_config.yaml.example          # 系统配置示例
+│   ├── platform_templates.yaml             # 平台模板配置
+│   ├── platform_templates.yaml.example     # 平台模板配置示例
+│   ├── text_providers.yaml                 # 文本AI提供商配置
+│   ├── text_providers.yaml.example         # 文本AI提供商配置示例
+│   ├── image_providers.yaml                # 图像AI提供商配置
+│   └── image_providers.yaml.example        # 图像AI提供商配置示例
 ├── .gitignore              # Git忽略文件
 ├── design_scheme.md        # 设计方案
 ├── package.json            # 根目录package.json
