@@ -112,7 +112,7 @@
             </div>
             <h4>{{ t('home.batchGenerate') }}</h4>
             <p>{{ t('home.batchDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
+            <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -123,7 +123,7 @@
             </div>
             <h4>{{ t('home.configManagement') }}</h4>
             <p>{{ t('home.configDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
+            <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
         
@@ -134,7 +134,7 @@
             </div>
             <h4>{{ t('home.historyRecords') }}</h4>
             <p>{{ t('home.historyDesc') }}</p>
-            <el-button type="primary" size="small" link>{{ t('home.goTo') }}</el-button>
+            <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
       </div>

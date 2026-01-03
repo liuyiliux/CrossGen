@@ -19,7 +19,6 @@
             @select="handleSelect"
             background-color="white"
             text-color="var(--el-text-color-primary)"
-            active-text-color="var(--el-color-primary)"
           >
             <el-menu-item index="/">
               <el-icon><HomeFilled /></el-icon>
@@ -193,9 +192,10 @@ const handleLanguageChange = (lang: string) => {
 
     &.is-active {
       background: linear-gradient(135deg, var(--xhs-primary) 0%, #FF6B9D 100%);
-      color: #FFFFFF;
+      color: #FFFFFF !important;
       font-weight: var(--xhs-font-weight-semibold);
       box-shadow: 0 2px 8px rgba(255, 36, 66, 0.25);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
   }
 

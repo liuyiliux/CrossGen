@@ -94,89 +94,92 @@
       
       <!-- 历史记录列表 -->
       <div class="history-list">
-        <el-table
-          ref="historyTableRef"
-          :data="filteredHistory.length > 0 ? filteredHistory : []"
-          border
-          style="width: 100%"
-          class="history-table"
-          @selection-change="handleSelectionChange"
-        >
-          <!-- 多选框 -->
-          <el-table-column type="selection" width="55" />
-          
-          <!-- 序号 -->
-          <el-table-column type="index" :label="t('common.index')" width="80" />
-          
-          <!-- 主题 -->
-          <el-table-column prop="topic" :label="t('history.topic')" min-width="200" show-overflow-tooltip>
-            <template #default="scope">
-              <div class="topic-cell">
-                <span class="topic-text">{{ scope.row.topic }}</span>
-                <el-tag :type="getPlatformType(scope.row.platform)" size="small" class="platform-tag">
-                  {{ getPlatformLabel(scope.row.platform) }}
+        <!-- 有数据时显示表格和分页 -->
+        <template v-if="filteredHistory.length > 0">
+          <el-table
+            ref="historyTableRef"
+            :data="filteredHistory"
+            border
+            style="width: 100%"
+            class="history-table"
+            @selection-change="handleSelectionChange"
+          >
+            <!-- 多选框 -->
+            <el-table-column type="selection" width="55" />
+            
+            <!-- 序号 -->
+            <el-table-column type="index" :label="t('common.index')" width="80" />
+            
+            <!-- 主题 -->
+            <el-table-column prop="topic" :label="t('history.topic')" min-width="200" show-overflow-tooltip>
+              <template #default="scope">
+                <div class="topic-cell">
+                  <span class="topic-text">{{ scope.row.topic }}</span>
+                  <el-tag :type="getPlatformType(scope.row.platform)" size="small" class="platform-tag">
+                    {{ getPlatformLabel(scope.row.platform) }}
+                  </el-tag>
+                </div>
+              </template>
+            </el-table-column>
+            
+            <!-- 生成时间 -->
+            <el-table-column prop="created_at" :label="t('history.createdAt')" width="200" show-overflow-tooltip>
+              <template #default="scope">
+                {{ formatTime(scope.row.created_at) }}
+              </template>
+            </el-table-column>
+            
+            <!-- 状态 -->
+            <el-table-column prop="status" :label="t('history.status')" width="120">
+              <template #default="scope">
+                <el-tag :type="getStatusType(scope.row.status)" effect="light">
+                  {{ getStatusLabel(scope.row.status) }}
                 </el-tag>
-              </div>
-            </template>
-          </el-table-column>
+              </template>
+            </el-table-column>
+            
+            <!-- 操作 -->
+            <el-table-column :label="t('common.action')" width="360" fixed="right">
+              <template #default="scope">
+                <div class="action-buttons-group">
+                  <el-button type="primary" size="small" @click="viewHistory(scope.row)">
+                    <el-icon><View /></el-icon>
+                    {{ t('common.view') }}
+                  </el-button>
+                  <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
+                    <el-icon><CopyDocument /></el-icon>
+                    {{ t('common.copy') }}
+                  </el-button>
+                  <el-button type="success" size="small" @click="editHistory(scope.row)" :disabled="!scope.row.outline">
+                    <el-icon><EditPen /></el-icon>
+                    {{ t('common.edit') }}
+                  </el-button>
+                  <el-button type="danger" size="small" @click="deleteHistory(scope.row.id)">
+                    <el-icon><Delete /></el-icon>
+                    {{ t('common.delete') }}
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
           
-          <!-- 生成时间 -->
-          <el-table-column prop="created_at" :label="t('history.createdAt')" width="200" show-overflow-tooltip>
-            <template #default="scope">
-              {{ formatTime(scope.row.created_at) }}
-            </template>
-          </el-table-column>
-          
-          <!-- 状态 -->
-          <el-table-column prop="status" :label="t('history.status')" width="120">
-            <template #default="scope">
-              <el-tag :type="getStatusType(scope.row.status)" effect="light">
-                {{ getStatusLabel(scope.row.status) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          
-          <!-- 操作 -->
-          <el-table-column :label="t('common.action')" width="360" fixed="right">
-            <template #default="scope">
-              <div class="action-buttons-group">
-                <el-button type="primary" size="small" @click="viewHistory(scope.row)">
-                  <el-icon><View /></el-icon>
-                  {{ t('common.view') }}
-                </el-button>
-                <el-button type="warning" size="small" @click="copyAndEdit(scope.row)" :disabled="!scope.row.outline">
-                  <el-icon><CopyDocument /></el-icon>
-                  {{ t('common.copy') }}
-                </el-button>
-                <el-button type="success" size="small" @click="editHistory(scope.row)" :disabled="!scope.row.outline">
-                  <el-icon><EditPen /></el-icon>
-                  {{ t('common.edit') }}
-                </el-button>
-                <el-button type="danger" size="small" @click="deleteHistory(scope.row.id)">
-                  <el-icon><Delete /></el-icon>
-                  {{ t('common.delete') }}
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-        
-        <!-- 分页 -->
-        <div class="pagination">
-          <el-pagination
-            v-model:current-page="pagination.currentPage"
-            v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="filteredHistory.length"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+          <!-- 分页 -->
+          <div class="pagination">
+            <el-pagination
+              v-model:current-page="pagination.currentPage"
+              v-model:page-size="pagination.pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="filteredHistory.length"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
+        </template>
         
         <!-- 空状态 -->
         <el-empty
-          v-if="filteredHistory.length === 0"
+          v-else
           :description="t('history.noHistory')"
           :image-size="200"
         />
@@ -758,14 +761,19 @@ const editHistory = (history: any) => {
 }
 
 .history-table {
-  .el-table__header-wrapper {
-    background-color: var(--el-bg-color-page);
-  }
-  
-  .el-table__body-wrapper {
-    max-height: 600px;
-    overflow-y: auto;
-  }
+    .el-table__header-wrapper {
+      background-color: var(--el-bg-color-page);
+    }
+    
+    .el-table__body-wrapper {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    /* 隐藏表格自带的空状态文本 */
+    .el-table__empty-text {
+      display: none;
+    }
   
   .topic-cell {
     display: flex;

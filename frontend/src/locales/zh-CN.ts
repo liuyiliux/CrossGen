@@ -204,6 +204,7 @@ export default {
     title: '历史记录',
     subtitle: '查看之前生成的图文内容',
     noData: '暂无历史记录',
+    noHistory: '暂无历史记录',
     search: '搜索',
     selectPlatform: '选择平台',
     keywordPlaceholder: '请输入主题关键词',
