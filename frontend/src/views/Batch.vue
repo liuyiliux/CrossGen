@@ -66,13 +66,39 @@
           </div>
         </el-form-item>
         
+        <!-- 文本服务商选择 -->
+        <el-form-item :label="t('composer.textProvider')">
+          <el-select 
+            v-model="batchForm.textProviderId" 
+            :placeholder="t('composer.selectTextProvider')"
+            size="large"
+            clearable
+            style="width: 100%;"
+          >
+            <el-option 
+              v-for="provider in generatorStore.textProviders.filter(p => p.enabled)" 
+              :key="provider.name" 
+              :label="`${provider.name} (${provider.model})`" 
+              :value="provider.name" 
+            >
+              <div class="option-content">
+                <div class="option-name">{{ provider.name }}</div>
+                <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <!-- 平台选择 -->
         <el-form-item :label="t('batch.targetPlatforms')" required>
           <el-checkbox-group v-model="batchForm.platforms">
-            <el-checkbox label="xiaohongshu">{{ t('batch.platform.xiaohongshu') }}</el-checkbox>
-            <el-checkbox label="douyin">{{ t('batch.platform.douyin') }}</el-checkbox>
-            <el-checkbox label="wechat">{{ t('batch.platform.wechat') }}</el-checkbox>
-            <el-checkbox label="toutiao">{{ t('batch.platform.toutiao') }}</el-checkbox>
+            <el-checkbox
+              v-for="platform in platforms"
+              :key="platform.value"
+              :label="platform.value"
+            >
+              {{ platform.label }}
+            </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         
@@ -191,18 +217,31 @@ import { Plus, Loading, Refresh, Close, Download } from '@element-plus/icons-vue
 import axios from 'axios'
 import dayjs from 'dayjs'
 
+// 导入平台工具函数
+import { getPlatformOptions, loadPlatformConfig } from '../utils/platformUtils'
+
+// 引入状态管理
+import { useGeneratorStore } from '../stores/generator'
+
 // 表单引用
 const batchFormRef = ref()
+
+// 引入状态管理
+const generatorStore = useGeneratorStore()
 
 // 批量生成表单
 const batchForm = reactive({
   topics: '',
-  platforms: [] as string[]
+  platforms: [] as string[],
+  textProviderId: generatorStore.textProviderId
 })
 
 // 参考图相关
 const referenceImages = ref<any[]>([])
 const previewImages = ref<any[]>([])
+
+// 平台选项
+const platforms = ref<Array<{value: string, label: string}>>([])
 
 // 生成状态
 const generating = ref(false)
@@ -211,18 +250,46 @@ const jobInfo = ref<any>(null)
 const results = ref<any[]>([])
 const activeNames = ref(['0'])
 
-// 平台标签映射
-const platformLabels: Record<string, string> = {
-  xiaohongshu: t('batch.platform.xiaohongshu'),
-  douyin: t('batch.platform.douyin'),
-  wechat: t('batch.platform.wechat'),
-  toutiao: t('batch.platform.toutiao')
-}
-
 // 获取平台标签
 const getPlatformLabel = (platform: string) => {
-  return platformLabels[platform] || platform
+  const found = platforms.value.find(p => p.value === platform)
+  return found ? found.label : platform
 }
+
+// 组件挂载时加载平台配置和文本服务商数据
+onMounted(async () => {
+  // 加载平台配置
+  await loadPlatformConfig()
+  platforms.value = getPlatformOptions()
+  
+  // 如果没有加载到平台配置，显示警告并使用默认平台
+  if (platforms.value.length === 0) {
+    console.warn('未加载到平台配置，使用默认平台')
+    // 添加默认平台选项
+    platforms.value = [
+      { label: '小红书', value: 'xiaohongshu' },
+      { label: '抖音', value: 'douyin' },
+      { label: '微信', value: 'wechat' },
+      { label: '头条', value: 'toutiao' }
+    ]
+  }
+  
+  // 加载文本服务商数据
+  try {
+    const textResponse = await axios.get('/api/config/providers/text')
+    if (textResponse.data?.providers?.providers) {
+      const textProviders = Object.entries(textResponse.data.providers.providers).map(([name, provider]: [string, any]) => ({
+        name,
+        type: provider.type || 'openai',
+        model: provider.model,
+        ...provider
+      }))
+      generatorStore.setTextProviders(textProviders)
+    }
+  } catch (error: any) {
+    console.error('加载文本服务商数据失败:', error)
+  }
+})
 
 // 获取状态类型
 const getStatusType = (status: string) => {
@@ -293,6 +360,11 @@ const generateBatch = async () => {
     const formData = new FormData()
     formData.append('topics', JSON.stringify(topics))
     formData.append('platforms', JSON.stringify(batchForm.platforms))
+    
+    // 添加文本服务商参数
+    if (batchForm.textProviderId) {
+      formData.append('text_provider', batchForm.textProviderId)
+    }
     
     // 添加参考图
     previewImages.value.forEach((img, index) => {
@@ -536,6 +608,25 @@ const downloadResults = () => {
 
 .batch-form {
   margin-bottom: 24px;
+}
+
+/* 选项内容样式 */
+.option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.option-desc {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.4;
 }
 
 .status-card {
