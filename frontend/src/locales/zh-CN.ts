@@ -62,7 +62,9 @@ export default {
     goTo: '前往',
     copySuccess: '结果已复制到剪贴板',
     copyFailed: '复制失败，请手动复制',
-    generatingInProgress: '生成请求已在处理中，请勿重复点击'
+    generatingInProgress: '生成请求已在处理中，请勿重复点击',
+    generating: '正在生成中',
+    generatingDesc: 'AI正在根据您的需求生成创意内容，请稍候...'
   },
   composer: {
     placeholder: '输入主题，例如：鉴定白水晶...',

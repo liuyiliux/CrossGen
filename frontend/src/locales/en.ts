@@ -62,7 +62,9 @@ export default {
     goTo: 'Go to',
     copySuccess: 'Result copied to clipboard',
     copyFailed: 'Copy failed, please copy manually',
-    generatingInProgress: 'Generation request already in progress, please do not click repeatedly'
+    generatingInProgress: 'Generation request already in progress, please do not click repeatedly',
+    generating: 'Generating',
+    generatingDesc: 'AI is generating creative content based on your needs, please wait...'
   },
   composer: {
     placeholder: 'Enter topic, for example: identify white crystal...',

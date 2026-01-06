@@ -47,7 +47,7 @@
       
       <div class="result-content">
         <!-- 平台标签 -->
-        <div class="platform-info">
+        <div class="platform-info animate-fade-in">
           <el-tag size="large" type="primary" class="platform-tag">
             {{ getPlatformLabel(generateResult.platform) }}
           </el-tag>
@@ -57,16 +57,16 @@
         </div>
         
         <!-- 标题 -->
-        <h3 class="result-title">{{ generateResult.title }}</h3>
+        <h3 class="result-title animate-slide-up">{{ generateResult.title }}</h3>
         
         <!-- 正文内容 -->
-        <div class="result-text">
+        <div class="result-text animate-fade-in">
           <el-divider content-position="left">{{ t('home.contentText') }}</el-divider>
           <div class="content-text">{{ generateResult.content }}</div>
         </div>
         
         <!-- 生成图片 -->
-        <div v-if="generateResult.images.length > 0" class="result-images">
+        <div v-if="generateResult.images.length > 0" class="result-images animate-slide-up">
           <el-divider content-position="left">{{ t('home.generatedImages') }}</el-divider>
           <el-image-viewer
             v-if="showImageViewer"
@@ -80,12 +80,18 @@
               :src="image"
               :preview-src-list="generateResult.images"
               fit="cover"
-              class="result-image"
+              class="result-image image-zoom"
               @click="showImageViewer = true"
+              :style="{ animationDelay: `calc(0.1s * ${index})` }"
             >
               <template #error>
                 <div class="image-error">
                   <el-icon><PictureRounded /></el-icon>
+                </div>
+              </template>
+              <template #loading>
+                <div class="image-loading">
+                  <div class="spinner-sm"></div>
                 </div>
               </template>
             </el-image>
@@ -93,7 +99,7 @@
         </div>
         
         <!-- 生成时间 -->
-        <div class="result-footer">
+        <div class="result-footer animate-fade-in">
           <span class="create-time">
             {{ t('home.createTime') }}{{ formatTime(generateResult.created_at) }}
           </span>
@@ -273,7 +279,9 @@ const handleGenerate = async () => {
   const loadingInstance = ElLoading.service({
     lock: true,
     text: t('home.generatingOutline'),
-    background: 'rgba(255, 255, 255, 0.8)'
+    background: 'rgba(255, 255, 255, 0.95)',
+    customClass: 'custom-loading',
+    spinner: '<div class="simple-loading"><div class="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>'
   })
 
   try {
@@ -961,6 +969,245 @@ async function createHistoryRecord(
   
   .result-card {
     border-radius: var(--xhs-radius-xl);
+  }
+}
+/* 旋转动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 结果卡片动画效果 */
+.result-card {
+  animation: card-bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes card-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 内容渐入动画 */
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 内容滑入动画 */
+.animate-slide-up {
+  animation: slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 为不同内容设置延迟动画 */
+.result-title {
+  animation-delay: 0.2s;
+}
+
+.result-text {
+  animation-delay: 0.3s;
+}
+
+.result-images {
+  animation-delay: 0.4s;
+}
+
+.result-footer {
+  animation-delay: 0.5s;
+}
+
+/* 图片加载样式 */
+.image-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #fafafa;
+}
+
+/* 图片错误样式 */
+.image-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #fafafa;
+  color: #999;
+  font-size: 24px;
+}
+
+/* 图片网格动画 */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.result-image {
+  animation: image-fade-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.result-image:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes image-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 响应式设计 - 移动端优化 */
+@media (max-width: 768px) {
+  /* 调整加载动画大小 */
+  .spinner-lg {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+  }
+  
+  .loading-title {
+    font-size: 16px;
+  }
+  
+  .loading-subtitle {
+    font-size: 12px;
+  }
+  
+  /* 调整图片网格 */
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  /* 简化动画，提升性能 */
+  .result-card {
+    animation: card-bounce-in 0.4s ease-out;
+  }
+  
+  .animate-slide-up,
+  .animate-fade-in {
+    animation-duration: 0.4s;
+  }
+}
+
+/* 尊重用户的动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 自定义加载动画样式 */
+.custom-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.custom-loading .el-loading-spinner {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-loading .el-loading-text {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+/* 简化的加载点动画 */
+.simple-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-dots .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--el-color-primary, #ff2442);
+  animation: dot-bounce 1.4s ease-in-out infinite;
+}
+
+.loading-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* 弹跳动画 */
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 </style>

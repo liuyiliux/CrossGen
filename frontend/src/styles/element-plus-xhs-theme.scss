@@ -443,11 +443,7 @@
   background-color: rgba(255, 255, 255, 0.85) !important;
 }
 
-.el-loading-spinner {
-  border: 3px solid var(--xhs-primary) !important;
-  border-top-color: transparent !important;
-  border-radius: 50% !important;
-}
+/* 移除了默认的半圆环加载动画，使用自定义样式 */
 
 // ============================================
 // 分隔线组件 / Divider Component
