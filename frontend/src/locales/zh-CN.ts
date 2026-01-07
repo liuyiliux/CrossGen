@@ -155,6 +155,8 @@ export default {
     referenceImageFieldHelp: 'API 请求中用于传递参考图的字段名，例如：image_urls, images, init_images 等',
     supportMultipleReferenceImages: '支持多张参考图',
     supportMultipleReferenceImagesHelp: '是否支持多张参考图，单图模型将使用第一张',
+    maxReferenceImages: '最大参考图数量',
+    maxReferenceImagesHelp: '支持的最大参考图数量，仅在支持多张参考图时生效',
     supportedSizes: '支持的尺寸',
     supportedSizesPlaceholder: '输入支持的尺寸列表，例如：["1024x1024", "1056x1584", "1584x1056"]',
     supportedSizesHelp: 'JSON 格式的尺寸列表，用于限制用户可选的尺寸',
