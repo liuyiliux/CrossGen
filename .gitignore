@@ -367,3 +367,4 @@ backend/history/
 
 # CodeBuddy AI assistant files
 .codebuddy/
+backend/config/system_config.yaml

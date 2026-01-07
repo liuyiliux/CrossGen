@@ -61,84 +61,155 @@
         </div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <div style="width: 240px;">
-          <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择图片服务商</label>
-          <el-select 
-            v-model="imageProviderId" 
-            placeholder="请选择图片服务商" 
-            size="large" 
-            style="width: 100%;"
-            clearable
-          >
-            <el-option 
-              v-for="provider in store.imageProviders.filter(p => p.enabled)" 
-              :key="provider.name" 
-              :label="`${provider.name} (${provider.type})`" 
-              :value="provider.name" 
+          <div style="width: 240px;">
+            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择图片服务商</label>
+            <el-select 
+              v-model="imageProviderId" 
+              placeholder="请选择图片服务商" 
+              size="large" 
+              style="width: 100%;"
+              clearable
+              @change="onImageProviderChange"
             >
-              <template #default="{ option }">
-                <div class="option-content">
-                  <div class="option-name">{{ provider.name }}</div>
-                  <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
-                </div>
-              </template>
-            </el-option>
-          </el-select>
-        </div>
-        
-        <div style="width: 200px;">
-          <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择图片尺寸</label>
-          <el-select 
-            v-model="store.selectedSize" 
-            placeholder="请选择图片尺寸" 
-            size="large" 
-            style="width: 100%;"
-            clearable
-          >
-            <el-option 
-              v-for="size in getSupportedSizes()" 
-              :key="size" 
-              :label="size" 
-              :value="size" 
-            />
-          </el-select>
-        </div>
-        <div style="width: 240px;">
-          <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择视频服务商</label>
-          <el-select 
-            v-model="videoProviderId" 
-            placeholder="请选择视频服务商" 
-            size="large" 
-            style="width: 100%;"
-            clearable
-          >
-            <el-option 
-              v-for="provider in store.videoProviders" 
-              :key="provider.name" 
-              :label="`${provider.name} (${provider.type})`" 
-              :value="provider.name" 
+              <el-option 
+                v-for="provider in store.imageProviders.filter(p => p.enabled)" 
+                :key="provider.name" 
+                :label="`${provider.name} (${provider.type})`" 
+                :value="provider.name" 
+              >
+                <template #default="{ option }">
+                  <div class="option-content">
+                    <div class="option-name">{{ provider.name }}</div>
+                    <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
+                  </div>
+                </template>
+              </el-option>
+            </el-select>
+          </div>
+          
+          <div style="width: 200px;">
+            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择图片尺寸</label>
+            <el-select 
+              v-model="store.selectedSize" 
+              placeholder="请选择图片尺寸" 
+              size="large" 
+              style="width: 100%;"
+              clearable
             >
-              <template #default="{ option }">
-                <div class="option-content">
-                  <div class="option-name">{{ provider.name }}</div>
-                  <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
-                </div>
+              <el-option 
+                v-for="size in getSupportedSizes()" 
+                :key="size" 
+                :label="size" 
+                :value="size" 
+              />
+            </el-select>
+          </div>
+          
+          <!-- 参考图配置 -->
+          <div v-if="getCurrentImageProvider()?.support_reference_image" style="width: 240px;">
+            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">参考图</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <el-switch 
+                v-model="store.referenceImageEnabled" 
+                size="large"
+                @change="onReferenceImageToggle"
+              />
+              <el-dropdown trigger="click" @command="onReferenceImageOptionSelect">
+                <el-button size="small" :disabled="!store.referenceImageEnabled">
+                  {{ referenceImageOptionLabel }}
+                  <el-icon class="el-icon--right"><arrow-down /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="upload">上传图片</el-dropdown-item>
+                    <el-dropdown-item command="cover">使用封面图片</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </div>
+          
+          <!-- 参考图上传 -->
+          <div v-if="store.referenceImageEnabled" style="width: 240px;">
+            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">上传参考图</label>
+            <el-upload
+              v-model:file-list="referenceImageFiles"
+              :action="''"
+              :before-upload="handleBeforeUpload"
+              :limit="getMaxReferenceImages()"
+              :on-exceed="handleExceed"
+              list-type="picture-card"
+              :auto-upload="false"
+            >
+              <el-icon><plus /></el-icon>
+              <template #default="{ file }">
+                <el-image
+                  :src="(file as UploadFile).url"
+                  :alt="(file as UploadFile).name"
+                  fit="cover"
+                  style="width: 100%; height: 100%;"
+                />
+                <span class="el-upload-list__item-actions">
+                  <span
+                    class="el-upload-list__item-preview"
+                    @click="handlePictureCardPreview(file as UploadFile)"
+                  >
+                    <el-icon><zoom-in /></el-icon>
+                  </span>
+                  <span
+                    class="el-upload-list__item-delete"
+                    @click="handleRemove(file as UploadFile)"
+                  >
+                    <el-icon><delete /></el-icon>
+                  </span>
+                </span>
               </template>
-            </el-option>
-          </el-select>
+            </el-upload>
+            <el-dialog v-model="previewVisible" title="预览" width="500px">
+              <el-image
+                :src="previewImage"
+                fit="contain"
+                style="width: 100%; height: 100%;"
+              />
+            </el-dialog>
+          </div>
+          
+          <div style="width: 240px;">
+            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">选择视频服务商</label>
+            <el-select 
+              v-model="videoProviderId" 
+              placeholder="请选择视频服务商" 
+              size="large" 
+              style="width: 100%;"
+              clearable
+            >
+              <el-option 
+                v-for="provider in store.videoProviders" 
+                :key="provider.name" 
+                :label="`${provider.name} (${provider.type})`" 
+                :value="provider.name" 
+              >
+                <template #default="{ option }">
+                  <div class="option-content">
+                    <div class="option-name">{{ provider.name }}</div>
+                    <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
+                  </div>
+                </template>
+              </el-option>
+            </el-select>
+          </div>
+          <button class="btn btn-secondary" @click="goBack" style="background: white; border: 1px solid var(--border-color);">
+            上一步
+          </button>
+          <button class="btn btn-primary" @click="startGeneration" :disabled="!imageProviderId">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+            开始生成图片
+          </button>
+          <button class="btn btn-success" @click="startVideoGeneration" :disabled="!videoProviderId">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            开始生成视频
+          </button>
         </div>
-        <button class="btn btn-secondary" @click="goBack" style="background: white; border: 1px solid var(--border-color);">
-          上一步
-        </button>
-        <button class="btn btn-primary" @click="startGeneration" :disabled="!imageProviderId">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
-          开始生成图片
-        </button>
-        <button class="btn btn-success" @click="startVideoGeneration" :disabled="!videoProviderId">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          开始生成视频
-        </button>
-      </div>
     </div>
 
     <div class="outline-grid">
@@ -270,11 +341,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // 导入共享平台映射工具
 import { loadPlatformConfig } from '../utils/platformUtils'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type { UploadFile } from 'element-plus'
+import { ArrowDown, Plus, ZoomIn, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useGeneratorStore } from '../stores/generator'
 
@@ -287,6 +360,113 @@ const imageProviderId = ref<string | null>(store.imageProviderId)
 const videoProviderId = ref<string | null>(store.videoProviderId)
 // 请求管理对象，用于存储和取消正在进行的请求
 const activeRequests = ref<Record<number, AbortController>>({})
+
+// 参考图相关数据
+const referenceImageFiles = ref<UploadFile[]>([])
+const previewVisible = ref(false)
+const previewImage = ref('')
+
+// 计算属性：获取当前选中的图片提供商
+const getCurrentImageProvider = () => {
+  if (!imageProviderId.value) return null
+  return store.imageProviders.find(p => p.name === imageProviderId.value) || null
+}
+
+// 计算属性：获取参考图选项标签
+const referenceImageOptionLabel = computed(() => {
+  if (store.useCoverAsReference) {
+    return '使用封面图片'
+  }
+  return '上传图片'
+})
+
+// 获取最大参考图数量
+const getMaxReferenceImages = () => {
+  const provider = getCurrentImageProvider()
+  if (provider?.max_reference_images) {
+    return provider.max_reference_images
+  }
+  return provider?.support_multiple_reference_images ? 4 : 1
+}
+
+// 参考图相关方法
+const onImageProviderChange = () => {
+  // 重置参考图设置
+  const provider = getCurrentImageProvider()
+  if (!provider?.support_reference_image) {
+    store.referenceImageEnabled = false
+    store.referenceImages = []
+    store.useCoverAsReference = false
+    referenceImageFiles.value = []
+  }
+}
+
+const onReferenceImageToggle = (enabled: boolean) => {
+  if (!enabled) {
+    store.referenceImages = []
+    store.useCoverAsReference = false
+    referenceImageFiles.value = []
+  }
+}
+
+const onReferenceImageOptionSelect = (command: string) => {
+  if (command === 'cover') {
+    store.useCoverAsReference = true
+    store.referenceImages = []
+    referenceImageFiles.value = []
+  } else {
+    store.useCoverAsReference = false
+  }
+}
+
+// 图片上传相关方法
+const handleBeforeUpload = (rawFile: File) => {
+  // 这里只是本地处理，不实际上传到服务器
+  // 生成一个本地URL用于预览
+  const reader = new FileReader()
+  reader.readAsDataURL(rawFile)
+  reader.onload = () => {
+    const file: UploadFile = {
+      uid: Date.now(),
+      name: rawFile.name,
+      status: 'success',
+      url: reader.result as string,
+      raw: rawFile
+    }
+    referenceImageFiles.value.push(file)
+    // 保存到store
+    saveReferenceImagesToStore()
+  }
+  return false
+}
+
+const handleExceed = (files: File[], fileList: UploadFile[]) => {
+  ElMessage.warning(`最多只能上传 ${getMaxReferenceImages()} 张参考图`)
+}
+
+const handleRemove = (file: UploadFile) => {
+  const index = referenceImageFiles.value.findIndex(item => item.uid === file.uid)
+  if (index !== -1) {
+    referenceImageFiles.value.splice(index, 1)
+    // 保存到store
+    saveReferenceImagesToStore()
+  }
+}
+
+const handlePictureCardPreview = (file: UploadFile) => {
+  previewImage.value = file.url as string
+  previewVisible.value = true
+}
+
+const saveReferenceImagesToStore = () => {
+  if (store.useCoverAsReference) {
+    // 使用封面图片，不需要保存上传的图片
+    store.referenceImages = []
+  } else {
+    // 保存上传的图片URL到store
+    store.referenceImages = referenceImageFiles.value.map(file => file.url as string)
+  }
+}
 
 const getPageTypeName = (type: string) => {
   const names = {
@@ -484,6 +664,8 @@ const startGeneration = () => {
   }
   // 保存选择的图片服务商ID到状态管理
   store.setImageProviderId(imageProviderId.value)
+  // 保存参考图设置
+  saveReferenceImagesToStore()
   router.push('/generate')
 }
 
@@ -578,7 +760,9 @@ const generateSingleImage = async (index: number) => {
       page_index: index,
       prompt: store.outline.pages[index].content,
       image_provider: imageProviderId.value,
-      size: store.selectedSize // 添加用户选择的尺寸
+      size: store.selectedSize, // 添加用户选择的尺寸
+      reference_images: store.referenceImages,
+      use_cover_as_reference: store.useCoverAsReference
     }, {
       signal: controller.signal
     })

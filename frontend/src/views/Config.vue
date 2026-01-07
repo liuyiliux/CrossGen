@@ -473,6 +473,17 @@
                 <span class="help-text">{{ t('config.supportMultipleReferenceImagesHelp') }}</span>
               </el-form-item>
               
+              <el-form-item :label="t('config.maxReferenceImages')" v-if="currentProvider.support_multiple_reference_images">
+                <el-input-number
+                  v-model="currentProvider.max_reference_images"
+                  :min="1"
+                  :max="10"
+                  :step="1"
+                  :placeholder="t('config.maxReferenceImagesPlaceholder')"
+                />
+                <span class="help-text">{{ t('config.maxReferenceImagesHelp') }}</span>
+              </el-form-item>
+              
               <!-- 支持的尺寸 - 所有类型提供商都显示 -->
               <el-form-item :label="t('config.supportedSizes')">
                 <el-input
@@ -1062,6 +1073,10 @@ const openProviderDialog = (type: 'text' | 'image', provider?: any) => {
         enabled: true,
         timeout: 30,
         supported_sizes: JSON.stringify(["1024x1024", "1056x1584", "1584x1056"], null, 2), // 默认尺寸
+        support_reference_image: false,
+        support_multiple_reference_images: false,
+        max_reference_images: 1,
+        reference_image_field: '',
         request_config: {
           template: ''
         },

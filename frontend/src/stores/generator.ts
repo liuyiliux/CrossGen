@@ -39,6 +39,11 @@ interface GeneratorState {
   // 用户上传的图片（用于图片生成参考）
   userImages: File[]
   
+  // 参考图相关状态
+  referenceImageEnabled: boolean
+  referenceImages: Array<{ file: File; url: string }>
+  useCoverAsReference: boolean
+  
   // 大纲数据
   outline: {
     raw: string
@@ -146,6 +151,11 @@ export const useGeneratorStore = defineStore('generator', {
         // 用户上传的图片
         userImages: [],
         
+        // 参考图相关状态
+        referenceImageEnabled: false,
+        referenceImages: [],
+        useCoverAsReference: false,
+        
         // 大纲数据
         outline: saved.outline || {
           raw: '',
@@ -217,7 +227,49 @@ export const useGeneratorStore = defineStore('generator', {
       this.userImages = images
     },
 
+    /**
+     * 设置参考图开关状态
+     */
+    setReferenceImageEnabled(enabled: boolean) {
+      this.referenceImageEnabled = enabled
+    },
 
+    /**
+     * 设置参考图
+     */
+    setReferenceImages(images: Array<{ file: File; url: string }>) {
+      this.referenceImages = images
+    },
+
+    /**
+     * 清除参考图
+     */
+    clearReferenceImages() {
+      this.referenceImages = []
+    },
+
+    /**
+     * 设置是否使用封面作为参考图
+     */
+    setUseCoverAsReference(use: boolean) {
+      this.useCoverAsReference = use
+    },
+
+    /**
+     * 准备参考图数据，根据模型支持的最大参考图数量处理
+     */
+    prepareReferenceImages(maxImages: number) {
+      if (!this.referenceImageEnabled) return null
+      
+      // 根据模型支持的最大参考图数量截取
+      const processedImages = this.referenceImages.slice(0, maxImages)
+      
+      return {
+        files: processedImages.map(img => img.file),
+        useCover: this.useCoverAsReference,
+        maxImages
+      }
+    },
 
     /**
      * 设置文本服务商ID
