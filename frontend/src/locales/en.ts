@@ -13,6 +13,7 @@ export default {
     test: 'Test',
     copy: 'Copy',
     delete: 'Delete',
+    add: 'Add',
     confirm: 'Confirm',
     cancel: 'Cancel',
     connected: 'Connected',

@@ -94,9 +94,12 @@ class GenericImageProvider(BaseProvider):
             self.initialized = False
             return False
     
-    async def test_connection(self) -> bool:
+    async def test_connection(self, reference_images: list = None) -> bool:
         """测试通用图像提供商连接
         
+        Args:
+            reference_images: 参考图URL列表（可选）
+            
         Returns:
             bool: 连接是否成功
         """
@@ -105,6 +108,12 @@ class GenericImageProvider(BaseProvider):
         print(f"类型: {type(self).__name__}")
         print(f"模型: {self.model}")
         print(f"基础URL: {self.base_url}")
+        
+        # 打印参考图信息
+        if reference_images and len(reference_images) > 0:
+            print(f"使用提供的参考图: {reference_images}")
+        else:
+            print("未提供参考图，将使用无参考图的测试请求")
         
         if not self.initialized or not self.client:
             print(f"提供商尚未初始化，尝试初始化...")
@@ -117,20 +126,38 @@ class GenericImageProvider(BaseProvider):
             # 优先从supported_sizes获取测试尺寸，否则使用默认逻辑
             test_size = None
             if self.supported_sizes and len(self.supported_sizes) > 0:
-                test_size = self.supported_sizes[0]
-                print(f"  使用支持尺寸列表中的第一个尺寸: {test_size}")
+                raw_size = self.supported_sizes[0]
+                # 检查尺寸格式是否有效
+                if isinstance(raw_size, str) and "*" in raw_size:
+                    try:
+                        parts = raw_size.split("*")
+                        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+                            test_size = raw_size
+                            print(f"  使用支持尺寸列表中的第一个尺寸: {test_size}")
+                        else:
+                            raise ValueError(f"无效的尺寸值: {raw_size}")
+                    except (ValueError, AttributeError) as e:
+                        print(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
+                else:
+                    print(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
             
             # 如果没有获取到尺寸，使用默认逻辑
             if not test_size:
                 test_size = self.default_params.get("size", "1024*1024")
                 print(f"  使用默认尺寸: {test_size}")
             
+            # 构建测试请求参数
             test_params = {
                 "model": self.model,
                 "prompt": "测试图片生成",
                 "size": test_size,
                 "n": 1
             }
+            
+            # 如果提供了参考图，添加到测试参数中
+            if reference_images and len(reference_images) > 0:
+                test_params["reference_images"] = reference_images
+                print(f"  已添加 {len(reference_images)} 张参考图到测试请求")
             
             # 处理尺寸
             test_params["size"] = self._process_size(test_params.get("size"))
@@ -348,6 +375,10 @@ class GenericImageProvider(BaseProvider):
                 # 替换换行符、制表符等控制字符为空格，确保JSON有效
                 value = value.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
             clean_params[key] = value
+        
+        # 确保 reference_images 变量存在，避免模板渲染错误
+        if 'reference_images' not in clean_params:
+            clean_params['reference_images'] = []
         
         # 渲染模板
         rendered = self.request_template.render(**clean_params)

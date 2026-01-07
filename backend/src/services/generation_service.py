@@ -54,15 +54,16 @@ class GenerationService:
     def __init__(self):
         """初始化内容生成服务"""
         # 只初始化一次
-        if not self._initialized:
+        if not GenerationService._initialized:
             self.active_jobs: Dict[str, GenerationStatus] = {}
             self.provider_manager: Optional[ProviderManager] = None
             self.provider_manager_loaded = False
             self.image_analysis_service: Optional[Any] = None
-            self._initialized = True
+            GenerationService._initialized = True
     
     async def initialize_provider_manager(self) -> bool:
-        """初始化提供商管理器
+        """
+        初始化提供商管理器
         
         Returns:
             bool: 初始化是否成功
@@ -81,12 +82,14 @@ class GenerationService:
                     self.provider_manager = self._global_provider_manager
                     self.provider_manager_loaded = True
                     print("使用全局提供商管理器实例")
+                    print(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
                 else:
                     # 全局提供商管理器不存在，创建新实例
                     self.provider_manager = ProviderManager()
                     await self.provider_manager.load_providers()
                     self.provider_manager_loaded = True
                     print("创建新的提供商管理器实例")
+                    print(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
                 
                 # 初始化图片分析服务
                 from src.services.image_analysis_service import ImageAnalysisService

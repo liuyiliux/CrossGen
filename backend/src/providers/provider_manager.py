@@ -645,17 +645,21 @@ class ProviderManager:
             
             # 初始化并测试连接
             if await provider.initialize():
+                # 如果提供了参考图，传递给test_connection方法
+                if reference_images:
+                    return await provider.test_connection(reference_images=reference_images)
                 return await provider.test_connection()
             return False
         except Exception as e:
             print(f"测试文本提供商连接失败: {str(e)}")
             return False
     
-    async def test_image_provider_connection(self, config: Dict[str, Any]) -> bool:
+    async def test_image_provider_connection(self, config: Dict[str, Any], reference_images: list = None) -> bool:
         """测试图像提供商连接（使用临时配置）
         
         Args:
             config: 提供商配置
+            reference_images: 参考图URL列表（可选）
             
         Returns:
             bool: 连接是否成功

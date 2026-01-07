@@ -13,6 +13,7 @@ export default {
     test: '测试',
     copy: '复制',
     delete: '删除',
+    add: '添加',
     confirm: '确认',
     cancel: '取消',
     connected: '已连接',

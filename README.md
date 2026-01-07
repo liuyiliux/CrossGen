@@ -522,7 +522,7 @@ WantedBy=multi-user.target
 - [Element Plus](https://element-plus.org/) - Vue 3 UI组件库
 - [OpenAI](https://openai.com/) - AI模型提供商
 - [Google Gemini](https://gemini.google.com/) - Google AI模型
-- [SiliconFlow](https://siliconflow.cn/) - AI模型平台
+- [SiliconFlow](https://siliconflow.cn/) - AI模型平台 (邀请码: https://cloud.siliconflow.cn/i/fTKOkjDc)
 - [Stable Diffusion](https://stability.ai/stable-diffusion) - 图像生成模型
 - [uv](https://github.com/astral-sh/uv) - 快速Python包管理器
 - [Pydantic](https://docs.pydantic.dev/) - 数据验证和序列化

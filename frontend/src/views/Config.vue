@@ -483,6 +483,68 @@
                 />
                 <span class="help-text">{{ t('config.maxReferenceImagesHelp') }}</span>
               </el-form-item>
+
+              <!-- 测试参考图上传 - 当支持参考图时显示 -->
+              <el-form-item v-if="currentProvider.support_reference_image" label="测试参考图">
+                <div class="test-reference-upload">
+                  <el-upload
+                    v-model:file-list="testReferenceImageFiles"
+                    :action="''"
+                    :before-upload="handleTestReferenceBeforeUpload"
+                    :limit="1"
+                    :on-exceed="handleTestReferenceExceed"
+                    list-type="picture-card"
+                    :auto-upload="false"
+                    :on-change="(file: any) => {
+                      if (file.raw) {
+                        // 将文件转换为base64
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          const result = e.target?.result as string;
+                          testReferenceImages.value = [result];
+                        };
+                        reader.readAsDataURL(file.raw);
+                      }
+                    }"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    <template #file="{ file }">
+                      <el-image
+                        :src="file.url"
+                        :alt="file.name"
+                        fit="cover"
+                        style="width: 100%; height: 100%;"
+                      />
+                      <span class="el-upload-list__item-actions">
+                        <span
+                          class="el-upload-list__item-preview"
+                          @click="previewTestReferenceImage(file)"
+                        >
+                          <el-icon><ZoomIn /></el-icon>
+                        </span>
+                        <span
+                          class="el-upload-list__item-delete"
+                          @click="removeTestReferenceImage(0)"
+                        >
+                          <el-icon><Delete /></el-icon>
+                        </span>
+                      </span>
+                    </template>
+                  </el-upload>
+                  <div class="help-text" style="margin-top: 8px;">
+                    上传参考图用于测试连接（可选）
+                  </div>
+                </div>
+              </el-form-item>
+
+              <!-- 参考图预览对话框 -->
+              <el-dialog v-model="testReferenceImagePreviewVisible" title="参考图预览" width="400px">
+                <el-image
+                  :src="testReferenceImagePreviewUrl"
+                  fit="contain"
+                  style="width: 100%; height: 100%;"
+                />
+              </el-dialog>
               
               <!-- 支持的尺寸 - 所有类型提供商都显示 -->
               <el-form-item :label="t('config.supportedSizes')">
@@ -660,7 +722,7 @@ import { useI18n } from 'vue-i18n'
 
 // 国际化
 const { t } = useI18n()
-import { Upload, RefreshRight, Refresh, Plus, Edit, Delete, Connection, CopyDocument } from '@element-plus/icons-vue'
+import { Upload, RefreshRight, Refresh, Plus, Edit, Delete, Connection, CopyDocument, ZoomIn } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 // 标签页状态
@@ -788,6 +850,51 @@ const savingProvider = ref(false)
 
 // 测试状态管理
 const testingProviders = ref<Record<string, boolean>>({}) // 记录正在测试的服务商
+
+// 参考图上传相关
+const testReferenceImages = ref<string[]>([]) // 测试用的参考图URL列表
+const testReferenceImageFiles = ref<any[]>([]) // 参考图文件列表
+const testReferenceImagePreviewVisible = ref(false)
+const testReferenceImagePreviewUrl = ref('')
+
+// 参考图上传预处理
+const handleTestReferenceBeforeUpload = (file: any) => {
+  const isImage = file.type.startsWith('image/')
+  const isLt10M = file.size / 1024 / 1024 < 10
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    return false
+  }
+  if (!isLt10M) {
+    ElMessage.error('图片大小不能超过 10MB!')
+    return false
+  }
+  return true
+}
+
+// 处理参考图超出数量
+const handleTestReferenceExceed = () => {
+  ElMessage.warning(`最多只能上传 1 张测试参考图`)
+}
+
+// 移除测试参考图
+const removeTestReferenceImage = (index: number) => {
+  testReferenceImageFiles.value.splice(index, 1)
+  testReferenceImages.value.splice(index, 1)
+}
+
+// 预览测试参考图
+const previewTestReferenceImage = (file: any) => {
+  testReferenceImagePreviewUrl.value = file.url
+  testReferenceImagePreviewVisible.value = true
+}
+
+// 清除测试参考图
+const clearTestReferenceImages = () => {
+  testReferenceImageFiles.value = []
+  testReferenceImages.value = []
+}
 
 // 通用设置
 const generalFormRef = ref()
@@ -1127,13 +1234,23 @@ const testProviderConnection = async (
   }
   
   try {
+    // 构建测试请求数据
+    let testData = undefined
+    if (isEditingMode) {
+      testData = { ...resolvedProvider }
+      // 如果是图像提供商且支持参考图，添加测试参考图URL
+      if (resolvedType === 'image' && resolvedProvider.support_reference_image && testReferenceImages.value.length > 0) {
+        testData.reference_images = testReferenceImages.value
+      }
+    }
+    
     // 调用后端API测试连接
     // 在编辑模式下，我们发送提供商配置进行测试，而不是依赖已保存的配置
     const response = await axios.post(
       isEditingMode 
         ? `/api/config/provider/test/${resolvedType}` 
         : `/api/config/provider/test/${resolvedType}/${resolvedProvider.name}`,
-      isEditingMode ? resolvedProvider : undefined
+      testData
     )
     
     if (response.data?.success) {

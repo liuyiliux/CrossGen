@@ -141,8 +141,12 @@
               list-type="picture-card"
               :auto-upload="false"
             >
-              <el-icon><plus /></el-icon>
-              <template #default="{ file }">
+              <!-- 上传按钮插槽 -->
+              <template #default>
+                <el-icon><plus /></el-icon>
+              </template>
+              <!-- 文件列表项插槽 -->
+              <template #file="{ file }">
                 <el-image
                   :src="(file as UploadFile).url"
                   :alt="(file as UploadFile).name"
