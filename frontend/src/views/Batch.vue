@@ -78,12 +78,11 @@
             <el-option 
               v-for="provider in generatorStore.textProviders.filter(p => p.enabled)" 
               :key="provider.name" 
-              :label="`${provider.name} (${provider.model})`" 
               :value="provider.name" 
             >
               <div class="option-content">
                 <div class="option-name">{{ provider.name }}</div>
-                <div class="option-desc">{{ provider.type }} - {{ provider.model }}</div>
+                <div class="option-desc">{{ provider.model }}</div>
               </div>
             </el-option>
           </el-select>
@@ -95,7 +94,7 @@
             <el-checkbox
               v-for="platform in platforms"
               :key="platform.value"
-              :label="platform.value"
+              :value="platform.value"
             >
               {{ platform.label }}
             </el-checkbox>
@@ -172,10 +171,11 @@
           </div>
         </template>
         
-        <el-collapse v-model="activeNames" accordion>
-          <el-collapse-item 
-            v-for="(result, index) in results" 
-            :key="index" 
+        <el-collapse v-model="activeNames">
+          <el-collapse-item
+            v-for="(result, index) in results"
+            :key="result.job_id || index"
+            :name="`result-${result.job_id || index}`"
             :title="`${getPlatformLabel(result.platform)} - ${result.title}`"
           >
             <div class="result-content">
@@ -248,7 +248,7 @@ const generating = ref(false)
 const checkingStatus = ref(false)
 const jobInfo = ref<any>(null)
 const results = ref<any[]>([])
-const activeNames = ref(['0'])
+const activeNames = ref([])
 
 // 获取平台标签
 const getPlatformLabel = (platform: string) => {
@@ -326,7 +326,7 @@ const resetForm = () => {
   batchFormRef.value?.resetFields()
   jobInfo.value = null
   results.value = []
-  activeNames.value = ['0']
+  activeNames.value = []
 }
 
 // 开始批量生成

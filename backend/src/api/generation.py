@@ -83,14 +83,64 @@ async def generate_content(
 
 @router.post("/batch", response_model=BatchGenerationResponse)
 async def batch_generate(
-    request: BatchGenerationRequest,
-    background_tasks: BackgroundTasks
+    request: Request,
+    background_tasks: BackgroundTasks,
+    topics: Optional[str] = Form(None),
+    platforms: Optional[str] = Form(None),
+    text_provider: Optional[str] = Form(None),
+    reference_images: Optional[List[UploadFile]] = File(None)
 ) -> BatchGenerationResponse:
-    """批量生成请求"""
+    """批量生成请求
+    
+    支持两种请求格式：
+    1. JSON格式：符合BatchGenerationRequest模型
+    2. multipart/form-data格式：用于支持文件上传
+    """
     
     try:
+        # 获取请求内容类型
+        content_type = request.headers.get("content-type", "")
+        
+        ref_images_list = []
+        
+        # 如果是JSON请求
+        if "application/json" in content_type:
+            request_body = await request.json()
+            batch_request = BatchGenerationRequest(**request_body)
+            # 从JSON请求中提取参考图
+            if request_body.get("reference_images"):
+                ref_images_list = request_body.get("reference_images")
+        # 如果是表单请求
+        elif "multipart/form-data" in content_type:
+            # 处理文件上传
+            if reference_images:
+                # 读取上传的图片并转换为base64
+                import base64
+                for image in reference_images:
+                    image_data = await image.read()
+                    base64_image = base64.b64encode(image_data).decode("utf-8")
+                    ref_images_list.append({
+                        "type": "image_url",
+                        "image_url": f"data:{image.content_type};base64,{base64_image}"
+                    })
+            
+            if not topics or not platforms:
+                raise HTTPException(status_code=422, detail="请求格式错误，缺少必要参数")
+            
+            # 解析JSON字符串
+            import json
+            topics_list = json.loads(topics)
+            platforms_list = json.loads(platforms)
+            
+            batch_request = BatchGenerationRequest(
+                topics=topics_list,
+                platforms=platforms_list
+            )
+        else:
+            raise HTTPException(status_code=415, detail="不支持的媒体类型")
+        
         service = GenerationService()
-        job_id = await service.start_batch_generation(request, background_tasks)
+        job_id = await service.start_batch_generation(batch_request, background_tasks, reference_images=ref_images_list)
         return BatchGenerationResponse(
             job_id=job_id,
             status="processing",

@@ -322,6 +322,7 @@ export default {
     pleaseSelectPlatforms: '请选择目标平台',
     pleaseEnterValidTopics: '请输入有效的生成主题',
     confirmCancelJob: '确定要取消这个批量生成任务吗？',
+    cancelJob: '取消任务',
     startBatchGenerate: '开始批量生成'
   }
 }

@@ -545,7 +545,8 @@ class GenerationService:
     async def start_batch_generation(
         self, 
         request: BatchGenerationRequest,
-        background_tasks
+        background_tasks,
+        reference_images: List = None
     ) -> str:
         """启动批量生成任务"""
         job_id = str(uuid.uuid4())
@@ -563,11 +564,12 @@ class GenerationService:
         
         self.active_jobs[job_id] = status
         
-        # 启动后台任务
+        # 启动后台任务，传入参考图
         background_tasks.add_task(
             self._process_batch_generation,
             job_id,
-            request
+            request,
+            reference_images or []
         )
         
         return job_id
@@ -575,7 +577,8 @@ class GenerationService:
     async def _process_batch_generation(
         self,
         job_id: str,
-        request: BatchGenerationRequest
+        request: BatchGenerationRequest,
+        reference_images: List = None
     ):
         """处理批量生成任务"""
         try:
@@ -592,7 +595,7 @@ class GenerationService:
                             options=request.options
                         )
                         
-                        response = await self.generate_single(gen_request)
+                        response = await self.generate_single(gen_request, reference_images=reference_images or [])
                         
                         if response.success and response.results:
                             results.extend(response.results)
