@@ -694,6 +694,9 @@ const generateSingleImage = async (index: number) => {
   // 保存选择的图片服务商ID到状态管理
   store.setImageProviderId(imageProviderId.value)
   
+  // 保存参考图设置
+  saveReferenceImagesToStore()
+  
   // 确保images数组有足够的元素
   while (store.images.length <= index) {
     store.images.push({
@@ -719,13 +722,27 @@ const generateSingleImage = async (index: number) => {
   
   console.group(`生成第${index + 1}页图片`)
   console.log('使用提供商:', imageProviderId.value)
+  console.log('当前store中的imageProviderId:', store.imageProviderId)
   console.log('提示词:', store.outline.pages[index].content)
+  console.log('参考图设置:', {
+    referenceImages: store.referenceImages,
+    useCoverAsReference: store.useCoverAsReference
+  })
+  console.log('历史记录ID:', store.recordId)
   
   try {
+    // 确保使用正确的提供商ID
+    if (imageProviderId.value) {
+      store.imageProviderId = imageProviderId.value
+      console.log('已更新store.imageProviderId为:', imageProviderId.value)
+    }
+    
     // 检查recordId是否为null，如果是，则创建新的历史记录
-    if (!store.recordId) {
+    let historyId = store.recordId
+    if (!historyId) {
       try {
         // 创建新的历史记录
+        console.log('准备创建新历史记录...')
         const createHistoryResponse = await axios.post('/api/history', {
           topic: store.topic,
           platform: store.selectedPlatform || 'xiaohongshu', // 使用store中的platform或默认值
@@ -743,27 +760,30 @@ const generateSingleImage = async (index: number) => {
           signal: controller.signal
         })
         
-        if (createHistoryResponse.data) {
-          store.recordId = createHistoryResponse.data.id
-          console.log('创建新历史记录成功，recordId:', store.recordId)
+        if (createHistoryResponse.data && createHistoryResponse.data.id) {
+          historyId = createHistoryResponse.data.id
+          store.recordId = historyId
+          console.log('创建新历史记录成功，recordId:', historyId)
         } else {
           throw new Error('创建历史记录失败: 无效的响应数据')
         }
       } catch (historyError: any) {
         console.error('创建历史记录失败:', historyError)
+        console.error('历史记录创建错误详情:', historyError.response?.data || historyError.message)
         store.images[index].status = 'error'
         store.images[index].error = '创建历史记录失败，请重试'
-        ElMessage.error('创建历史记录失败，请重试')
+        ElMessage.error(`创建历史记录失败: ${historyError.response?.data?.detail || historyError.message}`)
         return
       }
     }
     
     // 调用API生成单张图片
+    console.log('准备调用生成图片API...')
     const response = await axios.post('/api/generate/image', {
-      history_id: store.recordId,
+      history_id: historyId,
       page_index: index,
       prompt: store.outline.pages[index].content,
-      image_provider: imageProviderId.value,
+      image_provider: store.imageProviderId, // 使用store中的imageProviderId确保一致性
       size: store.selectedSize, // 添加用户选择的尺寸
       reference_images: store.referenceImages,
       use_cover_as_reference: store.useCoverAsReference

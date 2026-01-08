@@ -694,10 +694,17 @@ class GenerationService:
             provider_config = self.provider_manager.image_providers.get(image_provider)
             if not provider_config:
                 print(f"未找到指定的图像提供商: {image_provider}")
-                return {
-                    "success": False,
-                    "error": f"未找到指定的图像提供商: {image_provider}"
-                }
+                print(f"当前可用的图像提供商: {list(self.provider_manager.image_providers.keys())}")
+                # 尝试重新加载提供商配置
+                print("尝试重新加载提供商配置...")
+                await self.provider_manager.load_image_providers(force_reload=True)
+                # 再次尝试获取
+                provider_config = self.provider_manager.image_providers.get(image_provider)
+                if not provider_config:
+                    return {
+                        "success": False,
+                        "error": f"未找到指定的图像提供商: {image_provider}。可用的提供商: {list(self.provider_manager.image_providers.keys())}"
+                    }
             
             provider = provider_config["provider"]
             if not provider.is_available():

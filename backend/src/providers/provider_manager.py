@@ -372,7 +372,12 @@ class ProviderManager:
         Returns:
             Optional[Dict[str, Any]]: 包含提供商实例和参考图配置的字典
         """
-        return self.image_providers.get(name)
+        provider = self.image_providers.get(name)
+        if not provider:
+            print(f"调试：get_image_provider 未找到提供商 {name}")
+            print(f"调试：当前可用图像提供商列表: {list(self.image_providers.keys())}")
+            print(f"调试：当前可用图像提供商数量: {len(self.image_providers)}")
+        return provider
     
     def get_available_text_providers(self) -> List[str]:
         """获取可用的文本提供商列表

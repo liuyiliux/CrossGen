@@ -205,7 +205,9 @@ async def generate_single_image(
     page_index: int = Body(..., description="页面索引"),
     prompt: str = Body(..., description="生成提示词"),
     image_provider: str = Body(..., description="图像提供商名称"),
-    reference_images: List[Dict[str, Any]] = Body(None, description="参考图片列表")
+    reference_images: List[Dict[str, Any]] = Body(None, description="参考图片列表"),
+    use_cover_as_reference: bool = Body(False, description="是否使用封面作为参考图"),
+    image_id: Optional[str] = Body(None, description="图片ID，用于替换原有图片")
 ) -> Dict[str, Any]:
     """生成单张图片"""
     
@@ -222,15 +224,57 @@ async def generate_single_image(
         if not history:
             raise HTTPException(status_code=404, detail="历史记录不存在")
         
+        # 如果使用封面作为参考图，获取封面图
+        processed_reference_images = reference_images or []
+        if use_cover_as_reference and history.images:
+            # 找到封面图（通常是第一张图片或标记为封面）
+            cover_image = None
+            for img in history.images:
+                if img.index == 0:  # 假设封面是 index=0 的图片
+                    cover_image = img
+                    break
+            
+            if cover_image and cover_image.url:
+                print(f"获取到封面图: {cover_image.url}")
+                # 检查封面图URL类型
+                if cover_image.url.startswith("http://") or cover_image.url.startswith("https://"):
+                    # HTTP URL，下载并转换为 base64
+                    import httpx
+                    try:
+                        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+                            response = await client.get(cover_image.url)
+                            response.raise_for_status()
+                            image_data = response.content
+                            import base64
+                            base64_image = base64.b64encode(image_data).decode("utf-8")
+                            # 尝试从响应头获取 content-type
+                            content_type = response.headers.get("content-type", "image/png")
+                            processed_reference_images.append({
+                                "type": "image_url",
+                                "image_url": f"data:{content_type};base64,{base64_image}"
+                            })
+                            print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                    except Exception as e:
+                        print(f"下载封面图失败: {str(e)}")
+                else:
+                    # 本地相对路径或其他格式，直接添加到参考图片列表
+                    processed_reference_images.append({
+                        "type": "image_url",
+                        "image_url": cover_image.url
+                    })
+                    print(f"封面图已添加到参考图片列表: {cover_image.url}")
+        
         # 更新历史记录状态为image_generating
         await history_service.update_history(
             history_id,
             HistoryRecordUpdate(status=GenerationStatus.IMAGE_GENERATING)
         )
         
-        # 生成图片
+        # 生成图片（传递处理后的参考图）
         service = GenerationService()
-        result = await service.generate_single_image(prompt, image_provider, reference_images)
+        result = await service.generate_single_image(prompt, image_provider, processed_reference_images, history_id, page_index, image_id)
+        
+        print(f"生成图片结果: {result}")
         
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象
@@ -241,28 +285,44 @@ async def generate_single_image(
                 status="success"
             )
             
+            print(f"创建GeneratedImage对象: {generated_image}")
+            print(f"当前历史记录中的图片数量: {len(history.images)}")
+            print(f"当前历史记录中的图片: {[img.model_dump() for img in history.images]}")
+            
             # 更新历史记录，添加生成的图片
             current_images = history.images.copy()
+            print(f"当前images副本: {[img.model_dump() for img in current_images]}")
             
             # 检查是否已有该页面的图片，有则更新，无则添加
             updated = False
             for i, img in enumerate(current_images):
+                print(f"检查图片 {i}: index={img.index}, page_index={page_index}")
                 if img.index == page_index:
                     current_images[i] = generated_image
                     updated = True
+                    print(f"已更新图片 {i}，新图片: {generated_image.model_dump()}")
                     break
             
             if not updated:
                 current_images.append(generated_image)
+                print(f"已添加新图片: {generated_image.model_dump()}")
+            
+            print(f"更新前历史记录状态: {history.status}")
+            print(f"更新后图片列表: {[img.model_dump() for img in current_images]}")
             
             # 更新历史记录状态和图片
-            await history_service.update_history(
+            update_result = await history_service.update_history(
                 history_id,
                 HistoryRecordUpdate(
                     status=GenerationStatus.IMAGE_SUCCESS,
                     images=current_images
                 )
             )
+            
+            print(f"历史记录更新结果: {update_result is not None}")
+            if update_result:
+                print(f"更新后的历史记录图片数量: {len(update_result.images)}")
+                print(f"更新后的历史记录图片: {[img.model_dump() for img in update_result.images]}")
         else:
             # 图片生成失败，更新历史记录状态
             await history_service.update_history(
@@ -333,7 +393,8 @@ async def retry_image(
     history_id: str,
     page_index: int = Body(..., description="页面索引"),
     prompt: str = Body(..., description="生成提示词"),
-    image_provider: str = Body(..., description="图像提供商名称")
+    image_provider: str = Body(..., description="图像提供商名称"),
+    use_cover_as_reference: bool = Body(False, description="是否使用封面作为参考图")
 ) -> Dict[str, Any]:
     """重试图片生成"""
     
@@ -350,15 +411,46 @@ async def retry_image(
         if not history:
             raise HTTPException(status_code=404, detail="历史记录不存在")
         
+        # 如果使用封面作为参考图，获取封面图
+        processed_reference_images = []
+        if use_cover_as_reference and history.images:
+            # 找到封面图（通常是第一张图片或标记为封面）
+            cover_image = None
+            for img in history.images:
+                if img.index == 0:  # 假设封面是 index=0 的图片
+                    cover_image = img
+                    break
+            
+            if cover_image and cover_image.url:
+                print(f"重试接口 - 获取到封面图: {cover_image.url}")
+                # 下载封面图并转换为 base64
+                import httpx
+                try:
+                    async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+                        response = await client.get(cover_image.url)
+                        response.raise_for_status()
+                        image_data = response.content
+                        import base64
+                        base64_image = base64.b64encode(image_data).decode("utf-8")
+                        # 尝试从响应头获取 content-type
+                        content_type = response.headers.get("content-type", "image/png")
+                        processed_reference_images.append({
+                            "type": "image_url",
+                            "image_url": f"data:{content_type};base64,{base64_image}"
+                        })
+                        print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                except Exception as e:
+                    print(f"下载封面图失败: {str(e)}")
+        
         # 更新历史记录状态为image_generating
         await history_service.update_history(
             history_id,
             HistoryRecordUpdate(status=GenerationStatus.IMAGE_GENERATING)
         )
         
-        # 生成图片
+        # 生成图片（传递处理后的参考图）
         service = GenerationService()
-        result = await service.generate_single_image(prompt, image_provider)
+        result = await service.generate_single_image(prompt, image_provider, processed_reference_images)
         
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象

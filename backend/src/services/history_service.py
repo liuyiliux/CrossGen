@@ -115,37 +115,88 @@ class HistoryService:
         file_path = self.history_dir / f"{history_id}.json"
         
         if not file_path.exists():
+            print(f"历史记录文件不存在: {file_path}")
             return None
         
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                content = f.read()
+                print(f"文件内容长度: {len(content)}")
+                data = json.loads(content)
+                
+                print(f"从文件读取历史记录: {history_id}")
+                print(f"原始数据: {data}")
+                print(f"包含images字段: {'images' in data}")
+                
+                if "images" in data:
+                    print(f"历史记录中图片数量: {len(data['images'])}")
+                    for i, img in enumerate(data['images']):
+                        print(f"  图片 {i}: {img}")
+                
                 # 转换日期字符串为datetime对象
                 data["created_at"] = datetime.fromisoformat(data["created_at"])
                 data["updated_at"] = datetime.fromisoformat(data["updated_at"])
+                
                 # 转换images字段的字典列表为GeneratedImage对象列表
-                if "images" in data:
+                processed_images = []
+                
+                # 确保images字段存在且为列表
+                if "images" in data and isinstance(data["images"], list):
+                    print(f"原始图片数据: {data['images']}")
+                    print(f"原始图片数量: {len(data['images'])}")
+                    
                     # 处理每个图片URL
-                    processed_images = []
-                    for img in data["images"]:
-                        # 转换为GeneratedImage对象
-                        gen_image = GeneratedImage(**img)
-                        # 如果图片URL不是http/https开头，转换为前端可访问的URL
-                        if gen_image.url and not gen_image.url.startswith("http://") and not gen_image.url.startswith("https://"):
-                            # 如果已经是相对路径，直接使用
-                            if gen_image.url.startswith("/"):
-                                pass
-                            elif "history/" in gen_image.url:
-                                # 转换为相对URL
-                                gen_image.url = f"/{'/'.join(gen_image.url.split('/')[-3:])}"  # 保留history/xxx_images/xxx.png
+                    for i, img in enumerate(data["images"]):
+                        try:
+                            # 转换为GeneratedImage对象
+                            if isinstance(img, dict):
+                                gen_image = GeneratedImage(**img)
+                            elif hasattr(img, 'model_dump'):
+                                gen_image = img
                             else:
-                                # 直接使用相对路径
-                                gen_image.url = f"/history/{file_path.stem}_images/{img.get('index', 0)}.png"
-                        processed_images.append(gen_image)
-                    data["images"] = processed_images
-                return HistoryRecord(**data)
+                                print(f"未知的图片类型: {type(img)}")
+                                continue
+                            
+                            print(f"处理图片 {i} 成功: {gen_image.model_dump()}")
+                            processed_images.append(gen_image)
+                        except Exception as img_e:
+                            print(f"处理图片 {i} 失败: {img}, 错误: {str(img_e)}")
+                            import traceback
+                            traceback.print_exc()
+                            continue
+                else:
+                    print(f"images字段不存在或不是列表: {data.get('images')}")
+                    data["images"] = []
+                
+                # 确保processed_images不为空，如果原始数据有图片但处理失败，使用原始数据
+                if not processed_images and "images" in data and isinstance(data["images"], list) and len(data["images"]) > 0:
+                    print(f"所有图片处理失败，尝试直接使用原始数据")
+                    processed_images = data["images"]
+                
+                data["images"] = processed_images
+                print(f"处理后图片数量: {len(processed_images)}")
+                print(f"处理后图片列表: {processed_images}")
+                
+                history_record = HistoryRecord(**data)
+                print(f"构建HistoryRecord对象成功")
+                print(f"返回历史记录: {history_record.id}, 图片数量: {len(history_record.images)}")
+                return history_record
+        except json.JSONDecodeError as e:
+            print(f"JSON解析失败 {file_path}: {str(e)}")
+            print(f"错误位置: 行 {e.lineno}, 列 {e.colno}, 字符 {e.pos}")
+            # 打印错误位置附近的内容
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+                if e.lineno <= len(lines):
+                    error_line = lines[e.lineno-1]
+                    print(f"错误行内容: {error_line.strip()}")
+            import traceback
+            traceback.print_exc()
+            return None
         except Exception as e:
             print(f"读取历史记录文件失败 {file_path}: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def _get_safe_folder_name(self, history_id: str, topic: str) -> Path:
@@ -259,16 +310,33 @@ class HistoryService:
         Returns:
             更新后的历史记录，不存在则返回None
         """
+        print(f"开始更新历史记录: {history_id}")
+        
         # 获取现有历史记录
         existing_history = await self.get_history_by_id(history_id)
         if not existing_history:
+            print(f"历史记录不存在: {history_id}")
             return None
         
-        # 更新字段
-        update_dict = update_data.model_dump(exclude_unset=True)
+        # 创建更新后的历史记录对象
+        updated_history = existing_history.model_copy()
+        updated_history.updated_at = datetime.now()
+        
+        # 处理更新数据
+        if update_data.status is not None:
+            updated_history.status = update_data.status
+        if update_data.outline is not None:
+            updated_history.outline = update_data.outline
+        if update_data.generation_time is not None:
+            updated_history.generation_time = update_data.generation_time
+        if update_data.text_model is not None:
+            updated_history.text_model = update_data.text_model
+        if update_data.image_model is not None:
+            updated_history.image_model = update_data.image_model
         
         # 处理图片数据
-        if "images" in update_dict:
+        if update_data.images is not None:
+            print(f"开始处理图片数据，图片数量: {len(update_data.images)}")
             processed_images = []
             from src.utils.image_utils import process_image, replace_image
             from pathlib import Path
@@ -276,14 +344,20 @@ class HistoryService:
             # 创建图片文件夹，使用主题文字命名
             image_dir = self._get_safe_folder_name(history_id, existing_history.topic)
             image_dir.mkdir(exist_ok=True)
+            print(f"图片保存目录: {image_dir}")
             
             # 获取现有图片信息，用于替换逻辑
             existing_images = {img.id: img for img in existing_history.images if hasattr(img, 'id')}
+            print(f"现有图片信息: {existing_images}")
             
             # 处理每个图片
-            for image in update_dict["images"]:
-                # 转换为GeneratedImage对象
-                gen_image = GeneratedImage(**image)
+            for i, image in enumerate(update_data.images):
+                print(f"处理图片 {i}: {image}")
+                
+                # 直接使用GeneratedImage对象
+                gen_image = image
+                
+                print(f"GeneratedImage对象: {gen_image.model_dump()}")
                 
                 if gen_image.url:
                     # 保存图片到本地文件夹
@@ -291,28 +365,36 @@ class HistoryService:
                         # 替换原有图片
                         old_image = existing_images[gen_image.id]
                         if old_image.url:
+                            print(f"替换原有图片: {old_image.url} -> {gen_image.url}")
                             # 使用replace_image函数替换原有图片
                             image_path = replace_image(old_image.url, gen_image.url)
                             if image_path:
                                 gen_image.url = self._convert_image_path_to_url(image_path)
+                                print(f"替换后的图片URL: {gen_image.url}")
                     else:
                         # 新生成图片，保存到本地
+                        print(f"保存新图片: {gen_image.url}")
                         image_path = process_image(gen_image.url, image_dir, f"{gen_image.id}.png" if gen_image.id else None)
                         if image_path:
                             gen_image.url = self._convert_image_path_to_url(image_path)
+                            print(f"保存后的图片URL: {gen_image.url}")
                 
                 processed_images.append(gen_image)
             
+            print(f"处理后图片数量: {len(processed_images)}")
             # 更新images字段
-            update_dict["images"] = processed_images
+            updated_history.images = processed_images
         
-        updated_history = existing_history.model_copy(update=update_dict)
-        updated_history.updated_at = datetime.now()
+        print(f"更新后的历史记录: {updated_history.model_dump(exclude={'outline': True})}")
+        print(f"更新后的图片数量: {len(updated_history.images)}")
+        print(f"更新后的图片列表: {[img.model_dump() for img in updated_history.images]}")
         
         # 写入文件
         await self._write_history(updated_history)
+        print(f"历史记录更新完成: {history_id}")
         
-        return updated_history
+        # 重新读取并返回，确保数据一致性
+        return await self.get_history_by_id(history_id)
     
     async def delete_history(self, history_id: str) -> bool:
         """
@@ -465,13 +547,34 @@ class HistoryService:
             file_path = self.history_dir / f"{history_record.id}.json"
             
             try:
-                # 转换datetime对象为字符串
-                data = history_record.model_dump()
-                data["created_at"] = history_record.created_at.isoformat()
-                data["updated_at"] = history_record.updated_at.isoformat()
+                # 检查图片列表
+                print(f"写入历史记录前检查 - 图片数量: {len(history_record.images)}")
+                print(f"写入历史记录前检查 - 图片列表: {[img.model_dump() for img in history_record.images]}")
+                
+                # 手动构建历史记录数据，确保图片正确序列化
+                data = {
+                    "id": history_record.id,
+                    "topic": history_record.topic,
+                    "platform": history_record.platform,
+                    "outline": history_record.outline.model_dump(),
+                    "images": [img.model_dump() for img in history_record.images],
+                    "status": history_record.status,
+                    "generation_time": history_record.generation_time,
+                    "created_at": history_record.created_at.isoformat(),
+                    "updated_at": history_record.updated_at.isoformat(),
+                    "text_model": history_record.text_model,
+                    "image_model": history_record.image_model
+                }
+                
+                print(f"写入历史记录数据 - 图片数量: {len(data['images'])}")
+                print(f"写入历史记录数据 - 图片列表: {data['images']}")
                 
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, ensure_ascii=False, indent=2)
+                
+                print(f"历史记录已成功写入文件: {file_path}")
             except Exception as e:
                 print(f"写入历史记录文件失败 {file_path}: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 raise

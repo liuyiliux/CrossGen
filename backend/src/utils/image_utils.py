@@ -35,6 +35,12 @@ def download_image(image_url: str, save_dir: Path, filename: Optional[str] = Non
             # 直接调用save_base64_image处理
             return save_base64_image(image_url, save_dir, filename)
         
+        # 检查是否是本地相对路径
+        if image_url.startswith("/"):
+            # 直接返回相对路径，不需要下载
+            logger.info(f"检测到本地相对路径 {image_url}，直接返回")
+            return image_url
+        
         # 检查是否是本地服务器URL，避免循环下载
         local_server_urls = [
             "http://localhost:8000",
@@ -159,7 +165,8 @@ def process_image(image_data: str or Dict[str, Any], save_dir: Path, filename: O
         if isinstance(image_data, dict):
             # 处理字典类型，如 {"type": "image_url", "image_url": "http://example.com/image.jpg"}
             if image_data.get("type") == "image_url":
-                return download_image(image_data.get("image_url", ""), save_dir, filename)
+                image_url = image_data.get("image_url", "")
+                return download_image(image_url, save_dir, filename)
             else:
                 logger.warning(f"不支持的图片数据类型: {image_data.get('type')}")
                 return None
@@ -171,6 +178,10 @@ def process_image(image_data: str or Dict[str, Any], save_dir: Path, filename: O
             elif image_data.startswith("data:image/"):
                 # Base64类型
                 return save_base64_image(image_data, save_dir, filename)
+            elif image_data.startswith("/"):
+                # 本地相对路径，直接返回
+                logger.info(f"检测到本地相对路径 {image_data}，直接返回")
+                return image_data
             else:
                 logger.warning(f"不支持的图片字符串格式: {image_data[:50]}...")
                 return None

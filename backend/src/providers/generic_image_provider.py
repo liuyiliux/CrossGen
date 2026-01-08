@@ -371,7 +371,7 @@ class GenericImageProvider(BaseProvider):
     
     def _render_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """渲染请求体
-        
+
         Args:
             params: 请求参数
             
@@ -392,6 +392,14 @@ class GenericImageProvider(BaseProvider):
         # 确保 reference_images 变量存在，避免模板渲染错误
         if 'reference_images' not in clean_params:
             clean_params['reference_images'] = []
+        
+        # 添加安全访问 reference_images 的辅助变量
+        if clean_params['reference_images']:
+            clean_params['reference_images_0'] = clean_params['reference_images'][0]
+            clean_params['has_reference_images'] = True
+        else:
+            clean_params['reference_images_0'] = ''
+            clean_params['has_reference_images'] = False
         
         # 渲染模板
         rendered = self.request_template.render(**clean_params)
