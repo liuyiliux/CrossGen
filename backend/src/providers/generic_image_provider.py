@@ -473,9 +473,12 @@ class GenericImageProvider(BaseProvider):
         template_content = self.request_config['template']
         # 替换原来的复杂条件表达式为简单的content_array
         import re
-        new_template_content = re.sub(r'"content": \{% if has_reference_images %\[{{ reference_images_0 }}, {"text": "{{ prompt }}"}\]\{% else %\[{"text": "{{ prompt }}"}\]\{% endif %\}', 
+        
+        # 使用更灵活的正则表达式，匹配各种模板格式变体
+        new_template_content = re.sub(r'"content":\s*\{%\s*if\s+has_reference_images\s+%\}\s*\[\s*\{\{\s*reference_images_0\s*\}\}\s*,\s*\{"text"\s*:\s*"\{\{\s*prompt\s*\}\}"\}\s*\]\s*\{%\s*else\s+%\}\s*\[\s*\{"text"\s*:\s*"\{\{\s*prompt\s*\}\}"\}\s*\]\s*\{%\s*endif\s+%\}', 
                                    '"content": {{ content_array }}', 
-                                   template_content)
+                                   template_content, 
+                                   flags=re.DOTALL | re.IGNORECASE)
         
         # 使用修改后的模板重新渲染
         from jinja2 import Template
@@ -500,7 +503,19 @@ class GenericImageProvider(BaseProvider):
                 start = max(0, e.colno-20)
                 end = min(len(error_line), e.colno+20)
                 print(f"错误位置附近: '{error_line[start:end]}'")
-            raise
+            
+            # 尝试直接构建请求体作为备用方案
+            try:
+                print("尝试直接构建请求体...")
+                # 解析模板为字典
+                base_template = json.loads(template_content)
+                # 直接设置content字段
+                base_template['input']['messages'][0]['content'] = json.loads(content_array)
+                print(f"直接构建请求体成功: {base_template}")
+                return base_template
+            except Exception as fallback_error:
+                print(f"直接构建请求体也失败: {fallback_error}")
+                raise
     
     def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
         """解析响应
