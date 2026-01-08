@@ -393,16 +393,94 @@ class GenericImageProvider(BaseProvider):
         if 'reference_images' not in clean_params:
             clean_params['reference_images'] = []
         
-        # 添加安全访问 reference_images 的辅助变量
-        if clean_params['reference_images']:
-            clean_params['reference_images_0'] = clean_params['reference_images'][0]
-            clean_params['has_reference_images'] = True
-        else:
-            clean_params['reference_images_0'] = ''
-            clean_params['has_reference_images'] = False
+        # 处理参考图
+        has_reference_images = False
+        processed_reference_images = []
         
-        # 渲染模板
-        rendered = self.request_template.render(**clean_params)
+        if clean_params['reference_images']:
+            import json
+            from src.utils.image_utils import convert_local_path_to_data_url
+            from pathlib import Path
+            
+            # 处理所有参考图
+            for i, ref_image in enumerate(clean_params['reference_images'][:self.max_reference_images]):
+                ref_image_copy = ref_image.copy()
+                # 根据配置的reference_image_field字段名进行转换
+                if 'image_url' in ref_image_copy and hasattr(self, 'reference_image_field'):
+                    image_url_value = ref_image_copy.pop('image_url')
+                    # 检查是否是本地路径，如果是则转换为data URL格式
+                    if image_url_value and image_url_value.startswith('/'):
+                        print(f"检测到本地路径: {image_url_value}，尝试转换为data URL格式")
+                        # 尝试将本地路径转换为data URL
+                        try:
+                            # 获取项目根目录
+                            project_root = Path(__file__).parent.parent.parent.parent
+                            full_path = project_root / image_url_value.lstrip('/')
+                            print(f"完整文件路径: {full_path}")
+                            
+                            # 直接读取文件转换为base64，避免调用convert_local_path_to_data_url函数
+                            if full_path.exists():
+                                print(f"文件存在，开始转换为base64...")
+                                with open(full_path, 'rb') as f:
+                                    image_data = f.read()
+                                import base64
+                                base64_image = base64.b64encode(image_data).decode("utf-8")
+                                # 确定文件类型
+                                content_type = "image/png"
+                                if full_path.suffix.lower() in ('.jpg', '.jpeg'):
+                                    content_type = "image/jpeg"
+                                elif full_path.suffix.lower() == '.gif':
+                                    content_type = "image/gif"
+                                elif full_path.suffix.lower() == '.webp':
+                                    content_type = "image/webp"
+                                
+                                image_url_value = f"data:{content_type};base64,{base64_image}"
+                                print(f"成功转换为base64格式，长度: {len(base64_image)}")
+                            else:
+                                print(f"文件不存在: {full_path}")
+                        except Exception as e:
+                            print(f"转换本地路径为data URL失败: {e}，保留原始路径")
+                    
+                    # 使用配置中指定的字段名（如image），而不是默认的image_urls
+                    ref_image_copy[self.reference_image_field] = image_url_value
+                    processed_reference_images.append(ref_image_copy)
+            
+            has_reference_images = len(processed_reference_images) > 0
+        
+        # 添加辅助变量
+        clean_params['has_reference_images'] = has_reference_images
+        
+        # 直接构建消息内容，避免模板渲染时的JSON格式问题
+        if has_reference_images:
+            # 构建包含参考图和提示词的消息内容
+            import json
+            ref_images_json = []
+            for img in processed_reference_images:
+                ref_images_json.append(json.dumps(img, ensure_ascii=False))
+            # 构建完整的内容数组：参考图 + 文本提示词
+            if ref_images_json:
+                content_array = f"[{','.join(ref_images_json)}, {{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
+            else:
+                # 如果参考图处理后为空，只包含文本提示词
+                content_array = f"[{{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
+            clean_params['content_array'] = content_array
+        else:
+            # 只包含文本提示词
+            clean_params['content_array'] = f"[{{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
+        
+        # 修改模板，使用content_array变量
+        # 先获取模板内容
+        template_content = self.request_config['template']
+        # 替换原来的复杂条件表达式为简单的content_array
+        import re
+        new_template_content = re.sub(r'"content": \{% if has_reference_images %\[{{ reference_images_0 }}, {"text": "{{ prompt }}"}\]\{% else %\[{"text": "{{ prompt }}"}\]\{% endif %\}', 
+                                   '"content": {{ content_array }}', 
+                                   template_content)
+        
+        # 使用修改后的模板重新渲染
+        from jinja2 import Template
+        new_template = Template(new_template_content)
+        rendered = new_template.render(**clean_params)
         print(f"渲染后的模板内容: {rendered}")
         
         # 解析为JSON

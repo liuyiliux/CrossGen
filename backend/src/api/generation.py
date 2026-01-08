@@ -257,12 +257,45 @@ async def generate_single_image(
                     except Exception as e:
                         print(f"下载封面图失败: {str(e)}")
                 else:
-                    # 本地相对路径或其他格式，直接添加到参考图片列表
-                    processed_reference_images.append({
-                        "type": "image_url",
-                        "image_url": cover_image.url
-                    })
-                    print(f"封面图已添加到参考图片列表: {cover_image.url}")
+                    # 本地相对路径，需要转换为完整的URL或base64
+                    from pathlib import Path
+                    import base64
+                    
+                    # 构建完整的文件路径
+                    base_dir = Path(__file__).parent.parent.parent
+                    image_path = base_dir / cover_image.url.lstrip('/')
+                    
+                    print(f"封面图本地路径: {image_path}")
+                    
+                    try:
+                        # 读取本地图片并转换为base64
+                        with open(image_path, 'rb') as f:
+                            image_data = f.read()
+                        base64_image = base64.b64encode(image_data).decode("utf-8")
+                        # 尝试从文件扩展名获取content-type
+                        content_type = "image/png"
+                        if image_path.suffix.lower() in ('.jpg', '.jpeg'):
+                            content_type = "image/jpeg"
+                        elif image_path.suffix.lower() == '.gif':
+                            content_type = "image/gif"
+                        elif image_path.suffix.lower() == '.webp':
+                            content_type = "image/webp"
+                        
+                        processed_reference_images.append({
+                            "type": "image_url",
+                            "image_url": f"data:{content_type};base64,{base64_image}"
+                        })
+                        print(f"封面图已转换为base64格式，长度: {len(base64_image)}")
+                    except Exception as e:
+                        print(f"读取本地封面图失败: {str(e)}")
+                        print(f"尝试读取的文件路径: {image_path}")
+                        # 如果读取失败，尝试构建完整的URL
+                        full_url = f"http://localhost:8000{cover_image.url}"
+                        processed_reference_images.append({
+                            "type": "image_url",
+                            "image_url": full_url
+                        })
+                        print(f"封面图已转换为完整URL: {full_url}")
         
         # 更新历史记录状态为image_generating
         await history_service.update_history(
@@ -279,9 +312,9 @@ async def generate_single_image(
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象
             generated_image = GeneratedImage(
-                id=result.get("image_id"),  # 使用生成服务返回的image_id
+                id=result.get("image_id") or f"temp_{uuid.uuid4().hex[:8]}",  # 确保id不为None
                 index=page_index,
-                url=result.get("image_url"),
+                url=result.get("image_url") or "",  # 确保url不为None
                 status="success"
             )
             
@@ -423,24 +456,67 @@ async def retry_image(
             
             if cover_image and cover_image.url:
                 print(f"重试接口 - 获取到封面图: {cover_image.url}")
-                # 下载封面图并转换为 base64
-                import httpx
-                try:
-                    async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
-                        response = await client.get(cover_image.url)
-                        response.raise_for_status()
-                        image_data = response.content
-                        import base64
+                
+                # 检查封面图URL类型
+                if cover_image.url.startswith("http://") or cover_image.url.startswith("https://"):
+                    # HTTP URL，下载并转换为 base64
+                    import httpx
+                    try:
+                        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+                            response = await client.get(cover_image.url)
+                            response.raise_for_status()
+                            image_data = response.content
+                            import base64
+                            base64_image = base64.b64encode(image_data).decode("utf-8")
+                            # 尝试从响应头获取 content-type
+                            content_type = response.headers.get("content-type", "image/png")
+                            processed_reference_images.append({
+                                "type": "image_url",
+                                "image_url": f"data:{content_type};base64,{base64_image}"
+                            })
+                            print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                    except Exception as e:
+                        print(f"下载封面图失败: {str(e)}")
+                else:
+                    # 本地相对路径，需要转换为完整的URL或base64
+                    from pathlib import Path
+                    import base64
+                    
+                    # 构建完整的文件路径
+                    base_dir = Path(__file__).parent.parent.parent
+                    image_path = base_dir / cover_image.url.lstrip('/')
+                    
+                    print(f"封面图本地路径: {image_path}")
+                    
+                    try:
+                        # 读取本地图片并转换为base64
+                        with open(image_path, 'rb') as f:
+                            image_data = f.read()
                         base64_image = base64.b64encode(image_data).decode("utf-8")
-                        # 尝试从响应头获取 content-type
-                        content_type = response.headers.get("content-type", "image/png")
+                        # 尝试从文件扩展名获取content-type
+                        content_type = "image/png"
+                        if image_path.suffix.lower() in ('.jpg', '.jpeg'):
+                            content_type = "image/jpeg"
+                        elif image_path.suffix.lower() == '.gif':
+                            content_type = "image/gif"
+                        elif image_path.suffix.lower() == '.webp':
+                            content_type = "image/webp"
+                        
                         processed_reference_images.append({
                             "type": "image_url",
                             "image_url": f"data:{content_type};base64,{base64_image}"
                         })
-                        print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
-                except Exception as e:
-                    print(f"下载封面图失败: {str(e)}")
+                        print(f"封面图已转换为base64格式，长度: {len(base64_image)}")
+                    except Exception as e:
+                        print(f"读取本地封面图失败: {str(e)}")
+                        print(f"尝试读取的文件路径: {image_path}")
+                        # 如果读取失败，尝试构建完整的URL
+                        full_url = f"http://localhost:8000{cover_image.url}"
+                        processed_reference_images.append({
+                            "type": "image_url",
+                            "image_url": full_url
+                        })
+                        print(f"封面图已转换为完整URL: {full_url}")
         
         # 更新历史记录状态为image_generating
         await history_service.update_history(
@@ -456,7 +532,7 @@ async def retry_image(
             # 图片生成成功，创建GeneratedImage对象
             generated_image = GeneratedImage(
                 index=page_index,
-                url=result.get("image_url"),
+                url=result.get("image_url") or "",  # 确保url不为None
                 status="success"
             )
             

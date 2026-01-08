@@ -191,12 +191,24 @@ async function retrySingleImage(index: number) {
     console.log('提示词:', page.content)
     console.log('尺寸:', store.selectedSize)
     
+    // 准备参考图数据，转换为后端期望的格式
+    let referenceImagesForBackend: Array<{ type: string; image_url: string }> = []
+    if (!store.useCoverAsReference && store.referenceImages.length > 0) {
+      // 只有当不使用封面作为参考图时，才传递上传的参考图
+      referenceImagesForBackend = store.referenceImages.map(img => ({
+        type: "image_url",
+        image_url: img.url
+      }))
+    }
+
     const response = await axios.post('/api/generate/image', {
       history_id: store.recordId,
       page_index: index,
       prompt: page.content,
       image_provider: store.imageProviderId,
-      size: store.selectedSize
+      size: store.selectedSize,
+      reference_images: referenceImagesForBackend,
+      use_cover_as_reference: store.useCoverAsReference
     }, {
       signal: retryController.signal
     })
@@ -285,12 +297,24 @@ async function retryAllFailed() {
         console.log('提示词:', page.content)
         console.log('尺寸:', store.selectedSize)
         
+        // 准备参考图数据，转换为后端期望的格式
+        let referenceImagesForBackend: Array<{ type: string; image_url: string }> = []
+        if (!store.useCoverAsReference && store.referenceImages.length > 0) {
+          // 只有当不使用封面作为参考图时，才传递上传的参考图
+          referenceImagesForBackend = store.referenceImages.map(img => ({
+            type: "image_url",
+            image_url: img.url
+          }))
+        }
+
         const response = await axios.post('/api/generate/image', {
           history_id: store.recordId,
           page_index: image.index,
           prompt: page.content,
           image_provider: store.imageProviderId,
-          size: store.selectedSize
+          size: store.selectedSize,
+          reference_images: referenceImagesForBackend,
+          use_cover_as_reference: store.useCoverAsReference
         }, {
           signal: retryController.signal
         })

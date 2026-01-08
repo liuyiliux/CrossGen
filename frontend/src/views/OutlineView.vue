@@ -467,8 +467,11 @@ const saveReferenceImagesToStore = () => {
     // 使用封面图片，不需要保存上传的图片
     store.referenceImages = []
   } else {
-    // 保存上传的图片URL到store
-    store.referenceImages = referenceImageFiles.value.map(file => file.url as string)
+    // 保存上传的图片到store，格式为{ file: File; url: string }
+    store.referenceImages = referenceImageFiles.value.map(file => ({
+      file: file.raw as File,
+      url: file.url as string
+    }))
   }
 }
 
@@ -777,6 +780,16 @@ const generateSingleImage = async (index: number) => {
       }
     }
     
+    // 准备参考图数据，转换为后端期望的格式
+    let referenceImagesForBackend: Array<{ type: string; image_url: string }> = []
+    if (!store.useCoverAsReference && store.referenceImages.length > 0) {
+      // 只有当不使用封面作为参考图时，才传递上传的参考图
+      referenceImagesForBackend = store.referenceImages.map(img => ({
+        type: "image_url",
+        image_url: img.url
+      }))
+    }
+
     // 调用API生成单张图片
     console.log('准备调用生成图片API...')
     const response = await axios.post('/api/generate/image', {
@@ -785,7 +798,7 @@ const generateSingleImage = async (index: number) => {
       prompt: store.outline.pages[index].content,
       image_provider: store.imageProviderId, // 使用store中的imageProviderId确保一致性
       size: store.selectedSize, // 添加用户选择的尺寸
-      reference_images: store.referenceImages,
+      reference_images: referenceImagesForBackend,
       use_cover_as_reference: store.useCoverAsReference
     }, {
       signal: controller.signal

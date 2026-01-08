@@ -253,3 +253,82 @@ def replace_image(old_image_path: str, new_image_url: str) -> Optional[str]:
     except Exception as e:
         logger.error(f"替换图片失败 {old_image_path}: 未知错误 - {str(e)}", exc_info=True)
         return None
+
+
+def convert_local_path_to_data_url(file_path: str, base_dir: Path = None) -> Optional[str]:
+    """
+    将本地文件路径转换为data URL格式
+    
+    Args:
+        file_path: 本地文件路径（可以是相对路径或绝对路径）
+        base_dir: 基础目录，用于处理相对路径
+        
+    Returns:
+        data URL字符串（格式：data:image/format;base64,encoded_data），失败返回None
+    """
+    try:
+        # 处理相对路径
+        if file_path.startswith("/") or (base_dir and not Path(file_path).is_absolute()):
+            if base_dir:
+                # 直接使用提供的base_dir拼接路径
+                full_path = base_dir / file_path.lstrip("/")
+            else:
+                # 如果没有提供base_dir，尝试从项目根目录解析
+                from pathlib import Path
+                project_root = Path(__file__).parent.parent.parent
+                if file_path.startswith("/history/"):
+                    # history文件夹在backend目录下
+                    # 正确处理路径：/history/folder_name_images/filename.png
+                    history_path = file_path.lstrip("/history/")
+                    # 获取完整的history子路径，包括folder_name_images部分
+                    history_subpath = "/".join(history_path.split("/")[:-1])
+                    filename = history_path.split("/")[-1]
+                    full_path = project_root / "backend" / "history" / history_subpath / filename
+                elif file_path.startswith("/uploads/"):
+                    # uploads文件夹在项目根目录下
+                    uploads_path = file_path.lstrip("/uploads/")
+                    uploads_subpath = "/".join(uploads_path.split("/")[:-1])
+                    filename = uploads_path.split("/")[-1]
+                    full_path = project_root / "uploads" / uploads_subpath / filename
+                else:
+                    logger.error(f"无法解析文件路径: {file_path}")
+                    return None
+        else:
+            full_path = Path(file_path)
+        
+        # 检查文件是否存在
+        if not full_path.exists():
+            logger.error(f"文件不存在: {full_path}")
+            # 尝试使用不同的基础目录
+            project_root = Path(__file__).parent.parent.parent.parent
+            alternative_path = project_root / file_path.lstrip("/")
+            if alternative_path.exists():
+                print(f"尝试使用备选路径: {alternative_path}")
+                full_path = alternative_path
+            else:
+                logger.error(f"备选路径也不存在: {alternative_path}")
+                return None
+        
+        # 读取文件并转换为base64
+        with open(full_path, 'rb') as f:
+            file_data = f.read()
+        
+        # 根据文件扩展名确定MIME类型
+        mime_types = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        }
+        file_ext = full_path.suffix.lower()
+        mime_type = mime_types.get(file_ext, 'image/png')
+        
+        # 转换为base64并构建data URL
+        base64_data = base64.b64encode(file_data).decode('utf-8')
+        data_url = f"data:{mime_type};base64,{base64_data}"
+        
+        return data_url
+    except Exception as e:
+        logger.error(f"转换文件路径为data URL失败 {file_path}: {str(e)}", exc_info=True)
+        return None

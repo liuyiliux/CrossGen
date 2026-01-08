@@ -347,7 +347,7 @@ class HistoryService:
             print(f"图片保存目录: {image_dir}")
             
             # 获取现有图片信息，用于替换逻辑
-            existing_images = {img.id: img for img in existing_history.images if hasattr(img, 'id')}
+            existing_images = {img.id: img for img in existing_history.images if hasattr(img, 'id') and img.id}
             print(f"现有图片信息: {existing_images}")
             
             # 处理每个图片
@@ -357,27 +357,43 @@ class HistoryService:
                 # 直接使用GeneratedImage对象
                 gen_image = image
                 
+                # 确保gen_image有效，并确保id不为None
+                if not gen_image.id:
+                    gen_image.id = f"temp_{uuid.uuid4().hex[:8]}"
+                    print(f"为图片生成临时ID: {gen_image.id}")
+                
+                # 确保url不为None
+                if not gen_image.url:
+                    gen_image.url = ""
+                    print(f"警告：图片 {i} 的URL为空，已设置为空字符串")
+                
                 print(f"GeneratedImage对象: {gen_image.model_dump()}")
                 
                 if gen_image.url:
                     # 保存图片到本地文件夹
-                    if gen_image.id and gen_image.id in existing_images:
+                    if gen_image.id in existing_images:
                         # 替换原有图片
                         old_image = existing_images[gen_image.id]
                         if old_image.url:
                             print(f"替换原有图片: {old_image.url} -> {gen_image.url}")
                             # 使用replace_image函数替换原有图片
-                            image_path = replace_image(old_image.url, gen_image.url)
-                            if image_path:
-                                gen_image.url = self._convert_image_path_to_url(image_path)
-                                print(f"替换后的图片URL: {gen_image.url}")
+                            try:
+                                image_path = replace_image(old_image.url, gen_image.url)
+                                if image_path:
+                                    gen_image.url = self._convert_image_path_to_url(image_path)
+                                    print(f"替换后的图片URL: {gen_image.url}")
+                            except Exception as e:
+                                print(f"替换图片失败: {str(e)}")
                     else:
                         # 新生成图片，保存到本地
                         print(f"保存新图片: {gen_image.url}")
-                        image_path = process_image(gen_image.url, image_dir, f"{gen_image.id}.png" if gen_image.id else None)
-                        if image_path:
-                            gen_image.url = self._convert_image_path_to_url(image_path)
-                            print(f"保存后的图片URL: {gen_image.url}")
+                        try:
+                            image_path = process_image(gen_image.url, image_dir, f"{gen_image.id}.png" if gen_image.id else None)
+                            if image_path:
+                                gen_image.url = self._convert_image_path_to_url(image_path)
+                                print(f"保存后的图片URL: {gen_image.url}")
+                        except Exception as e:
+                            print(f"保存图片失败: {str(e)}")
                 
                 processed_images.append(gen_image)
             
