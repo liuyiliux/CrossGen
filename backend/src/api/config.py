@@ -243,7 +243,9 @@ async def test_provider_connection_with_config(
         provider_manager = ProviderManager()
         
         # 提取参考图URL列表（如果有）
+        print(f"收到的provider_config: {provider_config}")
         reference_images = provider_config.get("reference_images", None)
+        print(f"提取的reference_images: {reference_images}")
         if reference_images:
             # 从provider_config中移除reference_images，避免影响提供商配置
             del provider_config["reference_images"]
@@ -255,6 +257,7 @@ async def test_provider_connection_with_config(
             return {"success": result}
         elif provider_type == "image":
             # 测试图像提供商
+            print(f"调用test_image_provider_connection，参考图: {reference_images}")
             result = await provider_manager.test_image_provider_connection(provider_config, reference_images)
             return {"success": result}
         else:

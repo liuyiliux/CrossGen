@@ -644,10 +644,9 @@ class ProviderManager:
                 raise ValueError(f"不支持的文本提供商类型: {provider_type}")
             
             # 初始化并测试连接
+            print(f"开始初始化提供商: {provider.name}")
             if await provider.initialize():
-                # 如果提供了参考图，传递给test_connection方法
-                if reference_images:
-                    return await provider.test_connection(reference_images=reference_images)
+                print(f"提供商初始化成功，准备测试连接")
                 return await provider.test_connection()
             return False
         except Exception as e:
@@ -739,6 +738,11 @@ class ProviderManager:
                 provider_config.response_config = resolved_config.get("response_config", {})
                 provider_config.size_config = resolved_config.get("size_config", {})
                 provider_config.supported_sizes = resolved_config.get("supported_sizes", [])
+                # 添加参考图相关配置
+                provider_config.support_reference_image = resolved_config.get("support_reference_image", False)
+                provider_config.reference_image_field = resolved_config.get("reference_image_field", "image_urls")
+                provider_config.support_multiple_reference_images = resolved_config.get("support_multiple_reference_images", False)
+                provider_config.max_reference_images = resolved_config.get("max_reference_images", 1)
                 
                 # 导入GenericImageProvider
                 from src.providers.generic_image_provider import GenericImageProvider
@@ -747,7 +751,13 @@ class ProviderManager:
                 raise ValueError(f"不支持的图像提供商类型: {provider_type}")
             
             # 初始化并测试连接
+            print(f"开始初始化图像提供商: {provider.name}")
             if await provider.initialize():
+                print(f"图像提供商初始化成功，准备测试连接")
+                # 如果提供了参考图，传递给test_connection方法
+                print(f"测试图像连接时的参考图: {reference_images}")
+                if reference_images:
+                    return await provider.test_connection(reference_images=reference_images)
                 return await provider.test_connection()
             return False
         except Exception as e:

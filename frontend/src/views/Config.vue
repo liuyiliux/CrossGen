@@ -418,7 +418,7 @@
                 v-model="currentProvider.request_config.template"
                 type="textarea"
                 :rows="10"
-                :placeholder="t('config.requestTemplatePlaceholder')"
+                :placeholder="requestTemplatePlaceholderExample"
               />
               <span class="help-text">{{ t('config.requestTemplateHelp') }}</span>
             </el-form-item>
@@ -495,22 +495,12 @@
                     :on-exceed="handleTestReferenceExceed"
                     list-type="picture-card"
                     :auto-upload="false"
-                    :on-change="(file: any) => {
-                      if (file.raw) {
-                        // 将文件转换为base64
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          const result = e.target?.result as string;
-                          testReferenceImages.value = [result];
-                        };
-                        reader.readAsDataURL(file.raw);
-                      }
-                    }"
+                    :on-change="handleTestReferenceImageChange"
                   >
                     <el-icon><Plus /></el-icon>
                     <template #file="{ file }">
                       <el-image
-                        :src="file.url"
+                        :src="testReferenceImages[0] || file.url"
                         :alt="file.name"
                         fit="cover"
                         style="width: 100%; height: 100%;"
@@ -848,6 +838,11 @@ const providerFormRef = ref()
 const testingConnection = ref(false)
 const savingProvider = ref(false)
 
+// 计算属性：返回包含 Jinja2 模板语法示例的字符串（避免 Vue 模板编译冲突）
+const requestTemplatePlaceholderExample = computed(() => {
+  return '输入 Jinja2 模板，例如：{"role": "user", "content": [{"text": "{{ prompt }}"}]}'
+})
+
 // 测试状态管理
 const testingProviders = ref<Record<string, boolean>>({}) // 记录正在测试的服务商
 
@@ -894,6 +889,22 @@ const previewTestReferenceImage = (file: any) => {
 const clearTestReferenceImages = () => {
   testReferenceImageFiles.value = []
   testReferenceImages.value = []
+}
+
+// 处理测试参考图变更
+const handleTestReferenceImageChange = (file: any) => {
+  console.log('文件上传:', file);
+  if (file.raw) {
+    // 将文件转换为base64
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      testReferenceImages.value = [result];
+      console.log('转换后的base64:', result.substring(0, 100) + '...');
+      console.log('testReferenceImages:', testReferenceImages.value);
+    };
+    reader.readAsDataURL(file.raw);
+  }
 }
 
 // 通用设置
@@ -1239,8 +1250,12 @@ const testProviderConnection = async (
     if (isEditingMode) {
       testData = { ...resolvedProvider }
       // 如果是图像提供商且支持参考图，添加测试参考图URL
+      console.log('测试前的参考图:', testReferenceImages.value);
+      console.log('支持参考图:', resolvedProvider.support_reference_image);
+      console.log('提供商类型:', resolvedType);
       if (resolvedType === 'image' && resolvedProvider.support_reference_image && testReferenceImages.value.length > 0) {
         testData.reference_images = testReferenceImages.value
+        console.log('添加参考图到测试数据:', testData.reference_images);
       }
     }
     

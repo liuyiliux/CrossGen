@@ -156,6 +156,7 @@ export default {
     supportMultipleReferenceImages: 'Support Multiple Reference Images',
     supportMultipleReferenceImagesHelp: 'Whether to support multiple reference images, single-image models will use the first one',
     maxReferenceImages: 'Max Reference Images',
+    maxReferenceImagesPlaceholder: 'Enter max reference images',
     maxReferenceImagesHelp: 'Maximum number of reference images supported, only effective when multiple reference images are supported',
     supportedSizes: 'Supported Sizes',
     supportedSizesPlaceholder: 'Enter supported sizes list, e.g., ["1024x1024", "1056x1584", "1584x1056"]',

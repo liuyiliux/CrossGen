@@ -15,30 +15,36 @@ class GenericImageProvider(BaseProvider):
     
     def __init__(self, config: ProviderConfig):
         """初始化通用图像提供商
-        
+
         Args:
             config: 提供商配置
         """
         super().__init__(config)
         self.client = None
         self.initialized = False
-        
+
         # 通用配置
         self.request_config = getattr(config, 'request_config', {})
         self.response_config = getattr(config, 'response_config', {})
         self.size_config = getattr(config, 'size_config', {})
-        
+
         # 支持的尺寸列表
         self.supported_sizes = getattr(config, 'supported_sizes', [])
-        
+
+        # 参考图配置
+        self.support_reference_image = getattr(config, 'support_reference_image', False)
+        self.reference_image_field = getattr(config, 'reference_image_field', 'image_urls')
+        self.support_multiple_reference_images = getattr(config, 'support_multiple_reference_images', False)
+        self.max_reference_images = getattr(config, 'max_reference_images', 1)
+
         # 模板渲染配置
         self.request_template = None
         if self.request_config.get('template'):
             self.request_template = Template(self.request_config['template'])
-        
+
         # 默认参数
         self.default_params = self.request_config.get('defaults', {})
-        
+
         # 参数转换规则
         self.parameter_transforms = self.request_config.get('parameter_transforms', {})
     
@@ -153,11 +159,18 @@ class GenericImageProvider(BaseProvider):
                 "size": test_size,
                 "n": 1
             }
-            
-            # 如果提供了参考图，添加到测试参数中
-            if reference_images and len(reference_images) > 0:
+
+            # 添加所有默认参数
+            for key, value in self.default_params.items():
+                if key not in test_params:
+                    test_params[key] = value
+
+            # 如果提供了参考图且支持参考图，添加到测试参数中
+            if reference_images and len(reference_images) > 0 and self.support_reference_image:
                 test_params["reference_images"] = reference_images
                 print(f"  已添加 {len(reference_images)} 张参考图到测试请求")
+            elif reference_images and len(reference_images) > 0 and not self.support_reference_image:
+                print(f"  提供了参考图但提供商不支持参考图，将忽略参考图")
             
             # 处理尺寸
             test_params["size"] = self._process_size(test_params.get("size"))
@@ -382,10 +395,26 @@ class GenericImageProvider(BaseProvider):
         
         # 渲染模板
         rendered = self.request_template.render(**clean_params)
+        print(f"渲染后的模板内容: {rendered}")
         
         # 解析为JSON
         import json
-        return json.loads(rendered)
+        try:
+            result = json.loads(rendered)
+            print(f"JSON解析成功: {result}")
+            return result
+        except json.JSONDecodeError as e:
+            print(f"JSON解析失败，错误位置: 行 {e.lineno}, 列 {e.colno}, 字符位置 {e.pos}")
+            # 打印错误位置附近的内容
+            lines = rendered.split('\n')
+            error_line = lines[e.lineno-1] if e.lineno <= len(lines) else ''
+            print(f"错误行内容: {error_line}")
+            if error_line:
+                # 打印错误位置前后的字符
+                start = max(0, e.colno-20)
+                end = min(len(error_line), e.colno+20)
+                print(f"错误位置附近: '{error_line[start:end]}'")
+            raise
     
     def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
         """解析响应
