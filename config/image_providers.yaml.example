@@ -85,6 +85,12 @@ providers:
                 "role": "user",
                 "content": [
                   {
+                    "image": "" // 参考图占位符1
+                  },
+                  {
+                    "image": "" // 参考图占位符2
+                  },
+                  {
                     "text": "{{ prompt }}"
                   }
                 ]

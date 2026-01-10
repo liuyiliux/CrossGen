@@ -416,10 +416,9 @@ class GenericImageProvider(BaseProvider):
             
             # 处理所有参考图
             for i, ref_image in enumerate(clean_params['reference_images'][:self.max_reference_images]):
-                # 创建一个空字典，确保只包含必要的字段
-                ref_image_copy = {}
-                # 根据配置的reference_image_field字段名进行转换
-                if 'image_url' in ref_image and hasattr(self, 'reference_image_field'):
+                # 直接存储原始参考图信息，不再转换为特定字段名
+                # 模板中直接使用占位符，字段名由模板决定
+                if 'image_url' in ref_image:
                     image_url_value = ref_image.get('image_url', '')
                     # 检查是否是本地路径，如果是则转换为data URL格式
                     if image_url_value and image_url_value.startswith('/'):
@@ -454,31 +453,56 @@ class GenericImageProvider(BaseProvider):
                         except Exception as e:
                             logger.error(f"转换本地路径为data URL失败: {e}，保留原始路径")
                     
-                    # 使用配置中指定的字段名（如image），只包含必要的字段
-                    ref_image_copy[self.reference_image_field] = image_url_value
-                    processed_reference_images.append(ref_image_copy)
+                    # 直接存储image_url值，模板中通过占位符使用
+                    processed_reference_images.append(image_url_value)
             
             has_reference_images = len(processed_reference_images) > 0
         
         # 添加辅助变量
         clean_params['has_reference_images'] = has_reference_images
 
-        # 动态生成参考图参数
-        for i, img in enumerate(processed_reference_images):
-            placeholder_name = f'reference_image_{i}'
-            clean_params[placeholder_name] = img.get(self.reference_image_field, '')
-            logger.info(f"生成参考图参数 {placeholder_name}: {clean_params[placeholder_name]}")
-        
-        # 处理多余的占位符（如果模板中引用了超出实际数量的参考图）
-        for i in range(len(processed_reference_images), 10):  # 最多支持10个参考图
-            placeholder_name = f'reference_image_{i}'
-            if placeholder_name not in clean_params:
-                clean_params[placeholder_name] = ''
-                logger.info(f"生成空参考图参数 {placeholder_name}")
-
         # 渲染基础模板
         from jinja2 import Template
         rendered = self.request_template.render(**clean_params)
+        
+        # 动态替换参考图字段值
+        if has_reference_images and rendered:
+            import json
+            
+            try:
+                # 解析渲染后的JSON
+                rendered_json = json.loads(rendered)
+                
+                # 递归遍历JSON对象，按顺序替换所有匹配的image字段
+                replaced_count = 0
+                
+                def replace_image_fields(obj):
+                    nonlocal replaced_count
+                    if isinstance(obj, dict):
+                        for key, value in obj.items():
+                            if isinstance(value, dict):
+                                replace_image_fields(value)
+                            elif isinstance(value, list):
+                                replace_image_fields(value)
+                            elif key == 'image' and isinstance(value, str) and value == '':
+                                # 找到空的image字段，按顺序替换为实际参考图
+                                if replaced_count < len(processed_reference_images):
+                                    logger.info(f"替换第 {replaced_count + 1} 个image字段为: {processed_reference_images[replaced_count]}")
+                                    obj[key] = processed_reference_images[replaced_count]
+                                    replaced_count += 1
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            replace_image_fields(item)
+                
+                # 开始替换
+                replace_image_fields(rendered_json)
+                
+                logger.info(f"共替换了 {replaced_count} 个参考图字段")
+                
+                # 重新序列化JSON
+                rendered = json.dumps(rendered_json, ensure_ascii=False)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON解析失败: {e}")
         logger.info(f"渲染后的模板内容（完整）: {rendered}")
         
         # 解析为JSON
@@ -499,18 +523,7 @@ class GenericImageProvider(BaseProvider):
                 end = min(len(error_line), e.colno+50)
                 logger.error(f"错误位置附近: '{error_line[start:end]}'")
             
-            # 尝试直接修复content字段
-            try:
-                logger.info("尝试直接修复content字段...")
-                # 解析模板为字典
-                base_template = json.loads(self.request_config['template'])
-                # 直接设置content字段
-                base_template['input']['messages'][0]['content'] = final_content
-                logger.info(f"直接修复content字段成功: {json.dumps(base_template, ensure_ascii=False, indent=2)}")
-                return base_template
-            except Exception as fallback_error:
-                logger.error(f"直接修复content字段也失败: {fallback_error}")
-                raise
+            raise
     
     def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
         """解析响应
