@@ -8,6 +8,9 @@ import httpx
 import jsonpath_ng
 from jinja2 import Template
 from src.providers.base_provider import BaseProvider, ProviderConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GenericImageProvider(BaseProvider):
@@ -54,13 +57,13 @@ class GenericImageProvider(BaseProvider):
         Returns:
             bool: 初始化是否成功
         """
-        print(f"=== 开始初始化通用图像提供商 ===")
-        print(f"提供商: {self.name}")
-        print(f"模型: {self.model}")
-        print(f"基础URL: {self.base_url}")
+        logger.info(f"=== 开始初始化通用图像提供商 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"模型: {self.model}")
+        logger.info(f"基础URL: {self.base_url}")
         
         if not self.enabled:
-            print(f"提供商已禁用，跳过初始化")
+            logger.info(f"提供商已禁用，跳过初始化")
             self.initialized = False
             return False
         
@@ -80,7 +83,7 @@ class GenericImageProvider(BaseProvider):
             # 自动生成Authorization头（如果没有提供）
             if self.api_key and "Authorization" not in self.headers:
                 self.headers["Authorization"] = f"Bearer {self.api_key}"
-                print(f"自动生成Authorization头")
+                logger.info(f"自动生成Authorization头")
             
             # 创建HTTP客户端
             self.client = httpx.AsyncClient(
@@ -90,13 +93,13 @@ class GenericImageProvider(BaseProvider):
             )
             
             self.initialized = True
-            print(f"初始化成功")
+            logger.info(f"初始化成功")
             return True
             
         except Exception as e:
-            print(f"初始化失败: {str(e)}")
+            logger.error(f"初始化失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             self.initialized = False
             return False
     
@@ -109,22 +112,22 @@ class GenericImageProvider(BaseProvider):
         Returns:
             bool: 连接是否成功
         """
-        print(f"\n=== 开始测试通用图像提供商连接 ===")
-        print(f"提供商: {self.name}")
-        print(f"类型: {type(self).__name__}")
-        print(f"模型: {self.model}")
-        print(f"基础URL: {self.base_url}")
+        logger.info(f"\n=== 开始测试通用图像提供商连接 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"类型: {type(self).__name__}")
+        logger.info(f"模型: {self.model}")
+        logger.info(f"基础URL: {self.base_url}")
         
         # 打印参考图信息
         if reference_images and len(reference_images) > 0:
-            print(f"使用提供的参考图: {reference_images}")
+            logger.info(f"使用提供的参考图: {reference_images}")
         else:
-            print("未提供参考图，将使用无参考图的测试请求")
+            logger.info("未提供参考图，将使用无参考图的测试请求")
         
         if not self.initialized or not self.client:
-            print(f"提供商尚未初始化，尝试初始化...")
+            logger.info(f"提供商尚未初始化，尝试初始化...")
             if not await self.initialize():
-                print(f"初始化失败，连接测试失败")
+                logger.info(f"初始化失败，连接测试失败")
                 return False
         
         try:
@@ -139,18 +142,18 @@ class GenericImageProvider(BaseProvider):
                         parts = raw_size.split("*")
                         if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
                             test_size = raw_size
-                            print(f"  使用支持尺寸列表中的第一个尺寸: {test_size}")
+                            logger.info(f"  使用支持尺寸列表中的第一个尺寸: {test_size}")
                         else:
                             raise ValueError(f"无效的尺寸值: {raw_size}")
                     except (ValueError, AttributeError) as e:
-                        print(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
+                        logger.info(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
                 else:
-                    print(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
+                    logger.info(f"  尺寸格式无效: {raw_size}，使用默认尺寸")
             
             # 如果没有获取到尺寸，使用默认逻辑
             if not test_size:
                 test_size = self.default_params.get("size", "1024*1024")
-                print(f"  使用默认尺寸: {test_size}")
+                logger.info(f"  使用默认尺寸: {test_size}")
             
             # 构建测试请求参数
             test_params = {
@@ -168,9 +171,9 @@ class GenericImageProvider(BaseProvider):
             # 如果提供了参考图且支持参考图，添加到测试参数中
             if reference_images and len(reference_images) > 0 and self.support_reference_image:
                 test_params["reference_images"] = reference_images
-                print(f"  已添加 {len(reference_images)} 张参考图到测试请求")
+                logger.info(f"  已添加 {len(reference_images)} 张参考图到测试请求")
             elif reference_images and len(reference_images) > 0 and not self.support_reference_image:
-                print(f"  提供了参考图但提供商不支持参考图，将忽略参考图")
+                logger.info(f"  提供了参考图但提供商不支持参考图，将忽略参考图")
             
             # 处理尺寸
             test_params["size"] = self._process_size(test_params.get("size"))
@@ -180,12 +183,12 @@ class GenericImageProvider(BaseProvider):
             
             # 渲染测试请求
             request_body = self._render_request(test_params)
-            print(f"测试请求体: {request_body}")
+            logger.info(f"测试请求体: {request_body}")
             
             # 打印完整Headers，包括API密钥
-            print(f"发送请求的完整Headers: {self.headers}")
+            logger.info(f"发送请求的完整Headers: {self.headers}")
             # 单独打印Authorization头，方便查看API密钥
-            print(f"Authorization头: {self.headers.get('Authorization')}")
+            logger.info(f"Authorization头: {self.headers.get('Authorization')}")
             
             # 发送测试请求
             response = await self.client.request(
@@ -194,41 +197,42 @@ class GenericImageProvider(BaseProvider):
                 json=request_body
             )
             
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应体: {response.text}")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.info(f"响应体: {response.text}")
             
             if response.status_code == 200:
-                print("✓ 图像生成测试成功")
+                logger.info("✓ 图像生成测试成功")
                 return True
             else:
-                print(f"✗ 图像生成测试失败，状态码: {response.status_code}")
+                logger.info(f"✗ 图像生成测试失败，状态码: {response.status_code}")
                 return False
                 
         except Exception as e:
-            print(f"测试失败: {str(e)}")
+            logger.error(f"测试失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return False
     
     async def generate_image(self, prompt: str, platform: str, **kwargs) -> Optional[Dict[str, Any]]:
         """生成图像
-        
+
         Args:
             prompt: 生成提示词
             platform: 平台名称
             **kwargs: 额外参数
-            
+
         Returns:
             Optional[Dict[str, Any]]: 生成结果
         """
-        print(f"\n=== 开始通用图像生成 ===")
-        print(f"提供商: {self.name}")
-        print(f"平台: {platform}")
-        print(f"提示词: {prompt[:50]}..." if len(prompt) > 50 else f"提示词: {prompt}")
-        print(f"参数: {kwargs}")
+        import json
+        logger.info(f"\n=== 开始通用图像生成 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"平台: {platform}")
+        logger.info(f"提示词: {prompt[:50]}..." if len(prompt) > 50 else f"提示词: {prompt}")
+        logger.info(f"参数: {kwargs}")
         
         if not self.initialized or not self.client:
-            print(f"提供商不可用，无法生成图像")
+            logger.info(f"提供商不可用，无法生成图像")
             return None
         
         try:
@@ -249,7 +253,15 @@ class GenericImageProvider(BaseProvider):
             
             # 渲染请求体
             request_body = self._render_request(request_params)
-            print(f"最终请求体: {request_body}")
+            
+            # 自定义JSON序列化函数，base64只显示前20位
+            def custom_json_serializer(obj):
+                if isinstance(obj, str) and ('base64' in obj.lower() or obj.startswith('data:image/')):
+                    # 只显示前20位base64
+                    return obj[:20] + '...'
+                return obj
+            
+            logger.info(f"最终请求体（完整）: {json.dumps(request_body, ensure_ascii=False, indent=2, default=custom_json_serializer)}")
             
             # 发送请求
             response = await self.client.request(
@@ -258,23 +270,23 @@ class GenericImageProvider(BaseProvider):
                 json=request_body
             )
             
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应体: {response.text}")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.info(f"响应体: {response.text}")
             
             # 解析响应
             return self._parse_response(response)
             
         except httpx.HTTPStatusError as e:
-            print(f"HTTP错误: {e.response.status_code} - {e.response.text}")
+            logger.error(f"HTTP错误: {e.response.status_code} - {e.response.text}")
             return {
                 "success": False,
                 "error": f"HTTP错误 {e.response.status_code}: {e.response.text}",
                 "provider": self.name
             }
         except Exception as e:
-            print(f"生成图像失败: {str(e)}")
+            logger.error(f"生成图像失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": str(e),
@@ -333,7 +345,7 @@ class GenericImageProvider(BaseProvider):
         
         # 检查是否在支持的尺寸列表中
         if self.supported_sizes and size not in self.supported_sizes:
-            print(f"警告：尺寸 {size} 不在支持列表中，可能导致生成失败")
+            logger.warning(f"警告：尺寸 {size} 不在支持列表中，可能导致生成失败")
     
     def _parse_size_str(self, size_str: str) -> int:
         """解析尺寸字符串，返回总像素数
@@ -404,23 +416,24 @@ class GenericImageProvider(BaseProvider):
             
             # 处理所有参考图
             for i, ref_image in enumerate(clean_params['reference_images'][:self.max_reference_images]):
-                ref_image_copy = ref_image.copy()
+                # 创建一个空字典，确保只包含必要的字段
+                ref_image_copy = {}
                 # 根据配置的reference_image_field字段名进行转换
-                if 'image_url' in ref_image_copy and hasattr(self, 'reference_image_field'):
-                    image_url_value = ref_image_copy.pop('image_url')
+                if 'image_url' in ref_image and hasattr(self, 'reference_image_field'):
+                    image_url_value = ref_image.get('image_url', '')
                     # 检查是否是本地路径，如果是则转换为data URL格式
                     if image_url_value and image_url_value.startswith('/'):
-                        print(f"检测到本地路径: {image_url_value}，尝试转换为data URL格式")
+                        logger.info(f"检测到本地路径: {image_url_value}，尝试转换为data URL格式")
                         # 尝试将本地路径转换为data URL
                         try:
                             # 获取项目根目录
                             project_root = Path(__file__).parent.parent.parent.parent
                             full_path = project_root / image_url_value.lstrip('/')
-                            print(f"完整文件路径: {full_path}")
+                            logger.info(f"完整文件路径: {full_path}")
                             
                             # 直接读取文件转换为base64，避免调用convert_local_path_to_data_url函数
                             if full_path.exists():
-                                print(f"文件存在，开始转换为base64...")
+                                logger.info(f"文件存在，开始转换为base64...")
                                 with open(full_path, 'rb') as f:
                                     image_data = f.read()
                                 import base64
@@ -435,13 +448,13 @@ class GenericImageProvider(BaseProvider):
                                     content_type = "image/webp"
                                 
                                 image_url_value = f"data:{content_type};base64,{base64_image}"
-                                print(f"成功转换为base64格式，长度: {len(base64_image)}")
+                                logger.info(f"成功转换为base64格式，完整数据: {image_url_value}")
                             else:
-                                print(f"文件不存在: {full_path}")
+                                logger.info(f"文件不存在: {full_path}")
                         except Exception as e:
-                            print(f"转换本地路径为data URL失败: {e}，保留原始路径")
+                            logger.error(f"转换本地路径为data URL失败: {e}，保留原始路径")
                     
-                    # 使用配置中指定的字段名（如image），而不是默认的image_urls
+                    # 使用配置中指定的字段名（如image），只包含必要的字段
                     ref_image_copy[self.reference_image_field] = image_url_value
                     processed_reference_images.append(ref_image_copy)
             
@@ -449,72 +462,60 @@ class GenericImageProvider(BaseProvider):
         
         # 添加辅助变量
         clean_params['has_reference_images'] = has_reference_images
-        
-        # 直接构建消息内容，避免模板渲染时的JSON格式问题
+
+        # 处理参考图内容 - 直接在代码中构建正确的JSON内容，不依赖模板替换
+        final_content = None
         if has_reference_images:
-            # 构建包含参考图和提示词的消息内容
+            # 构建包含参考图和提示词的内容数组
             import json
-            ref_images_json = []
+            content_items = []
             for img in processed_reference_images:
-                ref_images_json.append(json.dumps(img, ensure_ascii=False))
-            # 构建完整的内容数组：参考图 + 文本提示词
-            if ref_images_json:
-                content_array = f"[{','.join(ref_images_json)}, {{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
-            else:
-                # 如果参考图处理后为空，只包含文本提示词
-                content_array = f"[{{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
-            clean_params['content_array'] = content_array
+                logger.info(f"添加参考图到content: {json.dumps(img, ensure_ascii=False)}")
+                content_items.append(img)
+            # 添加文本提示词
+            content_items.append({"text": clean_params.get('prompt', '')})
+            final_content = content_items
+            logger.info(f"最终content数组（有参考图）: {json.dumps(final_content, ensure_ascii=False, indent=2)}")
         else:
             # 只包含文本提示词
-            clean_params['content_array'] = f"[{{\"text\": \"{clean_params.get('prompt', '')}\"}}]"
-        
-        # 修改模板，使用content_array变量
-        # 先获取模板内容
-        template_content = self.request_config['template']
-        # 替换原来的复杂条件表达式为简单的content_array
-        import re
-        
-        # 使用更灵活的正则表达式，匹配各种模板格式变体
-        new_template_content = re.sub(r'"content":\s*\{%\s*if\s+has_reference_images\s+%\}\s*\[\s*\{\{\s*reference_images_0\s*\}\}\s*,\s*\{"text"\s*:\s*"\{\{\s*prompt\s*\}\}"\}\s*\]\s*\{%\s*else\s+%\}\s*\[\s*\{"text"\s*:\s*"\{\{\s*prompt\s*\}\}"\}\s*\]\s*\{%\s*endif\s+%\}', 
-                                   '"content": {{ content_array }}', 
-                                   template_content, 
-                                   flags=re.DOTALL | re.IGNORECASE)
-        
-        # 使用修改后的模板重新渲染
+            final_content = [{"text": clean_params.get('prompt', '')}]
+            logger.info(f"最终content数组（无参考图）: {json.dumps(final_content, ensure_ascii=False, indent=2)}")
+        clean_params['final_content'] = final_content
+
+        # 渲染基础模板
         from jinja2 import Template
-        new_template = Template(new_template_content)
-        rendered = new_template.render(**clean_params)
-        print(f"渲染后的模板内容: {rendered}")
+        rendered = self.request_template.render(**clean_params)
+        logger.info(f"渲染后的模板内容（完整）: {rendered}")
         
         # 解析为JSON
         import json
         try:
             result = json.loads(rendered)
-            print(f"JSON解析成功: {result}")
+            logger.info(f"JSON解析成功")
             return result
         except json.JSONDecodeError as e:
-            print(f"JSON解析失败，错误位置: 行 {e.lineno}, 列 {e.colno}, 字符位置 {e.pos}")
+            logger.error(f"JSON解析失败，错误位置: 行 {e.lineno}, 列 {e.colno}, 字符位置 {e.pos}")
             # 打印错误位置附近的内容
             lines = rendered.split('\n')
             error_line = lines[e.lineno-1] if e.lineno <= len(lines) else ''
-            print(f"错误行内容: {error_line}")
+            logger.error(f"错误行内容: {error_line}")
             if error_line:
                 # 打印错误位置前后的字符
-                start = max(0, e.colno-20)
-                end = min(len(error_line), e.colno+20)
-                print(f"错误位置附近: '{error_line[start:end]}'")
+                start = max(0, e.colno-50)
+                end = min(len(error_line), e.colno+50)
+                logger.error(f"错误位置附近: '{error_line[start:end]}'")
             
-            # 尝试直接构建请求体作为备用方案
+            # 尝试直接修复content字段
             try:
-                print("尝试直接构建请求体...")
+                logger.info("尝试直接修复content字段...")
                 # 解析模板为字典
-                base_template = json.loads(template_content)
+                base_template = json.loads(self.request_config['template'])
                 # 直接设置content字段
-                base_template['input']['messages'][0]['content'] = json.loads(content_array)
-                print(f"直接构建请求体成功: {base_template}")
+                base_template['input']['messages'][0]['content'] = final_content
+                logger.info(f"直接修复content字段成功: {json.dumps(base_template, ensure_ascii=False, indent=2)}")
                 return base_template
             except Exception as fallback_error:
-                print(f"直接构建请求体也失败: {fallback_error}")
+                logger.error(f"直接修复content字段也失败: {fallback_error}")
                 raise
     
     def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
@@ -590,7 +591,7 @@ class GenericImageProvider(BaseProvider):
             else:
                 return None
         except Exception as e:
-            print(f"JSONPath解析失败: {str(e)}")
+            logger.error(f"JSONPath解析失败: {str(e)}")
             return None
     
     async def close(self) -> None:

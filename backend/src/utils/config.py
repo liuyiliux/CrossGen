@@ -72,7 +72,7 @@ class Settings(BaseSettings):
     SD_API_KEY: Optional[str] = Field(default=None, env="SD_API_KEY")
     SD_BASE_URL: str = Field(default="http://localhost:7860/sdapi/v1", env="SD_BASE_URL")
     SD_MODEL: str = Field(default="stable-diffusion-xl", env="SD_MODEL")
-    
+
     # 文件存储配置
     UPLOAD_DIR: str = Field(default="uploads", env="UPLOAD_DIR")
     MAX_FILE_SIZE: str = Field(default="10MB", env="MAX_FILE_SIZE")

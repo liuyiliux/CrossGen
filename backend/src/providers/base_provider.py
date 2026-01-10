@@ -24,6 +24,10 @@ class ProviderConfig:
     retry_count: int = 3
     headers: Optional[Dict[str, str]] = None
     supported_sizes: Optional[List[str]] = None  # 支持的尺寸列表
+    # 参考图片支持配置
+    support_reference_image: bool = False
+    support_multiple_reference_images: bool = False
+    reference_image_field: str = "init_image"
 
 
 class BaseProvider(abc.ABC):
@@ -50,6 +54,11 @@ class BaseProvider(abc.ABC):
         self.headers = config.headers or {}
         self.supported_sizes = config.supported_sizes or []  # 支持的尺寸列表
         self.initialized = False
+        
+        # 参考图片支持
+        self.support_reference_image = getattr(config, 'support_reference_image', False)
+        self.support_multiple_reference_images = getattr(config, 'support_multiple_reference_images', False)
+        self.reference_image_field = getattr(config, 'reference_image_field', 'init_image')
     
     @abc.abstractmethod
     async def initialize(self) -> bool:

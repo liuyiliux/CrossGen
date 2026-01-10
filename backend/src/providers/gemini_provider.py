@@ -290,27 +290,38 @@ class GeminiProvider(BaseProvider):
             
             # 处理参考图
             reference_images = kwargs.get("reference_images", [])
-            if reference_images and kwargs.get("support_reference_image", False):
+            if reference_images and self.support_reference_image:
                 print(f"  处理参考图: {len(reference_images)}张")
                 # 支持多图参考的模型使用所有参考图
-                if kwargs.get("support_multiple_reference_images", False):
+                if self.support_multiple_reference_images:
                     for i, img in enumerate(reference_images):
+                        # 处理参考图对象，提取image_url或直接使用base64数据
+                        if isinstance(img, dict) and "image_url" in img:
+                            img_data = img["image_url"]
+                        else:
+                            img_data = img
                         request_body["contents"][0]["parts"].append({
                             "inlineData": {
                                 "mimeType": "image/jpeg",
-                                "data": img[:20] + "..." + img[-20:] if len(img) > 40 else img
+                                "data": img_data[:20] + "..." + img_data[-20:] if len(img_data) > 40 else img_data
                             }
                         })
-                        print(f"    参考图{i+1}: {img[:20]}..." if len(img) > 40 else f"    参考图{i+1}: {img}")
+                        print(f"    参考图{i+1}: {img_data[:20]}..." if len(img_data) > 40 else f"    参考图{i+1}: {img_data}")
                 # 不支持多图参考的模型只使用第一个参考图
                 else:
+                    # 处理第一个参考图对象，提取image_url或直接使用base64数据
+                    first_img = reference_images[0]
+                    if isinstance(first_img, dict) and "image_url" in first_img:
+                        img_data = first_img["image_url"]
+                    else:
+                        img_data = first_img
                     request_body["contents"][0]["parts"].append({
                         "inlineData": {
                             "mimeType": "image/jpeg",
-                            "data": reference_images[0]
+                            "data": img_data
                         }
                     })
-                    print(f"    参考图: {reference_images[0][:20]}..." if len(reference_images[0]) > 40 else f"    参考图: {reference_images[0]}")
+                    print(f"    参考图: {img_data[:20]}..." if len(img_data) > 40 else f"    参考图: {img_data}")
             
             # 发送请求
             # 统一使用配置的model字段

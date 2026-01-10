@@ -673,7 +673,11 @@ class GenerationService:
                     print(f"  参考图片 {i+1} 类型: {img_type}")
                     if img_type == 'image_url':
                         img_url = img.get('image_url', '')
-                        print(f"  参考图片 {i+1} URL: {img_url[:100]}...")
+                        # 如果是base64，只显示前20位
+                        if 'base64' in img_url.lower() or img_url.startswith('data:image/'):
+                            print(f"  参考图片 {i+1} URL: {img_url[:20]}...")
+                        else:
+                            print(f"  参考图片 {i+1} URL: {img_url[:100]}...")
                 else:
                     print(f"  参考图片 {i+1} 格式: {type(img)}")
         else:

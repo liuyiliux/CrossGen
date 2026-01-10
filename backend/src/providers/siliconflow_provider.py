@@ -467,14 +467,20 @@ class SiliconFlowProvider(BaseProvider):
             
             # 处理参考图
             reference_images = kwargs.get("reference_images", [])
-            if reference_images and kwargs.get("support_reference_image", False):
+            if reference_images and self.support_reference_image:
                 print(f"  处理参考图: {reference_images}")
+                # 提取参考图的URL
+                reference_image_urls = []
+                for ref_image in reference_images:
+                    if isinstance(ref_image, dict) and "image_url" in ref_image:
+                        reference_image_urls.append(ref_image["image_url"])
+                print(f"  提取后的参考图URL: {reference_image_urls}")
                 # 支持多图参考的模型使用所有参考图
-                if kwargs.get("support_multiple_reference_images", False):
-                    request_body[kwargs.get("reference_image_field", "init_images")] = reference_images
+                if self.support_multiple_reference_images:
+                    request_body[self.reference_image_field] = reference_image_urls
                 # 不支持多图参考的模型只使用第一个参考图
-                else:
-                    request_body[kwargs.get("reference_image_field", "init_image")] = reference_images[0]
+                elif reference_image_urls:
+                    request_body[self.reference_image_field] = reference_image_urls[0]
             
             print(f"  最终请求体: {request_body}")
             
