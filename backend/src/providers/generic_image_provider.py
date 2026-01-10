@@ -463,24 +463,18 @@ class GenericImageProvider(BaseProvider):
         # 添加辅助变量
         clean_params['has_reference_images'] = has_reference_images
 
-        # 处理参考图内容 - 直接在代码中构建正确的JSON内容，不依赖模板替换
-        final_content = None
-        if has_reference_images:
-            # 构建包含参考图和提示词的内容数组
-            import json
-            content_items = []
-            for img in processed_reference_images:
-                logger.info(f"添加参考图到content: {json.dumps(img, ensure_ascii=False)}")
-                content_items.append(img)
-            # 添加文本提示词
-            content_items.append({"text": clean_params.get('prompt', '')})
-            final_content = content_items
-            logger.info(f"最终content数组（有参考图）: {json.dumps(final_content, ensure_ascii=False, indent=2)}")
-        else:
-            # 只包含文本提示词
-            final_content = [{"text": clean_params.get('prompt', '')}]
-            logger.info(f"最终content数组（无参考图）: {json.dumps(final_content, ensure_ascii=False, indent=2)}")
-        clean_params['final_content'] = final_content
+        # 动态生成参考图参数
+        for i, img in enumerate(processed_reference_images):
+            placeholder_name = f'reference_image_{i}'
+            clean_params[placeholder_name] = img.get(self.reference_image_field, '')
+            logger.info(f"生成参考图参数 {placeholder_name}: {clean_params[placeholder_name]}")
+        
+        # 处理多余的占位符（如果模板中引用了超出实际数量的参考图）
+        for i in range(len(processed_reference_images), 10):  # 最多支持10个参考图
+            placeholder_name = f'reference_image_{i}'
+            if placeholder_name not in clean_params:
+                clean_params[placeholder_name] = ''
+                logger.info(f"生成空参考图参数 {placeholder_name}")
 
         # 渲染基础模板
         from jinja2 import Template
