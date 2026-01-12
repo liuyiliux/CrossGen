@@ -642,7 +642,7 @@ class GenerationService:
             return status.results
         return None
 
-    async def generate_single_image(self, prompt: str, image_provider: str, reference_images: List[Dict[str, Any]] = None, history_id: Optional[str] = None, page_index: Optional[int] = None, image_id: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_single_image(self, prompt: str, image_provider: str, reference_images: List[Dict[str, Any]] = None, history_id: Optional[str] = None, page_index: Optional[int] = None, image_id: Optional[str] = None, size: str = "") -> Dict[str, Any]:
         """
         生成单张图片
         
@@ -653,6 +653,7 @@ class GenerationService:
             history_id: 历史记录ID，用于保存图片到指定目录
             page_index: 页面索引，用于命名图片
             image_id: 图片ID，用于替换原有图片
+            size: 生成图片的尺寸，默认1024x1024
             
         Returns:
             Dict[str, Any]: 生成结果
@@ -721,11 +722,11 @@ class GenerationService:
             print(f"提供商地址: {provider.base_url}")
             print(f"使用模型: {provider.model}")
             
-            # 准备图像生成参数
+            # 准备图像生成参数 - 使用用户传递的size参数，不再硬编码
             generation_params = {
                 "prompt": prompt,
                 "platform": "general",
-                "size": "1024x1792",
+                "size": size,  # 使用用户传递的尺寸参数
                 "n": 1
             }
             

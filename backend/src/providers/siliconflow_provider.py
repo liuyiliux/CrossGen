@@ -33,7 +33,7 @@ class SiliconFlowProvider(BaseProvider):
             },
             "Qwen/Qwen-Image-Edit": {
                 "size_param": "image_size",
-                "default_size": "1056x1584",
+                "default_size": "1024x1024",
                 "supports_response_format": False
             },
             "default": {
@@ -431,25 +431,13 @@ class SiliconFlowProvider(BaseProvider):
             return None
         
         try:
-            # 获取平台尺寸配置
-            platform_sizes = self.size_config.get(platform, ["1024x1024"])
-            
-            # 优先使用kwargs中的size参数
-            size = kwargs.get("size")
-            
-            # 如果没有指定size，先尝试使用支持尺寸列表的第一个
-            if not size and self.supported_sizes and len(self.supported_sizes) > 0:
-                size = self.supported_sizes[0]
-                print(f"  未指定尺寸，使用支持尺寸列表第一个: {size}")
-            
-            # 如果仍然没有size，使用平台默认尺寸
-            if not size:
-                size = platform_sizes[0]
-                print(f"  未指定尺寸且支持尺寸列表为空，使用平台默认尺寸: {size}")
+            # 直接使用用户选择的尺寸，忽略参考图尺寸
+            # 优先使用kwargs中的size参数，这是用户在界面上选择的尺寸
+            selected_size = kwargs.get("size")
             
             print(f"\n1. 构建请求参数:")
             print(f"  平台: {platform}")
-            print(f"  尺寸: {size}")
+            print(f"  用户选择的尺寸: {selected_size}")
             print(f"  模型: {self.model}")
             print(f"  返回格式: {kwargs.get('response_format', self.return_format)}")
             
@@ -466,12 +454,21 @@ class SiliconFlowProvider(BaseProvider):
             model_config = self.model_configs.get(model, self.model_configs["default"])
             print(f"  模型配置: {model_config}")
             
-            # 检查尺寸是否在支持列表中
-            final_size = size
-            if self.supported_sizes and final_size not in self.supported_sizes:
-                # 如果尺寸不在支持列表中，使用配置的默认尺寸
+            # 确定最终使用的尺寸
+            # 优先使用用户选择的尺寸，忽略参考图尺寸
+            # 用户选择的尺寸是前端传递的size参数
+            final_size = selected_size
+            
+            if not final_size:
+                # 如果没有指定尺寸，使用配置的默认尺寸
                 final_size = model_config["default_size"]
-                print(f"  警告：尺寸 {size} 不在支持列表中，使用默认尺寸: {final_size}")
+                print(f"  未指定尺寸，使用配置的默认尺寸: {final_size}")
+            else:
+                # 检查尺寸是否在支持列表中
+                if self.supported_sizes and final_size not in self.supported_sizes:
+                    # 尺寸不在支持列表，仍使用用户选择的尺寸，不回退到默认尺寸
+                    print(f"  信息：尺寸 {final_size} 不在支持列表中，但仍使用用户选择的尺寸")
+                print(f"  使用用户选择的尺寸: {final_size}")
             
             # 根据配置使用正确的尺寸参数名
             size_param = model_config["size_param"]
@@ -482,34 +479,6 @@ class SiliconFlowProvider(BaseProvider):
             request_body["batch_size"] = kwargs.get("n", 1)
             print(f"  使用batch_size参数: {request_body['batch_size']}")
             
-            # 添加默认参数和用户自定义参数
-            # 从kwargs中提取直接参数
-            direct_params = [
-                "negative_prompt", "num_inference_steps", "seed", "cfg", 
-                "guidance_scale", "strength", "style_prompt", "quality"
-            ]
-            
-            for param in direct_params:
-                if param in kwargs:
-                    # 直接使用参数名，不进行映射
-                    request_body[param] = kwargs[param]
-                    print(f"  添加直接参数: {param} = {kwargs[param]}")
-            
-            # 添加默认参数值
-            if "negative_prompt" not in request_body:
-                request_body["negative_prompt"] = kwargs.get("negative_prompt", "")
-                print(f"  添加默认negative_prompt: {request_body['negative_prompt']}")
-            
-            if "num_inference_steps" not in request_body:
-                request_body["num_inference_steps"] = kwargs.get("num_inference_steps", 30)
-                print(f"  添加默认num_inference_steps: {request_body['num_inference_steps']}")
-            
-            if "seed" not in request_body:
-                # 如果用户提供了seed，使用用户提供的值，否则不设置（由API生成随机值）
-                if "seed" in kwargs:
-                    request_body["seed"] = kwargs["seed"]
-                    print(f"  添加用户指定seed: {request_body['seed']}")
-            
             # 处理配置文件中的image_parameters
             config_image_params = self.image_parameters
             
@@ -519,10 +488,33 @@ class SiliconFlowProvider(BaseProvider):
             # 合并参数，用户提供的参数优先
             combined_image_params = {**config_image_params, **kwargs_image_params}
             
+            # 添加所有合并后的图像参数到请求体
             if combined_image_params:
-                # 直接使用参数名，不进行映射
                 request_body.update(combined_image_params)
-                print(f"  添加图像参数: {combined_image_params}")
+                print(f"  添加配置的图像参数: {combined_image_params}")
+            
+            # 添加默认参数值（仅当配置中没有指定时）
+            if "negative_prompt" not in request_body:
+                default_negative_prompt = kwargs.get("negative_prompt", "")
+                request_body["negative_prompt"] = default_negative_prompt
+                print(f"  添加默认negative_prompt: {request_body['negative_prompt']}")
+            
+            if "num_inference_steps" not in request_body:
+                default_num_steps = kwargs.get("num_inference_steps", 30)
+                request_body["num_inference_steps"] = default_num_steps
+                print(f"  添加默认num_inference_steps: {request_body['num_inference_steps']}")
+            
+            # 处理seed参数，如果用户提供了则使用，否则不设置
+            if "seed" in kwargs and "seed" not in request_body:
+                request_body["seed"] = kwargs["seed"]
+                print(f"  添加用户指定seed: {request_body['seed']}")
+            
+            # 添加kwargs中的其他直接参数（排除特殊参数）
+            special_params = ["model", "prompt", "reference_images", "image_parameters", "n", "response_format", "size"]
+            for key, value in kwargs.items():
+                if key not in special_params and key not in request_body:
+                    request_body[key] = value
+                    print(f"  添加直接参数: {key} = {value}")
             
             # 根据配置处理响应格式
             if model_config["supports_response_format"] and kwargs.get("response_format"):
@@ -532,9 +524,10 @@ class SiliconFlowProvider(BaseProvider):
                 # 对于不支持response_format的模型，确保不添加此参数
                 print(f"  模型不支持response_format，跳过此参数")
             
-            # 处理参考图
+            # 处理参考图 - 继续使用参考图，但使用用户选择的尺寸
             reference_images = kwargs.get("reference_images", [])
             if reference_images and self.support_reference_image:
+                print(f"  收到参考图数量: {len(reference_images)}")
                 # 处理参考图日志，只显示前20位
                 truncated_refs = []
                 for ref in reference_images:
@@ -587,6 +580,8 @@ class SiliconFlowProvider(BaseProvider):
                 elif reference_image_values:
                     # 不支持多图参考的模型，使用配置的字段名，传递第一个参考图数据
                     request_body[self.reference_image_field] = reference_image_values[0]
+            else:
+                print(f"  未使用参考图")
             
             print(f"  最终请求体: {request_body}")
             

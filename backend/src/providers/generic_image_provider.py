@@ -245,8 +245,14 @@ class GenericImageProvider(BaseProvider):
                 **kwargs
             }
             
-            # 处理尺寸
-            request_params["size"] = self._process_size(request_params.get("size"))
+            # 处理尺寸 - 优先使用用户选择的尺寸，不自行转换格式
+            user_selected_size = kwargs.get("size")
+            if user_selected_size:
+                # 直接使用用户选择的尺寸，不转换格式
+                request_params["size"] = user_selected_size
+            elif "size" in request_params:
+                # 如果没有用户选择的尺寸，使用默认处理
+                request_params["size"] = self._process_size(request_params["size"])
             
             # 参数转换
             request_params = self._transform_parameters(request_params)
@@ -304,13 +310,9 @@ class GenericImageProvider(BaseProvider):
         """
         # 如果没有指定尺寸，使用默认值
         if not size:
-            size = self.default_params.get("size", "1024*1024")
+            size = self.default_params.get("size", "1024x1024")
         
-        # 转换尺寸格式（x -> *）
-        if "x" in size:
-            size = size.replace("x", "*")
-        
-        # 验证尺寸
+        # 验证尺寸 - 不转换格式，保持原始格式
         self._validate_size(size)
         
         return size
@@ -324,11 +326,15 @@ class GenericImageProvider(BaseProvider):
         Raises:
             ValueError: 尺寸不符合要求时抛出
         """
-        # 解析宽高
+        # 解析宽高 - 同时支持x和*作为分隔符
         try:
-            width, height = map(int, size.split("*"))
+            # 支持x和*作为分隔符
+            if "x" in size:
+                width, height = map(int, size.split("x"))
+            else:
+                width, height = map(int, size.split("*"))
         except ValueError:
-            raise ValueError(f"无效的尺寸格式: {size}，应为 W*H 格式")
+            raise ValueError(f"无效的尺寸格式: {size}，应为 WxH 或 W*H 格式")
         
         # 计算总像素
         total_pixels = width * height
