@@ -22,24 +22,24 @@ class SiliconFlowProvider(BaseProvider):
         self.image_jsonpath = "$.images[*].url"  # 默认值
         self.return_format = "url"  # 默认值
         self.size_config = {}  # 默认值
+        self.image_parameters = {}  # 默认值
         
         # 模型配置，支持通过配置文件扩展
         self.model_configs = {
             "Qwen/Qwen-Image": {
                 "size_param": "image_size",
                 "default_size": "1056x1584",
-                "param_mapping": {
-                    "guidance_scale": "cfg"
-                },
-                "supports_response_format": False,
-                "uses_batch_size": False
+                "supports_response_format": False
+            },
+            "Qwen/Qwen-Image-Edit": {
+                "size_param": "image_size",
+                "default_size": "1056x1584",
+                "supports_response_format": False
             },
             "default": {
-                "size_param": "size",
+                "size_param": "image_size",
                 "default_size": "1024x1024",
-                "param_mapping": {},
-                "supports_response_format": True,
-                "uses_batch_size": False
+                "supports_response_format": True
             }
         }
     
@@ -248,9 +248,24 @@ class SiliconFlowProvider(BaseProvider):
         Returns:
             Optional[Dict[str, Any]]: 生成结果
         """
+        # 处理kwargs中的图像相关数据，避免日志过长
+        kwargs_copy = kwargs.copy()
+        # 检查是否有图像相关的参数
+        if "images" in kwargs_copy and isinstance(kwargs_copy["images"], list):
+            truncated_images = []
+            for img in kwargs_copy["images"]:
+                if isinstance(img, dict) and "image_url" in img:
+                    img_url = img["image_url"]
+                    if isinstance(img_url, dict) and "url" in img_url and img_url["url"].startswith('data:image/'):
+                        img_url["url"] = img_url["url"][:20] + "..."
+                    elif isinstance(img_url, str) and img_url.startswith('data:image/'):
+                        img["image_url"] = img_url[:20] + "..."
+                truncated_images.append(img)
+            kwargs_copy["images"] = truncated_images
+        
         print(f"\n=== 开始SiliconFlow文本生成 ===")
         print(f"提供商: {self.name}")
-        print(f"参数: {kwargs}")
+        print(f"参数: {kwargs_copy}")
         
         if not self.is_available() or not self.client:
             print(f"提供商不可用，无法生成文本")
@@ -284,10 +299,18 @@ class SiliconFlowProvider(BaseProvider):
                             image_url = item['image_url']
                             if isinstance(image_url, dict):
                                 url = image_url.get("url", "")
-                                print(f"图像元素: {url[:50]}..." if len(url) > 50 else f"图像元素: {url}")
+                                # 只对base64格式的图像进行截断处理
+                                if url.startswith('data:image/'):
+                                    print(f"图像元素: {url[:20]}...")
+                                else:
+                                    print(f"图像元素: {url}")
                                 user_content.append(item)
                             elif isinstance(image_url, str):
-                                print(f"图像元素: {image_url[:50]}..." if len(image_url) > 50 else f"图像元素: {image_url}")
+                                # 只对base64格式的图像进行截断处理
+                                if image_url.startswith('data:image/'):
+                                    print(f"图像元素: {image_url[:20]}...")
+                                else:
+                                    print(f"图像元素: {image_url}")
                                 user_content.append({
                                     "type": "image_url",
                                     "image_url": {
@@ -381,11 +404,27 @@ class SiliconFlowProvider(BaseProvider):
         Returns:
             Optional[Dict[str, Any]]: 生成结果
         """
+        # 处理kwargs中的reference_images，避免日志过长
+        kwargs_copy = kwargs.copy()
+        if "reference_images" in kwargs_copy:
+            truncated_refs = []
+            for ref in kwargs_copy["reference_images"]:
+                if isinstance(ref, dict) and "image_url" in ref:
+                    img_url = ref["image_url"]
+                    if isinstance(img_url, dict):
+                        url_value = img_url.get("url", "")
+                        if url_value.startswith('data:image/'):
+                            img_url["url"] = url_value[:20] + "..."
+                    elif isinstance(img_url, str) and img_url.startswith('data:image/'):
+                        ref["image_url"] = img_url[:20] + "..."
+                truncated_refs.append(ref)
+            kwargs_copy["reference_images"] = truncated_refs
+        
         print(f"\n=== 开始SiliconFlow图像生成 ===")
         print(f"提供商: {self.name}")
         print(f"平台: {platform}")
         print(f"提示词: {prompt[:50]}..." if len(prompt) > 50 else f"提示词: {prompt}")
-        print(f"参数: {kwargs}")
+        print(f"参数: {kwargs_copy}")
         
         if not self.is_available() or not self.client:
             print(f"提供商不可用，无法生成图像")
@@ -440,47 +479,114 @@ class SiliconFlowProvider(BaseProvider):
             print(f"  使用尺寸参数: {size_param} = {final_size}")
             
             # 处理批处理参数
-            if model_config["uses_batch_size"]:
-                request_body["batch_size"] = kwargs.get("n", 1)
-                print(f"  使用batch_size参数: {request_body['batch_size']}")
-            elif "n" in kwargs:
-                request_body["n"] = kwargs["n"]
-                print(f"  使用n参数: {request_body['n']}")
+            request_body["batch_size"] = kwargs.get("n", 1)
+            print(f"  使用batch_size参数: {request_body['batch_size']}")
             
-            # 根据配置映射参数名
-            if kwargs.get("image_parameters"):
-                image_params = kwargs.get("image_parameters", {})
-                mapped_params = {}
-                
-                # 应用参数映射
-                for key, value in image_params.items():
-                    mapped_key = model_config["param_mapping"].get(key, key)
-                    mapped_params[mapped_key] = value
-                
-                request_body.update(mapped_params)
-                print(f"  映射后的图像参数: {mapped_params}")
+            # 添加默认参数和用户自定义参数
+            # 从kwargs中提取直接参数
+            direct_params = [
+                "negative_prompt", "num_inference_steps", "seed", "cfg", 
+                "guidance_scale", "strength", "style_prompt", "quality"
+            ]
+            
+            for param in direct_params:
+                if param in kwargs:
+                    # 直接使用参数名，不进行映射
+                    request_body[param] = kwargs[param]
+                    print(f"  添加直接参数: {param} = {kwargs[param]}")
+            
+            # 添加默认参数值
+            if "negative_prompt" not in request_body:
+                request_body["negative_prompt"] = kwargs.get("negative_prompt", "")
+                print(f"  添加默认negative_prompt: {request_body['negative_prompt']}")
+            
+            if "num_inference_steps" not in request_body:
+                request_body["num_inference_steps"] = kwargs.get("num_inference_steps", 30)
+                print(f"  添加默认num_inference_steps: {request_body['num_inference_steps']}")
+            
+            if "seed" not in request_body:
+                # 如果用户提供了seed，使用用户提供的值，否则不设置（由API生成随机值）
+                if "seed" in kwargs:
+                    request_body["seed"] = kwargs["seed"]
+                    print(f"  添加用户指定seed: {request_body['seed']}")
+            
+            # 处理配置文件中的image_parameters
+            config_image_params = self.image_parameters
+            
+            # 处理kwargs中的image_parameters，优先使用用户提供的值
+            kwargs_image_params = kwargs.get("image_parameters", {})
+            
+            # 合并参数，用户提供的参数优先
+            combined_image_params = {**config_image_params, **kwargs_image_params}
+            
+            if combined_image_params:
+                # 直接使用参数名，不进行映射
+                request_body.update(combined_image_params)
+                print(f"  添加图像参数: {combined_image_params}")
             
             # 根据配置处理响应格式
             if model_config["supports_response_format"] and kwargs.get("response_format"):
                 request_body["response_format"] = kwargs.get("response_format", self.return_format)
                 print(f"  使用响应格式: {request_body['response_format']}")
+            elif not model_config["supports_response_format"]:
+                # 对于不支持response_format的模型，确保不添加此参数
+                print(f"  模型不支持response_format，跳过此参数")
             
             # 处理参考图
             reference_images = kwargs.get("reference_images", [])
             if reference_images and self.support_reference_image:
-                print(f"  处理参考图: {reference_images}")
-                # 提取参考图的URL
-                reference_image_urls = []
+                # 处理参考图日志，只显示前20位
+                truncated_refs = []
+                for ref in reference_images:
+                    if isinstance(ref, dict) and "image_url" in ref:
+                        img_url = ref["image_url"]
+                        if isinstance(img_url, dict):
+                            # 只对base64格式的图像进行截断处理
+                            img_url_value = img_url.get("url", "")
+                            if img_url_value.startswith('data:image/'):
+                                truncated_url = img_url_value[:20] + "..."
+                            else:
+                                truncated_url = img_url_value
+                            truncated_refs.append({"image_url": truncated_url})
+                        elif isinstance(img_url, str):
+                            # 只对base64格式的图像进行截断处理
+                            if img_url.startswith('data:image/'):
+                                truncated_url = img_url[:20] + "..."
+                            else:
+                                truncated_url = img_url
+                            truncated_refs.append({"image_url": truncated_url})
+                    else:
+                        truncated_refs.append(ref)
+                print(f"  处理参考图: {truncated_refs}")
+                # 提取参考图数据（完全按照配置处理，不管是URL还是base64）
+                reference_image_values = []
                 for ref_image in reference_images:
                     if isinstance(ref_image, dict) and "image_url" in ref_image:
-                        reference_image_urls.append(ref_image["image_url"])
-                print(f"  提取后的参考图URL: {reference_image_urls}")
-                # 支持多图参考的模型使用所有参考图
+                        img_url = ref_image["image_url"]
+                        if isinstance(img_url, dict):
+                            # 如果image_url是字典，提取url字段的值
+                            reference_image_values.append(img_url.get("url", ""))
+                        else:
+                            # 否则直接使用img_url（可能是URL或base64字符串）
+                            reference_image_values.append(img_url)
+                
+                # 提取后的参考图数据只显示前20位
+                truncated_values = []
+                for value in reference_image_values:
+                    # 只对base64格式的图像进行截断处理
+                    if isinstance(value, str) and value.startswith('data:image/'):
+                        truncated_values.append(value[:20] + "...")
+                    else:
+                        truncated_values.append(value)
+                print(f"  提取后的参考图数据: {truncated_values}")
+                
+                # 完全按照配置的reference_image_field来处理
                 if self.support_multiple_reference_images:
-                    request_body[self.reference_image_field] = reference_image_urls
-                # 不支持多图参考的模型只使用第一个参考图
-                elif reference_image_urls:
-                    request_body[self.reference_image_field] = reference_image_urls[0]
+                    # 支持多图参考的模型，使用配置的字段名，传递所有参考图数据
+                    request_body[self.reference_image_field] = reference_image_values
+                elif reference_image_values:
+                    # 不支持多图参考的模型，使用配置的字段名，传递第一个参考图数据
+                    request_body[self.reference_image_field] = reference_image_values[0]
             
             print(f"  最终请求体: {request_body}")
             

@@ -153,7 +153,10 @@ class ProviderManager:
                 temperature=config.get("temperature", 0.7),
                 timeout=config.get("timeout", 30),
                 retry_count=config.get("retry_count", 3),
-                headers=config.get("headers")
+                headers=config.get("headers"),
+                support_reference_image=config.get("support_reference_image", False),
+                support_multiple_reference_images=config.get("support_multiple_reference_images", False),
+                reference_image_field=config.get("reference_image_field", "init_image")
             )
             
             # 根据类型创建提供商实例
@@ -234,7 +237,10 @@ class ProviderManager:
                     timeout=config.get("timeout", 30),
                     retry_count=config.get("retry_count", 3),
                     headers=config.get("headers"),
-                    supported_sizes=supported_sizes  # 添加支持的尺寸
+                    supported_sizes=supported_sizes,  # 添加支持的尺寸
+                    support_reference_image=config.get("support_reference_image", False),
+                    support_multiple_reference_images=config.get("support_multiple_reference_images", False),
+                    reference_image_field=config.get("reference_image_field", "init_image")
                 )
                 # 添加响应配置
                 provider_config.response_config = config.get("response_config", {})
@@ -263,7 +269,10 @@ class ProviderManager:
                     timeout=config.get("timeout", 30),
                     retry_count=config.get("retry_count", 3),
                     headers=config.get("headers"),
-                    supported_sizes=supported_sizes  # 添加支持的尺寸
+                    supported_sizes=supported_sizes,  # 添加支持的尺寸
+                    support_reference_image=config.get("support_reference_image", False),
+                    support_multiple_reference_images=config.get("support_multiple_reference_images", False),
+                    reference_image_field=config.get("reference_image_field", "init_image")
                 )
                 # 创建SiliconFlowProvider实例，传递ProviderConfig对象
                 provider = SiliconFlowProvider(provider_config)
@@ -271,6 +280,8 @@ class ProviderManager:
                 provider.image_jsonpath = config.get("image_jsonpath", "$.images[*].url")
                 provider.return_format = config.get("return_format", "url")
                 provider.size_config = config.get("size_config", {})
+                # 添加image_parameters属性
+                provider.image_parameters = config.get("image_parameters", {})
             elif provider_type == "gemini":
                 # 解析supported_sizes字段
                 supported_sizes = config.get("supported_sizes", [])
@@ -294,7 +305,10 @@ class ProviderManager:
                     timeout=config.get("timeout", 30),
                     retry_count=config.get("retry_count", 3),
                     headers=config.get("headers"),
-                    supported_sizes=supported_sizes  # 添加支持的尺寸
+                    supported_sizes=supported_sizes,  # 添加支持的尺寸
+                    support_reference_image=config.get("support_reference_image", False),
+                    support_multiple_reference_images=config.get("support_multiple_reference_images", False),
+                    reference_image_field=config.get("reference_image_field", "init_image")
                 )
                 # 添加响应配置
                 provider_config.response_config = config.get("response_config", {})
@@ -321,7 +335,10 @@ class ProviderManager:
                     timeout=config.get("timeout", 30),
                     retry_count=config.get("retry_count", 3),
                     headers=config.get("headers"),
-                    supported_sizes=supported_sizes  # 添加支持的尺寸
+                    supported_sizes=supported_sizes,  # 添加支持的尺寸
+                    support_reference_image=config.get("support_reference_image", False),
+                    support_multiple_reference_images=config.get("support_multiple_reference_images", False),
+                    reference_image_field=config.get("reference_image_field", "init_image")
                 )
                 
                 # 添加通用配置
@@ -632,7 +649,10 @@ class ProviderManager:
                 temperature=resolved_config.get("temperature", 0.7),
                 timeout=resolved_config.get("timeout", 30),
                 retry_count=resolved_config.get("retry_count", 3),
-                headers=resolved_config.get("headers")
+                headers=resolved_config.get("headers"),
+                support_reference_image=resolved_config.get("support_reference_image", False),
+                support_multiple_reference_images=resolved_config.get("support_multiple_reference_images", False),
+                reference_image_field=resolved_config.get("reference_image_field", "init_image")
             )
             
             # 根据类型创建提供商实例

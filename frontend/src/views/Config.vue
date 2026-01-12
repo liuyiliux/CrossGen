@@ -1149,6 +1149,14 @@ const loadProviders = async () => {
           providerCopy.supported_sizes = JSON.stringify(["1024x1024", "1056x1584", "1584x1056"], null, 2)
         }
         
+        // 如果image_parameters是对象，转换为JSON字符串显示
+        if (providerCopy.image_parameters && typeof providerCopy.image_parameters === 'object') {
+          providerCopy.image_parameters = JSON.stringify(providerCopy.image_parameters, null, 2)
+        } else if (!providerCopy.image_parameters) {
+          // 如果不存在，设置为空对象的JSON字符串
+          providerCopy.image_parameters = '{}'
+        }
+        
         return providerCopy
       })
     }
@@ -1173,6 +1181,14 @@ const openProviderDialog = (type: 'text' | 'image', provider?: any) => {
       // 如果supported_sizes是数组，转换为JSON字符串显示
       if (providerCopy.supported_sizes && Array.isArray(providerCopy.supported_sizes)) {
         providerCopy.supported_sizes = JSON.stringify(providerCopy.supported_sizes, null, 2)
+      }
+      
+      // 如果image_parameters是对象，转换为JSON字符串显示
+      if (providerCopy.image_parameters && typeof providerCopy.image_parameters === 'object') {
+        providerCopy.image_parameters = JSON.stringify(providerCopy.image_parameters, null, 2)
+      } else if (!providerCopy.image_parameters) {
+        // 如果不存在，设置为空对象的JSON字符串
+        providerCopy.image_parameters = '{}'
       }
       
       currentProvider.value = providerCopy
@@ -1361,6 +1377,20 @@ const saveProviderConfig = async () => {
         }
       } catch (e) {
         ElMessage.error(t('config.supportedSizesFormatError'))
+        savingProvider.value = false
+        return
+      }
+    }
+    
+    // 处理image_parameters字段，确保它是JSON对象
+    if (providerConfig.image_parameters) {
+      try {
+        // 如果是字符串，解析为JSON对象
+        if (typeof providerConfig.image_parameters === 'string') {
+          providerConfig.image_parameters = JSON.parse(providerConfig.image_parameters)
+        }
+      } catch (e) {
+        ElMessage.error('图片生成参数格式错误，必须是有效的JSON格式')
         savingProvider.value = false
         return
       }
