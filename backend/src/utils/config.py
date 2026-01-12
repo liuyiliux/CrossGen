@@ -54,10 +54,6 @@ class Settings(BaseSettings):
             # 如果加载失败，使用默认值
             print(f"加载system_config.yaml失败: {str(e)}")
     
-    # 安全配置
-    SECRET_KEY: str = Field(env="SECRET_KEY")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    
     # OpenAI 配置
     OPENAI_API_KEY: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
     OPENAI_BASE_URL: str = Field(default="https://api.openai.com/v1", env="OPENAI_BASE_URL")
