@@ -13,7 +13,7 @@ def setup_logger() -> None:
     """设置应用日志"""
     
     # 创建日志目录
-    log_dir = Path(__file__).parent.parent / "logs"
+    log_dir = Path(__file__).parent.parent.parent / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     
     # 使用绝对路径配置日志文件

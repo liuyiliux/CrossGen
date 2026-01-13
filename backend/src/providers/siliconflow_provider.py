@@ -6,9 +6,7 @@ from typing import Dict, Any, Optional, List
 import httpx
 import jsonpath_ng
 from src.providers.base_provider import BaseProvider, ProviderConfig
-import logging
-
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class SiliconFlowProvider(BaseProvider):
@@ -95,7 +93,7 @@ class SiliconFlowProvider(BaseProvider):
         except Exception as e:
             logger.error(f"初始化失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             self.initialized = False
             return False
     
@@ -217,7 +215,7 @@ class SiliconFlowProvider(BaseProvider):
             # 捕获并记录测试异常
             logger.info(f"✗ 测试失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
         
         # 测试失败，返回连接失败
         logger.info(f"=== 测试结束，连接失败 ===")
@@ -364,7 +362,7 @@ class SiliconFlowProvider(BaseProvider):
             logger.error(f"  状态码: {e.response.status_code}")
             logger.error(f"  错误响应: {e.response.text}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": f"HTTP错误 {e.response.status_code}: {e.response.text}",
@@ -375,7 +373,7 @@ class SiliconFlowProvider(BaseProvider):
             logger.error(f"  错误类型: {type(e).__name__}")
             logger.error(f"  错误信息: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": str(e),

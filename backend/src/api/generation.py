@@ -8,6 +8,8 @@ from typing import List, Dict, Any, Optional
 import uuid
 from datetime import datetime
 
+from src.utils.logger import logger
+
 from src.services.generation_service import GenerationService
 from src.models.generation import (
     GenerationRequest,
@@ -226,7 +228,15 @@ async def generate_single_image(
         
         # 处理参考图
         processed_reference_images = []
-        # 只有在使用参考图时才处理参考图片
+        
+        # 1. 处理直接传递的参考图片
+        if reference_images:
+            processed_reference_images.extend(reference_images)
+            logger.info(f"直接传递的参考图片数量: {len(reference_images)}")
+            for i, img in enumerate(reference_images):
+                logger.debug(f"  参考图片 {i+1}: {img}")
+        
+        # 2. 只有在使用参考图时才处理参考图片
         if use_cover_as_reference and history.images:
             # 找到封面图（通常是第一张图片或标记为封面）
             cover_image = None
@@ -236,7 +246,7 @@ async def generate_single_image(
                     break
             
             if cover_image and cover_image.url:
-                print(f"重试接口 - 获取到封面图: {cover_image.url}")
+                logger.info(f"重试接口 - 获取到封面图: {cover_image.url}")
                 
                 # 检查封面图URL类型
                 if cover_image.url.startswith("http://") or cover_image.url.startswith("https://"):
@@ -255,10 +265,10 @@ async def generate_single_image(
                                 "type": "image_url",
                                 "image_url": f"data:{content_type};base64,{base64_image}"
                             })
-                            print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                            logger.debug(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
                     except Exception as e:
-                        print(f"下载封面图失败: {str(e)}")
-                print(f"获取到封面图: {cover_image.url}")
+                        logger.error(f"下载封面图失败: {str(e)}")
+                logger.info(f"获取到封面图: {cover_image.url}")
                 # 检查封面图URL类型
                 if cover_image.url.startswith("http://") or cover_image.url.startswith("https://"):
                     # HTTP URL，下载并转换为 base64
@@ -276,9 +286,9 @@ async def generate_single_image(
                                 "type": "image_url",
                                 "image_url": f"data:{content_type};base64,{base64_image}"
                             })
-                            print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                            logger.debug(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
                     except Exception as e:
-                        print(f"下载封面图失败: {str(e)}")
+                        logger.error(f"下载封面图失败: {str(e)}")
                 else:
                     # 本地相对路径，需要转换为完整的URL或base64
                     from pathlib import Path
@@ -288,7 +298,7 @@ async def generate_single_image(
                     base_dir = Path(__file__).parent.parent.parent
                     image_path = base_dir / cover_image.url.lstrip('/')
                     
-                    print(f"封面图本地路径: {image_path}")
+                    logger.info(f"封面图本地路径: {image_path}")
                     
                     try:
                         # 读取本地图片并转换为base64
@@ -305,20 +315,20 @@ async def generate_single_image(
                             content_type = "image/webp"
                         
                         processed_reference_images.append({
-                            "type": "image_url",
-                            "image_url": f"data:{content_type};base64,{base64_image}"
-                        })
-                        print(f"封面图已转换为base64格式，长度: {len(base64_image)}, 内容前20位: {base64_image[:20]}...")
+                                "type": "image_url",
+                                "image_url": f"data:{content_type};base64,{base64_image}"
+                            })
+                            logger.debug(f"封面图已转换为base64格式，长度: {len(base64_image)}, 内容前20位: {base64_image[:20]}...")
                     except Exception as e:
-                        print(f"读取本地封面图失败: {str(e)}")
-                        print(f"尝试读取的文件路径: {image_path}")
+                        logger.error(f"读取本地封面图失败: {str(e)}")
+                        logger.error(f"尝试读取的文件路径: {image_path}")
                         # 如果读取失败，尝试构建完整的URL
                         full_url = f"http://localhost:8000{cover_image.url}"
                         processed_reference_images.append({
                             "type": "image_url",
                             "image_url": full_url
                         })
-                        print(f"封面图已转换为完整URL: {full_url}")
+                        logger.debug(f"封面图已转换为完整URL: {full_url}")
         
         # 更新历史记录状态为image_generating
         await history_service.update_history(
@@ -330,7 +340,7 @@ async def generate_single_image(
         service = GenerationService()
         result = await service.generate_single_image(prompt, image_provider, processed_reference_images, history_id, page_index, image_id)
         
-        print(f"生成图片结果: {result}")
+        logger.info(f"生成图片结果: {result}")
         
         if result.get("success"):
             # 图片生成成功，创建GeneratedImage对象
@@ -341,30 +351,30 @@ async def generate_single_image(
                 status="success"
             )
             
-            print(f"创建GeneratedImage对象: {generated_image}")
-            print(f"当前历史记录中的图片数量: {len(history.images)}")
-            print(f"当前历史记录中的图片: {[img.model_dump() for img in history.images]}")
+            logger.debug(f"创建GeneratedImage对象: {generated_image}")
+            logger.info(f"当前历史记录中的图片数量: {len(history.images)}")
+            logger.debug(f"当前历史记录中的图片: {[img.model_dump() for img in history.images]}")
             
             # 更新历史记录，添加生成的图片
             current_images = history.images.copy()
-            print(f"当前images副本: {[img.model_dump() for img in current_images]}")
+            logger.debug(f"当前images副本: {[img.model_dump() for img in current_images]}")
             
             # 检查是否已有该页面的图片，有则更新，无则添加
             updated = False
             for i, img in enumerate(current_images):
-                print(f"检查图片 {i}: index={img.index}, page_index={page_index}")
+                logger.debug(f"检查图片 {i}: index={img.index}, page_index={page_index}")
                 if img.index == page_index:
                     current_images[i] = generated_image
                     updated = True
-                    print(f"已更新图片 {i}，新图片: {generated_image.model_dump()}")
+                    logger.debug(f"已更新图片 {i}，新图片: {generated_image.model_dump()}")
                     break
             
             if not updated:
                 current_images.append(generated_image)
-                print(f"已添加新图片: {generated_image.model_dump()}")
+                logger.debug(f"已添加新图片: {generated_image.model_dump()}")
             
-            print(f"更新前历史记录状态: {history.status}")
-            print(f"更新后图片列表: {[img.model_dump() for img in current_images]}")
+            logger.debug(f"更新前历史记录状态: {history.status}")
+            logger.debug(f"更新后图片列表: {[img.model_dump() for img in current_images]}")
             
             # 更新历史记录状态和图片
             update_result = await history_service.update_history(
@@ -375,10 +385,10 @@ async def generate_single_image(
                 )
             )
             
-            print(f"历史记录更新结果: {update_result is not None}")
+            logger.info(f"历史记录更新结果: {update_result is not None}")
             if update_result:
-                print(f"更新后的历史记录图片数量: {len(update_result.images)}")
-                print(f"更新后的历史记录图片: {[img.model_dump() for img in update_result.images]}")
+                logger.info(f"更新后的历史记录图片数量: {len(update_result.images)}")
+                logger.debug(f"更新后的历史记录图片: {[img.model_dump() for img in update_result.images]}")
         else:
             # 图片生成失败，更新历史记录状态
             await history_service.update_history(
@@ -479,7 +489,7 @@ async def retry_image(
             
             # 处理封面图
             if cover_image and cover_image.url:
-                print(f"重试接口 - 获取到封面图: {cover_image.url}")
+                logger.info(f"重试接口 - 获取到封面图: {cover_image.url}")
                 
                 # 检查封面图URL类型
                 if cover_image.url.startswith("http://") or cover_image.url.startswith("https://"):
@@ -498,9 +508,9 @@ async def retry_image(
                                 "type": "image_url",
                                 "image_url": f"data:{content_type};base64,{base64_image}"
                             })
-                            print(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
+                            logger.debug(f"封面图已转换为 base64 格式，长度: {len(base64_image)}")
                     except Exception as e:
-                        print(f"下载封面图失败: {str(e)}")
+                        logger.error(f"下载封面图失败: {str(e)}")
                 else:
                     # 本地相对路径，需要转换为完整的URL或base64
                     from pathlib import Path
@@ -510,7 +520,7 @@ async def retry_image(
                     base_dir = Path(__file__).parent.parent.parent
                     image_path = base_dir / cover_image.url.lstrip('/')
                     
-                    print(f"封面图本地路径: {image_path}")
+                    logger.info(f"封面图本地路径: {image_path}")
                     
                     try:
                         # 读取本地图片并转换为base64
@@ -530,17 +540,17 @@ async def retry_image(
                                 "type": "image_url",
                                 "image_url": f"data:{content_type};base64,{base64_image}"
                             })
-                            print(f"封面图已转换为base64格式，长度: {len(base64_image)}")
+                            logger.debug(f"封面图已转换为base64格式，长度: {len(base64_image)}")
                     except Exception as e:
-                        print(f"读取本地封面图失败: {str(e)}")
-                        print(f"尝试读取的文件路径: {image_path}")
+                        logger.error(f"读取本地封面图失败: {str(e)}")
+                        logger.error(f"尝试读取的文件路径: {image_path}")
                         # 如果读取失败，尝试构建完整的URL
                         full_url = f"http://localhost:8000{cover_image.url}"
                         processed_reference_images.append({
                             "type": "image_url",
                             "image_url": full_url
                         })
-                        print(f"封面图已转换为完整URL: {full_url}")
+                        logger.debug(f"封面图已转换为完整URL: {full_url}")
         
         # 更新历史记录状态为image_generating
         await history_service.update_history(
@@ -694,7 +704,7 @@ async def download_all_images(image_urls: str):
                         # 添加到ZIP文件
                         zip_file.writestr(filename, response.content)
                     except Exception as e:
-                        print(f"下载图片失败 {url}: {str(e)}")
+                        logger.error(f"下载图片失败 {url}: {str(e)}")
                         continue
         
         # 重置文件指针到开始位置

@@ -6,6 +6,7 @@
 import asyncio
 import uuid
 import re
+import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -19,6 +20,8 @@ from src.models.generation import (
     PlatformType
 )
 from src.providers.provider_manager import ProviderManager
+
+logger = logging.getLogger(__name__)
 
 
 class GenerationService:
@@ -81,15 +84,15 @@ class GenerationService:
                 if self._global_provider_manager:
                     self.provider_manager = self._global_provider_manager
                     self.provider_manager_loaded = True
-                    print("使用全局提供商管理器实例")
-                    print(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
+                    logger.info("使用全局提供商管理器实例")
+                    logger.info(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
                 else:
                     # 全局提供商管理器不存在，创建新实例
                     self.provider_manager = ProviderManager()
                     await self.provider_manager.load_providers()
                     self.provider_manager_loaded = True
-                    print("创建新的提供商管理器实例")
-                    print(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
+                    logger.info("创建新的提供商管理器实例")
+                    logger.info(f"  可用图像提供商: {self.provider_manager.available_image_providers}")
                 
                 # 初始化图片分析服务
                 from src.services.image_analysis_service import ImageAnalysisService
@@ -98,7 +101,7 @@ class GenerationService:
                 
                 return True
             except Exception as e:
-                print(f"初始化提供商管理器失败: {str(e)}")
+                logger.error(f"初始化提供商管理器失败: {str(e)}")
                 return False
     
     async def generate_single(self, request: GenerationRequest, reference_images: List[str] = None) -> GenerationResponse:
@@ -207,21 +210,21 @@ class GenerationService:
                 history_record_id = history_record.id
                 
                 for platform in request.platforms:
-                    print(f"\n=== 开始为平台 {platform} 生成内容 ===")
-                    print(f"主题: {request.topic}")
+                    logger.info(f"\n=== 开始为平台 {platform} 生成内容 ===")
+                    logger.info(f"主题: {request.topic}")
                     
                     # 获取平台模板
                     config_service = self.provider_manager.config_service
                     templates = config_service.get_platform_templates()
-                    print(f"获取到的模板配置: {templates.keys()}")
+                    logger.info(f"获取到的模板配置: {templates.keys()}")
                     
                     # 检查平台类型，确保是字符串类型
                     platform_str = platform.value if hasattr(platform, 'value') else str(platform)
-                    print(f"处理后的平台名称: {platform_str}")
+                    logger.info(f"处理后的平台名称: {platform_str}")
                     
                     # 获取平台模板配置
                     platform_templates = templates.get("platform_templates", {})
-                    print(f"平台模板配置: {list(platform_templates.keys())}")
+                    logger.info(f"平台模板配置: {list(platform_templates.keys())}")
                     
                     # 获取当前平台的模板
                     current_platform_template = platform_templates.get(platform_str, {})
@@ -229,7 +232,7 @@ class GenerationService:
                     
                     # 构建生成提示词
                     if outline_template:
-                        print(f"使用平台大纲模板: {outline_template[:100]}...")
+                        logger.debug(f"使用平台大纲模板: {outline_template[:100]}...")
                         # 替换模板变量
                         prompt = outline_template.format(
                             topic=request.topic,
@@ -241,12 +244,12 @@ class GenerationService:
                     else:
                         # 使用默认提示词
                         prompt = f"为{platform_str}平台生成关于{request.topic}的内容"
-                        print(f"使用默认提示词: {prompt}")
-                        print(f"未找到平台 {platform_str} 的大纲模板，可用模板平台: {list(platform_templates.keys())}")
+                        logger.info(f"使用默认提示词: {prompt}")
+                        logger.warning(f"未找到平台 {platform_str} 的大纲模板，可用模板平台: {list(platform_templates.keys())}")
                     
                     # 如果有参考图片，使用图片分析服务生成提示词
                     if reference_images:
-                        print(f"使用参考图生成提示词: {len(reference_images)}张")
+                        logger.info(f"使用参考图生成提示词: {len(reference_images)}张")
                         
                         # 从参考图片生成提示词
                         prompt_results = await self.image_analysis_service.generate_prompts_from_images(reference_images)
@@ -267,7 +270,7 @@ class GenerationService:
                     if request.text_provider:
                         # 尝试直接通过字典访问获取提供商
                         provider = self.provider_manager.text_providers.get(request.text_provider)
-                        print(f"使用请求指定的提供商: {request.text_provider}")
+                        logger.info(f"使用请求指定的提供商: {request.text_provider}")
                         
                         # 针对中文提供商名称可能的编码问题，添加备用逻辑
                         if not provider:
@@ -282,28 +285,28 @@ class GenerationService:
                                 for provider_name in self.provider_manager.text_providers.keys():
                                     if request.text_provider in provider_name or provider_name in request.text_provider:
                                         provider = self.provider_manager.text_providers[provider_name]
-                                        print(f"使用模糊匹配的提供商: {provider_name}")
+                                        logger.debug(f"使用模糊匹配的提供商: {provider_name}")
                                         break
                     
                     # 如果没有指定提供商或指定的提供商不存在，使用平台映射的提供商
                     if not provider:
                         provider = self.provider_manager.get_text_provider_for_platform(platform)
-                        print(f"使用平台映射的提供商: {provider.name if provider else '未找到'}")
+                        logger.info(f"使用平台映射的提供商: {provider.name if provider else '未找到'}")
                     
                     if provider:
-                        print(f"提供商地址: {provider.base_url}")
+                        logger.debug(f"提供商地址: {provider.base_url}")
                     
                     # 调用AI API生成文本（大纲）
-                    print(f"\n=== 开始生成大纲 ===")
+                    logger.info(f"\n=== 开始生成大纲 ===")
                     
                     # 检查provider是否存在
                     if not provider:
                         error_msg = f"未找到适合平台 {platform} 的文本提供商"
-                        print(f"错误: {error_msg}")
+                        logger.error(f"错误: {error_msg}")
                         raise Exception(error_msg)
                     
-                    print(f"使用提供商: {provider.name}")
-                    print(f"请求参数: 提示词长度={len(prompt)}, max_tokens=2000, temperature=0.7")
+                    logger.info(f"使用提供商: {provider.name}")
+                    logger.debug(f"请求参数: 提示词长度={len(prompt)}, max_tokens=2000, temperature=0.7")
                     
                     # 构建包含参考图的完整提示
                     full_prompt = [
@@ -315,7 +318,7 @@ class GenerationService:
                     
                     # 如果有参考图，添加到提示中
                     if reference_images:
-                        print(f"使用参考图: {len(reference_images)}张")
+                        logger.debug(f"使用参考图: {len(reference_images)}张")
                         for img in reference_images:
                             full_prompt.append({
                                 "type": "image_url",
@@ -350,16 +353,16 @@ class GenerationService:
                         )
                     
                     # 打印大纲生成的响应
-                    print(f"大纲生成响应: {ai_result}")
+                    logger.debug(f"大纲生成响应: {ai_result}")
                     
                     if ai_result and ai_result.get("success"):
-                        print(f"AI生成成功，使用提供商: {ai_result.get('provider')}")
+                        logger.info(f"AI生成成功，使用提供商: {ai_result.get('provider')}")
                         # 解析AI生成结果
                         generated_text = ai_result.get("text", "")
-                        print(f"生成的文本内容: {generated_text[:200]}...")
+                        logger.debug(f"生成的文本内容: {generated_text[:200]}...")
                         
                         # 解析AI返回的内容，处理页面拆分
-                        print(f"开始解析页面内容")
+                        logger.debug(f"开始解析页面内容")
                         
                         # 解析AI生成的内容，提取总标题、总文案和多个图片提示词
                         def parse_generated_content(generated_text):
@@ -421,7 +424,7 @@ class GenerationService:
                                 "image_prompt": image_prompt
                             })
                         
-                        print(f"页面拆分完成，共 {len(pages)} 页")
+                        logger.info(f"页面拆分完成，共 {len(pages)} 页")
                         
                         # 只生成文本内容，不生成图像
                         # 图像生成只在专门的图像生成接口中调用
@@ -439,14 +442,14 @@ class GenerationService:
                                 "copywriting": copywriting.strip()  # 保存总文案
                             }
                         )
-                        print(f"文本生成完成，不自动生成图像")
+                        logger.info(f"文本生成完成，不自动生成图像")
                         
                         # 将结果添加到列表
                         results.append(result)
                     else:
                         # 如果AI生成失败，回退到模拟生成
                         error_msg = ai_result.get('error') if ai_result else '未知错误'
-                        print(f"AI生成失败，使用回退模式: {error_msg}")
+                        logger.warning(f"AI生成失败，使用回退模式: {error_msg}")
                         await asyncio.sleep(0.5)
                         result = GenerationResult(
                             platform=platform,
@@ -457,7 +460,7 @@ class GenerationService:
                         )
                         results.append(result)
                     
-                    print(f"=== 平台 {platform} 生成完成 ===")
+                    logger.info(f"=== 平台 {platform} 生成完成 ===")
                 
                 # 大纲生成成功，更新历史记录状态
                 if results and history_record_id:
@@ -535,9 +538,9 @@ class GenerationService:
             )
             
         except Exception as e:
-            print(f"生成单个主题失败: {str(e)}")
+            logger.error(f"生成单个主题失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return GenerationResponse(
                 success=False,
                 results=[],
@@ -617,7 +620,7 @@ class GenerationService:
                         
                     except Exception as e:
                         self.active_jobs[job_id].failed += 1
-                        print(f"生成失败: {str(e)}")
+                        logger.error(f"生成失败: {str(e)}")
             
             # 更新最终状态
             if self.active_jobs[job_id]:
@@ -629,7 +632,7 @@ class GenerationService:
             if self.active_jobs.get(job_id):
                 self.active_jobs[job_id].status = "failed"
                 self.active_jobs[job_id].updated_at = datetime.now()
-            print(f"批量生成任务失败: {str(e)}")
+            logger.error(f"批量生成任务失败: {str(e)}")
     
     async def get_batch_status(self, job_id: str) -> Optional[GenerationStatus]:
         """获取批量生成状态"""
@@ -658,38 +661,38 @@ class GenerationService:
         Returns:
             Dict[str, Any]: 生成结果
         """
-        print(f"\n=== 开始生成单张图片 ===")
-        print(f"提示词: {prompt[:100]}...")
-        print(f"使用提供商: {image_provider}")
-        print(f"历史记录ID: {history_id}")
-        print(f"页面索引: {page_index}")
-        print(f"图片ID: {image_id}")
+        logger.info(f"\n=== 开始生成单张图片 ===")
+        logger.info(f"提示词: {prompt[:100]}...")
+        logger.info(f"使用提供商: {image_provider}")
+        logger.info(f"历史记录ID: {history_id}")
+        logger.info(f"页面索引: {page_index}")
+        logger.info(f"图片ID: {image_id}")
         
         # 添加参考图片处理日志
         if reference_images:
-            print(f"收到参考图片数量: {len(reference_images)}")
+            logger.info(f"收到参考图片数量: {len(reference_images)}")
             for i, img in enumerate(reference_images):
                 if isinstance(img, dict):
                     img_type = img.get('type', 'unknown')
-                    print(f"  参考图片 {i+1} 类型: {img_type}")
+                    logger.info(f"  参考图片 {i+1} 类型: {img_type}")
                     if img_type == 'image_url':
                         img_url = img.get('image_url', '')
                         # 如果是base64，只显示前20位
                         if 'base64' in img_url.lower() or img_url.startswith('data:image/'):
-                            print(f"  参考图片 {i+1} URL: {img_url[:20]}...")
+                            logger.debug(f"  参考图片 {i+1} URL: {img_url[:20]}...")
                         else:
-                            print(f"  参考图片 {i+1} URL: {img_url[:100]}...")
+                            logger.debug(f"  参考图片 {i+1} URL: {img_url[:100]}...")
                 else:
-                    print(f"  参考图片 {i+1} 格式: {type(img)}")
+                    logger.info(f"  参考图片 {i+1} 格式: {type(img)}")
         else:
-            print("未收到参考图片")
+            logger.info("未收到参考图片")
 
         start_time = datetime.now()
 
         try:
             # 初始化提供商管理器
             if not await self.initialize_provider_manager():
-                print("提供商管理器未初始化，无法生成图片")
+                logger.error("提供商管理器未初始化，无法生成图片")
                 return {
                     "success": False,
                     "error": "提供商管理器未初始化"
@@ -698,10 +701,10 @@ class GenerationService:
             # 获取指定的图像提供商
             provider_config = self.provider_manager.image_providers.get(image_provider)
             if not provider_config:
-                print(f"未找到指定的图像提供商: {image_provider}")
-                print(f"当前可用的图像提供商: {list(self.provider_manager.image_providers.keys())}")
+                logger.error(f"未找到指定的图像提供商: {image_provider}")
+                logger.info(f"当前可用的图像提供商: {list(self.provider_manager.image_providers.keys())}")
                 # 尝试重新加载提供商配置
-                print("尝试重新加载提供商配置...")
+                logger.info("尝试重新加载提供商配置...")
                 await self.provider_manager.load_image_providers(force_reload=True)
                 # 再次尝试获取
                 provider_config = self.provider_manager.image_providers.get(image_provider)
@@ -713,14 +716,14 @@ class GenerationService:
             
             provider = provider_config["provider"]
             if not provider.is_available():
-                print(f"图像提供商 {image_provider} 不可用")
+                logger.error(f"图像提供商 {image_provider} 不可用")
                 return {
                     "success": False,
                     "error": f"图像提供商 {image_provider} 不可用"
                 }
             
-            print(f"提供商地址: {provider.base_url}")
-            print(f"使用模型: {provider.model}")
+            logger.info(f"提供商地址: {provider.base_url}")
+            logger.info(f"使用模型: {provider.model}")
             
             # 准备图像生成参数 - 使用用户传递的size参数，不再硬编码
             generation_params = {
@@ -733,12 +736,12 @@ class GenerationService:
             # 如果有参考图片，添加到生成参数中
             if reference_images:
                 generation_params["reference_images"] = reference_images
-                print(f"传递 {len(reference_images)} 张参考图片到图像生成API")
+                logger.info(f"传递 {len(reference_images)} 张参考图片到图像生成API")
             
             # 调用图像生成API
             image_result = await provider.generate_image(**generation_params)
 
-            print(f"图像生成结果: {image_result}")
+            logger.debug(f"图像生成结果: {image_result}")
 
             end_time = datetime.now()
             generation_time = (end_time - start_time).total_seconds()
@@ -746,7 +749,7 @@ class GenerationService:
             if image_result and image_result.get("success") and image_result.get("images"):
                 # 生成成功
                 generated_image_data = image_result["images"][0]
-                print(f"图像生成成功")
+                logger.info(f"图像生成成功")
                 
                 # 保存图片到本地文件夹
                 from src.utils.image_utils import process_image, replace_image
@@ -808,7 +811,7 @@ class GenerationService:
                         image_path = f"/uploads/{save_dir.name}/{filename}"
                 
                 # 生成成功，返回结果
-                print(f"图片保存成功，路径: {image_path}")
+                logger.info(f"图片保存成功，路径: {image_path}")
                 return {
                     "success": True,
                     "image_url": image_path,
@@ -820,7 +823,7 @@ class GenerationService:
             else:
                 # 生成失败
                 error_msg = image_result.get("error", "图像生成失败")
-                print(f"图像生成失败: {error_msg}")
+                logger.error(f"图像生成失败: {error_msg}")
                 return {
                     "success": False,
                     "error": error_msg,
@@ -831,16 +834,16 @@ class GenerationService:
         except Exception as e:
             end_time = datetime.now()
             generation_time = (end_time - start_time).total_seconds()
-            print(f"生成单张图片异常: {str(e)}")
+            logger.error(f"生成单张图片异常: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": f"生成图片异常: {str(e)}",
                 "generation_time": generation_time
             }
         finally:
-            print("=== 单张图片生成结束 ===")
+            logger.info("=== 单张图片生成结束 ===")
     
     async def regenerate_image(self, image_id: str, prompt: str) -> str:
         """重新生成单张图片"""

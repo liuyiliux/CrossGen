@@ -207,7 +207,7 @@ def replace_image(old_image_path: str, new_image_url: str) -> Optional[str]:
     try:
         old_path = Path(old_image_path)
         if not old_path.exists():
-            print(f"原有图片不存在: {old_image_path}")
+            logger.error(f"原有图片不存在: {old_image_path}")
             return None
         
         # 检查是否是本地服务器URL，避免循环下载
@@ -303,7 +303,7 @@ def convert_local_path_to_data_url(file_path: str, base_dir: Path = None) -> Opt
             project_root = Path(__file__).parent.parent.parent.parent
             alternative_path = project_root / file_path.lstrip("/")
             if alternative_path.exists():
-                print(f"尝试使用备选路径: {alternative_path}")
+                logger.info(f"尝试使用备选路径: {alternative_path}")
                 full_path = alternative_path
             else:
                 logger.error(f"备选路径也不存在: {alternative_path}")

@@ -3,12 +3,15 @@
 处理平台模板和提供商配置
 """
 
+import logging
 import yaml
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
 
 from src.utils.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigService:
@@ -63,7 +66,7 @@ class ConfigService:
             return True
             
         except Exception as e:
-            print(f"更新平台模板失败: {str(e)}")
+            logger.error(f"更新平台模板失败: {str(e)}")
             return False
     
     def delete_platform_template(self, platform: str) -> bool:
@@ -80,7 +83,7 @@ class ConfigService:
             return False
             
         except Exception as e:
-            print(f"删除平台模板失败: {str(e)}")
+            logger.error(f"删除平台模板失败: {str(e)}")
             return False
     
     def get_text_providers(self) -> Dict[str, Any]:
@@ -154,7 +157,7 @@ class ConfigService:
             return True
             
         except Exception as e:
-            print(f"更新文本提供商配置失败: {str(e)}")
+            logger.error(f"更新文本提供商配置失败: {str(e)}")
             return False
     
     def delete_text_provider(self, provider_name: str) -> bool:
@@ -171,7 +174,7 @@ class ConfigService:
             return False
             
         except Exception as e:
-            print(f"删除文本提供商配置失败: {str(e)}")
+            logger.error(f"删除文本提供商配置失败: {str(e)}")
             return False
     
     def update_image_provider(self, provider_name: str, config: Dict[str, Any]) -> bool:
@@ -201,7 +204,7 @@ class ConfigService:
             return True
             
         except Exception as e:
-            print(f"更新图像提供商配置失败: {str(e)}")
+            logger.error(f"更新图像提供商配置失败: {str(e)}")
             return False
     
     def delete_image_provider(self, provider_name: str) -> bool:
@@ -218,7 +221,7 @@ class ConfigService:
             return False
             
         except Exception as e:
-            print(f"删除图像提供商配置失败: {str(e)}")
+            logger.error(f"删除图像提供商配置失败: {str(e)}")
             return False
     
     def reload_config(self) -> bool:
@@ -238,7 +241,7 @@ class ConfigService:
             return True
             
         except Exception as e:
-            print(f"重新加载配置失败: {str(e)}")
+            logger.error(f"重新加载配置失败: {str(e)}")
             return False
     
     def get_system_config(self) -> Dict[str, Any]:
@@ -272,7 +275,7 @@ class ConfigService:
             self._system_config_cache = None
             return True
         except Exception as e:
-            print(f"更新系统配置失败: {str(e)}")
+            logger.error(f"更新系统配置失败: {str(e)}")
             return False
     
     def test_redis_connection(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -355,7 +358,7 @@ class ConfigService:
                     return yaml.safe_load(f) or default
             return default
         except Exception as e:
-            print(f"加载YAML文件失败 {file_path}: {str(e)}")
+            logger.error(f"加载YAML文件失败 {file_path}: {str(e)}")
             return default
     
     def _save_yaml(self, file_path: Path, data: Any) -> bool:
@@ -369,5 +372,5 @@ class ConfigService:
             return True
             
         except Exception as e:
-            print(f"保存YAML文件失败 {file_path}: {str(e)}")
+            logger.error(f"保存YAML文件失败 {file_path}: {str(e)}")
             return False

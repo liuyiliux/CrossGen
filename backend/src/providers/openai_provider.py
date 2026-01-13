@@ -2,11 +2,14 @@
 实现OpenAI API的文本生成功能
 """
 
+import logging
 from typing import Dict, Any, Optional, List
 import httpx
 import json
 import jsonpath_ng
 from src.providers.base_provider import BaseProvider, ProviderConfig
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(BaseProvider):
@@ -34,24 +37,24 @@ class OpenAIProvider(BaseProvider):
         Returns:
             bool: 初始化是否成功
         """
-        print(f"\n=== 开始初始化OpenAI提供商 ===")
-        print(f"提供商名称: {self.name}")
-        print(f"是否启用: {self.enabled}")
+        logger.info(f"\n=== 开始初始化OpenAI提供商 ===")
+        logger.info(f"提供商名称: {self.name}")
+        logger.info(f"是否启用: {self.enabled}")
         
         if not self.enabled:
-            print(f"提供商已禁用，跳过初始化")
+            logger.info(f"提供商已禁用，跳过初始化")
             return False
         
         try:
             # 打印初始配置
-            print(f"初始配置:")
-            print(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
-            print(f"  Base URL: {self.base_url}")
-            print(f"  Headers: {self.headers}")
-            print(f"  Timeout: {self.timeout}秒")
+            logger.info(f"初始配置:")
+            logger.info(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
+            logger.info(f"  Base URL: {self.base_url}")
+            logger.info(f"  Headers: {self.headers}")
+            logger.info(f"  Timeout: {self.timeout}秒")
             
             # 解析环境变量
-            print(f"\n1. 解析环境变量...")
+            logger.info(f"\n1. 解析环境变量...")
             resolved_config = self._resolve_env_vars({
                 "api_key": self.api_key,
                 "base_url": self.base_url,
@@ -68,38 +71,38 @@ class OpenAIProvider(BaseProvider):
             if self.api_key:
                 # 优先使用直接提供的API密钥生成Authorization头
                 self.headers["Authorization"] = f"Bearer {self.api_key}"
-                print(f"自动生成Authorization头")
+                logger.info(f"自动生成Authorization头")
             
             # 打印解析后的配置
-            print(f"\n2. 解析后的配置:")
-            print(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
-            print(f"  Base URL: {self.base_url}")
-            print(f"  Headers: {self.headers}")
-            print(f"  Timeout: {self.timeout}秒")
-            print(f"  支持的尺寸: {self.supported_sizes}")
+            logger.info(f"\n2. 解析后的配置:")
+            logger.info(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
+            logger.info(f"  Base URL: {self.base_url}")
+            logger.info(f"  Headers: {self.headers}")
+            logger.info(f"  Timeout: {self.timeout}秒")
+            logger.info(f"  支持的尺寸: {self.supported_sizes}")
             
             # 创建HTTP客户端
-            print(f"\n3. 创建HTTP客户端...")
+            logger.info(f"\n3. 创建HTTP客户端...")
             self.client = httpx.AsyncClient(
                 base_url=self.base_url,
                 headers=self.headers,
                 timeout=self.timeout
             )
             
-            print(f"客户端配置:")
-            print(f"  Base URL: {self.client.base_url}")
-            print(f"  Headers: {dict(self.client.headers)}")
-            print(f"  Timeout: {self.client.timeout}")
+            logger.info(f"客户端配置:")
+            logger.info(f"  Base URL: {self.client.base_url}")
+            logger.info(f"  Headers: {dict(self.client.headers)}")
+            logger.info(f"  Timeout: {self.client.timeout}")
             
             self.initialized = True
-            print(f"\n=== 初始化成功 ===")
+            logger.info(f"\n=== 初始化成功 ===")
             return True
             
         except Exception as e:
-            print(f"\n=== 初始化失败 ===")
-            print(f"错误信息: {str(e)}")
+            logger.error(f"\n=== 初始化失败 ===")
+            logger.error(f"错误信息: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             self.initialized = False
             return False
     
@@ -113,32 +116,32 @@ class OpenAIProvider(BaseProvider):
             if not await self.initialize():
                 return False
         
-        print(f"\n=== 开始测试OpenAI连接 ===")
-        print(f"提供商: {self.name}")
-        print(f"类型: {type(self).__name__}")
-        print(f"提供商类型: {self.provider_type}")
-        print(f"模型: {self.model}")
-        print(f"基础URL: {self.base_url}")
-        print(f"API端点: {self.api_endpoint}")
-        print(f"超时: {self.timeout}秒")
-        print(f"自动生成的请求头: {self.headers}")
+        logger.info(f"\n=== 开始测试OpenAI连接 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"类型: {type(self).__name__}")
+        logger.info(f"提供商类型: {self.provider_type}")
+        logger.info(f"模型: {self.model}")
+        logger.info(f"基础URL: {self.base_url}")
+        logger.info(f"API端点: {self.api_endpoint}")
+        logger.info(f"超时: {self.timeout}秒")
+        logger.info(f"自动生成的请求头: {self.headers}")
         
         try:
             # 1. 首先尝试使用/models端点测试（标准OpenAI接口）
-            print(f"\n1. 尝试使用/models端点测试...")
+            logger.info(f"\n1. 尝试使用/models端点测试...")
             response = await self.client.get("/models")
-            print(f"请求URL: {self.base_url}/models")
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应内容: {response.text[:500]}...")
+            logger.info(f"请求URL: {self.base_url}/models")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.info(f"响应内容: {response.text[:500]}...")
             if response.status_code == 200:
-                print("✓ /models端点测试成功")
+                logger.info("✓ /models端点测试成功")
                 return True
         except Exception as e:
-            print(f"✗ 使用/models端点测试失败: {str(e)}")
+            logger.error(f"✗ 使用/models端点测试失败: {str(e)}")
         
         try:
             # 2. 根据提供商类型使用不同的测试请求
-            print(f"\n2. 根据提供商类型使用不同的测试请求...")
+            logger.info(f"\n2. 根据提供商类型使用不同的测试请求...")
             
             if self.provider_type == "image":
                 # 图像生成提供商测试
@@ -157,7 +160,7 @@ class OpenAIProvider(BaseProvider):
                 }
                 
                 endpoint = self.api_endpoint or "/v1/images/generations"
-                print(f"请求类型: 图像生成测试")
+                logger.info(f"请求类型: 图像生成测试")
             else:
                 # 文本生成提供商测试
                 test_prompt = "你好，这是一个连接测试"
@@ -172,17 +175,17 @@ class OpenAIProvider(BaseProvider):
                 }
                 
                 endpoint = self.api_endpoint or "/v1/chat/completions"
-                print(f"请求类型: 文本生成测试")
+                logger.info(f"请求类型: 文本生成测试")
             
             # 确保endpoint以斜杠开头
             if not endpoint.startswith('/'):
                 endpoint = f"/{endpoint}"
             full_url = f"{self.base_url}{endpoint}"
             
-            print(f"请求URL: {full_url}")
-            print(f"请求方法: POST")
-            print(f"请求头: {self.headers}")
-            print(f"请求体: {json.dumps(request_body, indent=2)}")
+            logger.info(f"请求URL: {full_url}")
+            logger.info(f"请求方法: POST")
+            logger.info(f"请求头: {self.headers}")
+            logger.debug(f"请求体: {json.dumps(request_body, indent=2)}")
             
             # 确保使用最新的headers创建新的客户端（如果需要）
             if not self.client or self.client.headers != self.headers:
@@ -195,9 +198,9 @@ class OpenAIProvider(BaseProvider):
             
             response = await self.client.post(endpoint, json=request_body)
             
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应头: {dict(response.headers)}")
-            print(f"响应内容: {response.text}")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.debug(f"响应头: {dict(response.headers)}")
+            logger.debug(f"响应内容: {response.text}")
             
             # 检查响应状态码和响应格式
             if response.status_code == 200:
@@ -205,23 +208,23 @@ class OpenAIProvider(BaseProvider):
                 if self.provider_type == "image":
                     # 图像生成响应检查
                     if result.get("data") and isinstance(result["data"], list) and len(result["data"]) > 0:
-                        print("✓ 图像生成测试成功")
+                        logger.info("✓ 图像生成测试成功")
                         return True
                 else:
                     # 文本生成响应检查
                     if result.get("choices") and isinstance(result["choices"], list) and len(result["choices"]) > 0:
-                        print("✓ 文本生成测试成功")
+                        logger.info("✓ 文本生成测试成功")
                         return True
             
-            print(f"✗ 请求测试失败")
+            logger.error(f"✗ 请求测试失败")
             return False
         except Exception as e:
-            print(f"✗ 测试OpenAI连接失败: {str(e)}")
+            logger.error(f"✗ 测试OpenAI连接失败: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return False
         finally:
-            print("=== 测试结束 ===")
+            logger.info("=== 测试结束 ===")
     
     async def generate_text(self, prompt: str, **kwargs) -> Optional[Dict[str, Any]]:
         """生成文本
@@ -239,8 +242,8 @@ class OpenAIProvider(BaseProvider):
         try:
             # 获取模型名称，用于特殊处理
             model_name = kwargs.get("model", self.model)
-            print(f"\n=== 开始发送文本生成请求 ===")
-            print(f"使用模型: {model_name}")
+            logger.info(f"\n=== 开始发送文本生成请求 ===")
+            logger.info(f"使用模型: {model_name}")
             
             # 构建用户消息内容
             user_content = []
@@ -248,24 +251,24 @@ class OpenAIProvider(BaseProvider):
             # 检测prompt类型，支持多模态输入
             if isinstance(prompt, str):
                 # 纯文本输入，保持向后兼容
-                print(f"纯文本输入: {prompt[:50]}..." if len(prompt) > 50 else f"纯文本输入: {prompt}")
+                logger.info(f"纯文本输入: {prompt[:50]}..." if len(prompt) > 50 else f"纯文本输入: {prompt}")
                 user_content = prompt
             elif isinstance(prompt, list):
                 # 多模态输入，包含文本和图像
-                print(f"多模态输入，包含 {len(prompt)} 个元素")
+                logger.info(f"多模态输入，包含 {len(prompt)} 个元素")
                 for item in prompt:
                     if isinstance(item, dict):
                         if item.get("type") == "text":
-                            print(f"文本元素: {item['text'][:50]}..." if len(item['text']) > 50 else f"文本元素: {item['text']}")
+                            logger.info(f"文本元素: {item['text'][:50]}..." if len(item['text']) > 50 else f"文本元素: {item['text']}")
                             user_content.append(item)
                         elif item.get("type") == "image_url":
                             image_url = item['image_url']
                             if isinstance(image_url, dict):
                                 url = image_url.get("url", "")
-                                print(f"图像元素: {url[:50]}..." if len(url) > 50 else f"图像元素: {url}")
+                                logger.info(f"图像元素: {url[:50]}..." if len(url) > 50 else f"图像元素: {url}")
                                 user_content.append(item)
                             elif isinstance(image_url, str):
-                                print(f"图像元素: {image_url[:50]}..." if len(image_url) > 50 else f"图像元素: {image_url}")
+                                logger.info(f"图像元素: {image_url[:50]}..." if len(image_url) > 50 else f"图像元素: {image_url}")
                                 user_content.append({
                                     "type": "image_url",
                                     "image_url": {
@@ -300,27 +303,27 @@ class OpenAIProvider(BaseProvider):
                 endpoint = f"/{endpoint}"
             
             # 打印请求日志
-            print(f"基础URL: {self.base_url}")
-            print(f"API端点: {endpoint}")
-            print(f"完整URL: {self.base_url}{endpoint}")
-            print(f"请求头: {json.dumps(dict(self.headers), indent=2)}")
-            print(f"请求体: {json.dumps(request_body, ensure_ascii=False)}")
+            logger.info(f"基础URL: {self.base_url}")
+            logger.info(f"API端点: {endpoint}")
+            logger.info(f"完整URL: {self.base_url}{endpoint}")
+            logger.debug(f"请求头: {json.dumps(dict(self.headers), indent=2)}")
+            logger.debug(f"请求体: {json.dumps(request_body, ensure_ascii=False)}")
             
             response = await self.client.post(endpoint, json=request_body)
             
             # 打印响应日志
-            print(f"\n=== 接收文本生成响应 ===")
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应头: {json.dumps(dict(response.headers), indent=2)}")
+            logger.info(f"\n=== 接收文本生成响应 ===")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.debug(f"响应头: {json.dumps(dict(response.headers), indent=2)}")
             
             # 先获取原始响应文本，以便调试
             response_text = response.text
-            print(f"响应体原始文本: {response_text}")
+            logger.debug(f"响应体原始文本: {response_text}")
             
             response.raise_for_status()
             
             result = response.json()
-            print(f"响应体JSON: {json.dumps(result, indent=2, ensure_ascii=False)}")
+            logger.debug(f"响应体JSON: {json.dumps(result, indent=2, ensure_ascii=False)}")
             
             return {
                 "success": True,
@@ -331,11 +334,11 @@ class OpenAIProvider(BaseProvider):
             }
             
         except Exception as e:
-            print(f"\n=== 文本生成请求失败 ===")
-            print(f"错误类型: {type(e).__name__}")
-            print(f"错误信息: {str(e)}")
+            logger.error(f"\n=== 文本生成请求失败 ===")
+            logger.error(f"错误类型: {type(e).__name__}")
+            logger.error(f"错误信息: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": f"{type(e).__name__}: {str(e)}",
@@ -355,7 +358,7 @@ class OpenAIProvider(BaseProvider):
             Optional[Dict[str, Any]]: 生成结果
         """
         if not self.is_available() or not self.client:
-            print(f"OpenAI提供商不可用，无法生成图像")
+            logger.error(f"OpenAI提供商不可用，无法生成图像")
             return None
         
         try:
@@ -398,29 +401,29 @@ class OpenAIProvider(BaseProvider):
                 endpoint = f"/{endpoint}"
             
             # 打印请求日志
-            print(f"\n=== 开始发送图像生成请求 ===")
-            print(f"提供商: {self.name}")
-            print(f"平台: {platform}")
-            print(f"基础URL: {self.base_url}")
-            print(f"API端点: {endpoint}")
-            print(f"完整URL: {self.base_url}{endpoint}")
-            print(f"请求头: {json.dumps(dict(self.headers), indent=2)}")
-            print(f"请求体: {json.dumps(request_body, ensure_ascii=False, indent=2)}")
+            logger.info(f"\n=== 开始发送图像生成请求 ===")
+            logger.info(f"提供商: {self.name}")
+            logger.info(f"平台: {platform}")
+            logger.info(f"基础URL: {self.base_url}")
+            logger.info(f"API端点: {endpoint}")
+            logger.info(f"完整URL: {self.base_url}{endpoint}")
+            logger.debug(f"请求头: {json.dumps(dict(self.headers), indent=2)}")
+            logger.debug(f"请求体: {json.dumps(request_body, ensure_ascii=False, indent=2)}")
             
             response = await self.client.post(endpoint, json=request_body)
             
             # 打印响应日志
-            print(f"\n=== 接收图像生成响应 ===")
-            print(f"响应状态码: {response.status_code}")
-            print(f"响应头: {json.dumps(dict(response.headers), indent=2)}")
+            logger.info(f"\n=== 接收图像生成响应 ===")
+            logger.info(f"响应状态码: {response.status_code}")
+            logger.debug(f"响应头: {json.dumps(dict(response.headers), indent=2)}")
             
             # 尝试解析响应体
             response_text = response.text
             try:
                 response_json = response.json()
-                print(f"响应体: {json.dumps(response_json, ensure_ascii=False, indent=2)}")
+                logger.debug(f"响应体: {json.dumps(response_json, ensure_ascii=False, indent=2)}")
             except:
-                print(f"响应体: {response_text}")
+                logger.debug(f"响应体: {response_text}")
             
             response.raise_for_status()
             
@@ -434,8 +437,8 @@ class OpenAIProvider(BaseProvider):
             # 直接使用配置的images_path提取图像，不做任何字段映射
             images_path = self.response_config.get("images_path", "$.data[*].url")
             
-            print(f"使用JSONPath提取图像: {images_path}")
-            print(f"响应格式: {response_format}")
+            logger.info(f"使用JSONPath提取图像: {images_path}")
+            logger.info(f"响应格式: {response_format}")
             
             # 直接使用JSONPath提取图像，与通用提供商保持一致
             images = self._extract_from_response(result, images_path, is_list=True)
@@ -453,12 +456,12 @@ class OpenAIProvider(BaseProvider):
                         processed_images.append(img)
                 images = processed_images
             
-            print(f"最终提取到 {len(images)} 张图像")
+            logger.info(f"最终提取到 {len(images)} 张图像")
             
-            print(f"\n=== 图像生成成功 ===")
-            print(f"成功生成 {len(images)} 张图像")
-            print(f"使用模型: {result.get('model', self.model)}")
-            print(f"返回格式: {response_format}")
+            logger.info(f"\n=== 图像生成成功 ===")
+            logger.info(f"成功生成 {len(images)} 张图像")
+            logger.info(f"使用模型: {result.get('model', self.model)}")
+            logger.info(f"返回格式: {response_format}")
             
             return {
                 "success": True,
@@ -471,24 +474,24 @@ class OpenAIProvider(BaseProvider):
             }
             
         except httpx.HTTPStatusError as e:
-            print(f"\n=== 图像生成请求失败 - HTTP错误 ===")
-            print(f"状态码: {e.response.status_code}")
-            print(f"错误信息: {str(e)}")
-            print(f"响应头: {json.dumps(dict(e.response.headers), indent=2)}")
-            print(f"响应体: {e.response.text}")
+            logger.error(f"\n=== 图像生成请求失败 - HTTP错误 ===")
+            logger.error(f"状态码: {e.response.status_code}")
+            logger.error(f"错误信息: {str(e)}")
+            logger.debug(f"响应头: {json.dumps(dict(e.response.headers), indent=2)}")
+            logger.debug(f"响应体: {e.response.text}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": f"HTTP错误 {e.response.status_code}: {e.response.text}",
                 "provider": self.name
             }
         except Exception as e:
-            print(f"\n=== 图像生成请求失败 - 其他错误 ===")
-            print(f"错误类型: {type(e).__name__}")
-            print(f"错误信息: {str(e)}")
+            logger.error(f"\n=== 图像生成请求失败 - 其他错误 ===")
+            logger.error(f"错误类型: {type(e).__name__}")
+            logger.error(f"错误信息: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             return {
                 "success": False,
                 "error": str(e),
@@ -520,7 +523,7 @@ class OpenAIProvider(BaseProvider):
             else:
                 return None
         except Exception as e:
-            print(f"JSONPath解析失败: {str(e)}")
+            logger.error(f"JSONPath解析失败: {str(e)}")
             return None
     
     async def close(self) -> None:

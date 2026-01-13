@@ -2,12 +2,15 @@
 管理和选择不同的AI提供商
 """
 
+import logging
 from typing import Dict, Any, Optional, List
 from src.providers.base_provider import BaseProvider, ProviderConfig
 from src.providers.openai_provider import OpenAIProvider
 from src.providers.siliconflow_provider import SiliconFlowProvider
 from src.providers.gemini_provider import GeminiProvider
 from src.services.config_service import ConfigService
+
+logger = logging.getLogger(__name__)
 
 
 class ProviderManager:
@@ -40,7 +43,7 @@ class ProviderManager:
                 return True
                 
             # 获取文本提供商配置
-            print("开始加载文本提供商配置...")
+            logger.info("开始加载文本提供商配置...")
             # 清除配置缓存，确保获取最新配置
             self.config_service._text_providers_cache = None
             text_config = self.config_service.get_text_providers()
@@ -48,7 +51,7 @@ class ProviderManager:
             
             # 获取平台映射配置
             self.text_platform_mapping = text_config.get("platform_mapping", {})
-            print(f"加载到 {len(providers_config)} 个文本提供商配置")
+            logger.info(f"加载到 {len(providers_config)} 个文本提供商配置")
             
             # 清空现有提供商
             self.text_providers.clear()
@@ -56,18 +59,18 @@ class ProviderManager:
             
             # 注册提供商
             for name, config in providers_config.items():
-                print(f"正在注册文本提供商: {name}")
+                logger.info(f"正在注册文本提供商: {name}")
                 if await self.register_text_provider(name, config):
-                    print(f"文本提供商 {name} 注册成功")
+                    logger.info(f"文本提供商 {name} 注册成功")
                 else:
-                    print(f"文本提供商 {name} 注册失败")
+                    logger.error(f"文本提供商 {name} 注册失败")
             
             self.text_loaded = True
-            print(f"文本提供商加载完成，可用提供商数量: {len(self.available_text_providers)}")
+            logger.info(f"文本提供商加载完成，可用提供商数量: {len(self.available_text_providers)}")
             return True
             
         except Exception as e:
-            print(f"加载文本提供商配置失败: {str(e)}")
+            logger.error(f"加载文本提供商配置失败: {str(e)}")
             return False
     
     async def load_image_providers(self, force_reload: bool = False) -> bool:
@@ -85,7 +88,7 @@ class ProviderManager:
                 return True
                 
             # 获取图像提供商配置
-            print("开始加载图像提供商配置...")
+            logger.info("开始加载图像提供商配置...")
             # 清除配置缓存，确保获取最新配置
             self.config_service._image_providers_cache = None
             image_config = self.config_service.get_image_providers()
@@ -93,7 +96,7 @@ class ProviderManager:
             
             # 获取平台映射配置
             self.image_platform_mapping = image_config.get("platform_mapping", {})
-            print(f"加载到 {len(providers_config)} 个图像提供商配置")
+            logger.info(f"加载到 {len(providers_config)} 个图像提供商配置")
             
             # 清空现有提供商
             self.image_providers.clear()
@@ -101,18 +104,18 @@ class ProviderManager:
             
             # 注册提供商
             for name, config in providers_config.items():
-                print(f"正在注册图像提供商: {name}")
+                logger.info(f"正在注册图像提供商: {name}")
                 if await self.register_image_provider(name, config):
-                    print(f"图像提供商 {name} 注册成功")
+                    logger.info(f"图像提供商 {name} 注册成功")
                 else:
-                    print(f"图像提供商 {name} 注册失败")
+                    logger.error(f"图像提供商 {name} 注册失败")
             
             self.image_loaded = True
-            print(f"图像提供商加载完成，可用提供商数量: {len(self.available_image_providers)}")
+            logger.info(f"图像提供商加载完成，可用提供商数量: {len(self.available_image_providers)}")
             return True
             
         except Exception as e:
-            print(f"加载图像提供商配置失败: {str(e)}")
+            logger.error(f"加载图像提供商配置失败: {str(e)}")
             return False
     
     async def load_providers(self, force_reload: bool = False) -> bool:
@@ -170,7 +173,7 @@ class ProviderManager:
             elif provider_type == "gemini":
                 provider = GeminiProvider(provider_config)
             else:
-                print(f"不支持的文本提供商类型: {provider_type}")
+                logger.error(f"不支持的文本提供商类型: {provider_type}")
                 return False
             
             # 初始化提供商
@@ -182,7 +185,7 @@ class ProviderManager:
                 return False
                 
         except Exception as e:
-            print(f"注册文本提供商 {name} 失败: {str(e)}")
+            logger.error(f"注册文本提供商 {name} 失败: {str(e)}")
             return False
     
     async def register_image_provider(self, name: str, config: Dict[str, Any]) -> bool:
@@ -223,7 +226,7 @@ class ProviderManager:
                     try:
                         supported_sizes = json.loads(supported_sizes)
                     except json.JSONDecodeError:
-                        print(f"  警告：supported_sizes字段解析失败，使用默认值")
+                        logger.warning(f"  警告：supported_sizes字段解析失败，使用默认值")
                         supported_sizes = []
                 
                 provider_config = ProviderConfig(
@@ -255,7 +258,7 @@ class ProviderManager:
                     try:
                         supported_sizes = json.loads(supported_sizes)
                     except json.JSONDecodeError:
-                        print(f"  警告：supported_sizes字段解析失败，使用默认值")
+                        logger.warning(f"  警告：supported_sizes字段解析失败，使用默认值")
                         supported_sizes = []
                 
                 provider_config = ProviderConfig(
@@ -291,7 +294,7 @@ class ProviderManager:
                     try:
                         supported_sizes = json.loads(supported_sizes)
                     except json.JSONDecodeError:
-                        print(f"  警告：supported_sizes字段解析失败，使用默认值")
+                        logger.warning(f"  警告：supported_sizes字段解析失败，使用默认值")
                         supported_sizes = []
                 
                 provider_config = ProviderConfig(
@@ -322,7 +325,7 @@ class ProviderManager:
                     try:
                         supported_sizes = json.loads(supported_sizes)
                     except json.JSONDecodeError:
-                        print(f"  警告：supported_sizes字段解析失败，使用默认值")
+                        logger.warning(f"  警告：supported_sizes字段解析失败，使用默认值")
                         supported_sizes = []
                 
                 provider_config = ProviderConfig(
@@ -350,7 +353,7 @@ class ProviderManager:
                 from src.providers.generic_image_provider import GenericImageProvider
                 provider = GenericImageProvider(provider_config)
             else:
-                print(f"不支持的图像提供商类型: {provider_type}")
+                logger.error(f"不支持的图像提供商类型: {provider_type}")
                 return False
             
             # 初始化提供商
@@ -366,7 +369,7 @@ class ProviderManager:
                 return False
                 
         except Exception as e:
-            print(f"注册图像提供商 {name} 失败: {str(e)}")
+            logger.error(f"注册图像提供商 {name} 失败: {str(e)}")
             return False
     
     def get_text_provider(self, name: str) -> Optional[BaseProvider]:
@@ -391,9 +394,9 @@ class ProviderManager:
         """
         provider = self.image_providers.get(name)
         if not provider:
-            print(f"调试：get_image_provider 未找到提供商 {name}")
-            print(f"调试：当前可用图像提供商列表: {list(self.image_providers.keys())}")
-            print(f"调试：当前可用图像提供商数量: {len(self.image_providers)}")
+            logger.debug(f"get_image_provider 未找到提供商 {name}")
+            logger.debug(f"当前可用图像提供商列表: {list(self.image_providers.keys())}")
+            logger.debug(f"当前可用图像提供商数量: {len(self.image_providers)}")
         return provider
     
     def get_available_text_providers(self) -> List[str]:
@@ -492,7 +495,7 @@ class ProviderManager:
         # 获取合适的提供商
         provider = self.get_text_provider_for_platform(platform)
         if not provider:
-            print(f"没有可用的文本提供商为平台 {platform} 生成内容")
+            logger.error(f"没有可用的文本提供商为平台 {platform} 生成内容")
             return None
         
         # 调用提供商生成文本
@@ -500,7 +503,7 @@ class ProviderManager:
             result = await provider.generate_text(prompt, **kwargs)
             return result
         except Exception as e:
-            print(f"调用文本提供商 {provider.name} 失败: {str(e)}")
+            logger.error(f"调用文本提供商 {provider.name} 失败: {str(e)}")
             return None
     
     async def generate_image_for_platform(self, platform: str, prompt: str, **kwargs) -> Optional[Dict[str, Any]]:
@@ -517,7 +520,7 @@ class ProviderManager:
         # 获取合适的提供商
         provider_info = self.get_image_provider_for_platform(platform)
         if not provider_info:
-            print(f"没有可用的图像提供商为平台 {platform} 生成内容")
+            logger.error(f"没有可用的图像提供商为平台 {platform} 生成内容")
             return None
         
         provider = provider_info["provider"]
@@ -534,7 +537,7 @@ class ProviderManager:
             result = await provider.generate_image(prompt, platform, **merged_kwargs)
             return result
         except Exception as e:
-            print(f"调用图像提供商 {provider.name} 失败: {str(e)}")
+            logger.error(f"调用图像提供商 {provider.name} 失败: {str(e)}")
             return None
     
     async def test_all_text_providers(self) -> Dict[str, bool]:
@@ -669,13 +672,13 @@ class ProviderManager:
                 raise ValueError(f"不支持的文本提供商类型: {provider_type}")
             
             # 初始化并测试连接
-            print(f"开始初始化提供商: {provider.name}")
+            logger.info(f"开始初始化提供商: {provider.name}")
             if await provider.initialize():
-                print(f"提供商初始化成功，准备测试连接")
+                logger.info(f"提供商初始化成功，准备测试连接")
                 return await provider.test_connection()
             return False
         except Exception as e:
-            print(f"测试文本提供商连接失败: {str(e)}")
+            logger.error(f"测试文本提供商连接失败: {str(e)}")
             return False
     
     async def test_image_provider_connection(self, config: Dict[str, Any], reference_images: list = None) -> bool:
@@ -776,15 +779,15 @@ class ProviderManager:
                 raise ValueError(f"不支持的图像提供商类型: {provider_type}")
             
             # 初始化并测试连接
-            print(f"开始初始化图像提供商: {provider.name}")
+            logger.info(f"开始初始化图像提供商: {provider.name}")
             if await provider.initialize():
-                print(f"图像提供商初始化成功，准备测试连接")
+                logger.info(f"图像提供商初始化成功，准备测试连接")
                 # 如果提供了参考图，传递给test_connection方法
-                print(f"测试图像连接时的参考图: {reference_images}")
+                logger.debug(f"测试图像连接时的参考图: {reference_images}")
                 if reference_images:
                     return await provider.test_connection(reference_images=reference_images)
                 return await provider.test_connection()
             return False
         except Exception as e:
-            print(f"测试图像提供商连接失败: {str(e)}")
+            logger.error(f"测试图像提供商连接失败: {str(e)}")
             return False

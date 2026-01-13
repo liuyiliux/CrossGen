@@ -24,14 +24,18 @@ from src.utils.logger import setup_logger
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     # 启动时执行
+    # 先创建必要的目录，确保日志目录存在
+    app_root = Path(__file__).resolve().parent.parent
+    
+    # 创建必要的目录
+    (app_root / "logs").mkdir(exist_ok=True)
+    (app_root / "uploads").mkdir(exist_ok=True)
+    (app_root / "history").mkdir(exist_ok=True)
+    
+    # 配置日志
     setup_logger()
     logger = logging.getLogger(__name__)
     logger.info("逸流后端服务启动")
-    
-    # 创建必要的目录
-    os.makedirs("uploads", exist_ok=True)
-    os.makedirs("logs", exist_ok=True)
-    os.makedirs("history", exist_ok=True)
     
     # 初始化提供商管理器
     try:
@@ -119,12 +123,22 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
+    import argparse
+    
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description="逸流后端服务")
+    parser.add_argument("--port", type=int, help="服务端口")
+    args = parser.parse_args()
     
     settings = Settings()
+    
+    # 使用命令行指定的端口，如果没有指定则使用配置中的端口
+    port = args.port or settings.PORT
+    
     uvicorn.run(
         "src.app:app",
         host=settings.HOST,
-        port=settings.PORT,
+        port=port,
         reload=settings.DEBUG,
         log_level="info"
     )

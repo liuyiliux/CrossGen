@@ -3,10 +3,13 @@
 处理图片分析和提示词生成
 """
 
+import logging
 from typing import List, Dict, Any
 import base64
 import io
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 class ImageAnalysisService:
@@ -24,7 +27,7 @@ class ImageAnalysisService:
             await self.provider_manager.load_providers()
             return True
         except Exception as e:
-            print(f"初始化图片分析服务失败: {str(e)}")
+            logger.error(f"初始化图片分析服务失败: {str(e)}")
             return False
     
     async def analyze_image(self, image_data: str, provider_name: str = None) -> Dict[str, Any]:
@@ -89,7 +92,7 @@ class ImageAnalysisService:
                     "error": error_msg
                 }
         except Exception as e:
-            print(f"分析图片失败: {str(e)}")
+            logger.error(f"分析图片失败: {str(e)}")
             return {
                 "success": False,
                 "error": f"分析图片失败: {str(e)}"
@@ -154,7 +157,7 @@ class ImageAnalysisService:
                     "error": error_msg
                 }
         except Exception as e:
-            print(f"从图片生成提示词失败: {str(e)}")
+            logger.error(f"从图片生成提示词失败: {str(e)}")
             return {
                 "success": False,
                 "error": f"从图片生成提示词失败: {str(e)}"
@@ -220,7 +223,7 @@ class ImageAnalysisService:
                     "image_data": image_data
                 }
         except Exception as e:
-            print(f"预处理图片失败: {str(e)}")
+            logger.error(f"预处理图片失败: {str(e)}")
             return {
                 "success": False,
                 "error": f"预处理图片失败: {str(e)}"
