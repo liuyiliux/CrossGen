@@ -64,11 +64,13 @@ class SiliconFlowProvider(BaseProvider):
                 "headers": self.headers
             })
             
-            # 打印解析后的配置
+            # 更新配置
             self.api_key = resolved_config["api_key"]
             # 移除base_url末尾的斜杠，避免双斜杠问题
             self.base_url = resolved_config["base_url"].rstrip("/")
             self.headers = resolved_config["headers"] or {}
+            
+            logger.info(f"使用配置的Base URL: {self.base_url}")
             
             # 自动生成Authorization头（如果没有提供）
             if self.api_key:
@@ -78,13 +80,17 @@ class SiliconFlowProvider(BaseProvider):
             
             logger.info(f"Base URL: {self.base_url}, 支持的尺寸: {self.supported_sizes}")
             
-            # 创建HTTP客户端，不设置base_url，避免自动添加斜杠
-            # 不在这里设置headers，避免httpx自动添加额外的头
-            # 将在每次请求时单独设置必要的headers
+            # 创建HTTP客户端，只设置headers和timeout，不设置base_url
+            # 这样可以在请求时直接使用完整的URL
             self.client = httpx.AsyncClient(
+                headers=self.headers,
                 timeout=self.timeout,
                 follow_redirects=True  # 启用自动跟随重定向
             )
+            
+            logger.info(f"客户端配置:")
+            logger.info(f"  Headers: {dict(self.client.headers)}")
+            logger.info(f"  Timeout: {self.client.timeout}")
             
             self.initialized = True
             logger.info("SiliconFlow提供商初始化成功")
@@ -127,7 +133,7 @@ class SiliconFlowProvider(BaseProvider):
             
             if is_text_provider:
                 # 文本提供商测试：调用文本生成API进行连接测试
-                logger.info(f"\n2. 直接使用配置的Base URL测试文本生成...")
+                logger.info(f"\n2. 直接使用配置的完整URL测试文本生成...")
                 test_prompt = "你好，这是一个连接测试"
                 
                 # 构建文本生成测试请求体
@@ -153,7 +159,7 @@ class SiliconFlowProvider(BaseProvider):
                 logger.info(f"请求头: {dict(self.client.headers)}")
                 logger.info(f"请求体: {request_body}")
                 
-                # 发送测试请求
+                # 发送测试请求，直接使用配置的完整URL
                 response = await self.client.request(
                     method="POST",
                     url=self.base_url,
@@ -171,7 +177,7 @@ class SiliconFlowProvider(BaseProvider):
                     logger.info(f"✗ 文本生成测试失败，状态码: {response.status_code}")
             else:
                 # 图像提供商测试：调用图像生成API进行连接测试
-                logger.info(f"\n2. 直接使用配置的Base URL测试图像生成...")
+                logger.info(f"\n2. 直接使用配置的完整URL测试图像生成...")
                 test_prompt = "测试图片生成"
                 
                 # 测试时使用支持尺寸列表中的第一个尺寸，确保尺寸有效
@@ -193,8 +199,8 @@ class SiliconFlowProvider(BaseProvider):
                 logger.info(f"请求方法: POST")
                 logger.info(f"请求头: {dict(self.client.headers)}")
                 logger.info(f"请求体: {request_body}")
-                
-                # 发送测试请求，避免base_url和路径拼接问题
+
+                # 发送测试请求，直接使用配置的完整URL
                 response = await self.client.request(
                     method="POST",
                     url=self.base_url,
@@ -327,12 +333,12 @@ class SiliconFlowProvider(BaseProvider):
             
             logger.debug(f"  最终请求体: {request_body}")
             
-            # 发送请求
+            # 发送请求，直接使用配置的完整URL
             logger.debug(f"\n2. 发送文本生成请求:")
-            logger.debug(f"  请求URL: {self.base_url}")
-            logger.debug(f"  请求方法: POST")
-            logger.debug(f"  请求头: {dict(self.client.headers)}")
+            logger.debug(f"  完整URL: {self.base_url}")
+            logger.debug(f"  请求体: {request_body}")
             
+            # 直接使用request方法发送请求，不添加额外的端点路径
             response = await self.client.request(
                 method="POST",
                 url=self.base_url,
@@ -596,31 +602,16 @@ class SiliconFlowProvider(BaseProvider):
                 else:
                     logger.debug(f"    {key}: {value}")
             
-            # 发送请求
-            # 使用client.request方法直接发送完整URL
+            # 发送请求，直接使用配置的完整URL
             logger.debug(f"\n2. 发送图像生成请求:")
-            logger.debug(f"  请求URL: {self.base_url}")
-            logger.debug(f"  请求方法: POST")
+            logger.debug(f"  完整URL: {self.base_url}")
+            logger.debug(f"  请求体: {request_body}")
             
-            # 只传递必要的请求头，避免httpx自动添加额外头导致API调用失败
-            minimal_headers = {
-                "Authorization": self.headers.get("Authorization"),
-                "Content-Type": "application/json"
-            }
-            logger.debug(f"  配置的请求头: {minimal_headers}")
-            
-            # 添加事件监听器来捕获实际发送的请求
-            async def log_request(request):
-                logger.debug(f"  实际发送的请求头: {dict(request.headers)}")
-                return request
-            
-            event_handler = self.client.event_hooks['request'].append(log_request)
-            
+            # 直接使用request方法发送请求，不添加额外的端点路径
             response = await self.client.request(
                 method="POST",
                 url=self.base_url,
-                json=request_body,
-                headers=minimal_headers
+                json=request_body
             )
             
             logger.debug(f"\n3. 处理响应:")

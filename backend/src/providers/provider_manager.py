@@ -2,15 +2,13 @@
 管理和选择不同的AI提供商
 """
 
-import logging
 from typing import Dict, Any, Optional, List
 from src.providers.base_provider import BaseProvider, ProviderConfig
 from src.providers.openai_provider import OpenAIProvider
 from src.providers.siliconflow_provider import SiliconFlowProvider
 from src.providers.gemini_provider import GeminiProvider
 from src.services.config_service import ConfigService
-
-logger = logging.getLogger(__name__)
+from src.utils.logger import logger
 
 
 class ProviderManager:

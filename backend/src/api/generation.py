@@ -315,10 +315,10 @@ async def generate_single_image(
                             content_type = "image/webp"
                         
                         processed_reference_images.append({
-                                "type": "image_url",
-                                "image_url": f"data:{content_type};base64,{base64_image}"
-                            })
-                            logger.debug(f"封面图已转换为base64格式，长度: {len(base64_image)}, 内容前20位: {base64_image[:20]}...")
+                            "type": "image_url",
+                            "image_url": f"data:{content_type};base64,{base64_image}"
+                        })
+                        logger.debug(f"封面图已转换为base64格式，长度: {len(base64_image)}, 内容前20位: {base64_image[:20]}...")
                     except Exception as e:
                         logger.error(f"读取本地封面图失败: {str(e)}")
                         logger.error(f"尝试读取的文件路径: {image_path}")

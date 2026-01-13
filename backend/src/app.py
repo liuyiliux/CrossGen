@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.api import generation, config, health, history
 from src.utils.config import Settings
-from src.utils.logger import setup_logger
+from src.utils.logger import setup_logger, logger
 
 
 @asynccontextmanager
@@ -34,7 +34,6 @@ async def lifespan(app: FastAPI):
     
     # 配置日志
     setup_logger()
-    logger = logging.getLogger(__name__)
     logger.info("逸流后端服务启动")
     
     # 初始化提供商管理器
