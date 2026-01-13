@@ -91,9 +91,10 @@ class SiliconFlowProvider(BaseProvider):
             print(f"  支持的尺寸: {self.supported_sizes}")
             
             # 创建HTTP客户端，不设置base_url，避免自动添加斜杠
+            # 不在这里设置headers，避免httpx自动添加额外的头
+            # 将在每次请求时单独设置必要的headers
             print(f"\n创建HTTP客户端...")
             self.client = httpx.AsyncClient(
-                headers=self.headers,
                 timeout=self.timeout,
                 follow_redirects=True  # 启用自动跟随重定向
             )
@@ -251,16 +252,20 @@ class SiliconFlowProvider(BaseProvider):
         # 处理kwargs中的图像相关数据，避免日志过长
         kwargs_copy = kwargs.copy()
         # 检查是否有图像相关的参数
+        # 必须深拷贝避免修改原始数据
+        import copy
         if "images" in kwargs_copy and isinstance(kwargs_copy["images"], list):
             truncated_images = []
             for img in kwargs_copy["images"]:
-                if isinstance(img, dict) and "image_url" in img:
-                    img_url = img["image_url"]
+                # 深拷贝避免修改原始字典
+                truncated_img = copy.deepcopy(img) if isinstance(img, dict) else img
+                if isinstance(truncated_img, dict) and "image_url" in truncated_img:
+                    img_url = truncated_img["image_url"]
                     if isinstance(img_url, dict) and "url" in img_url and img_url["url"].startswith('data:image/'):
                         img_url["url"] = img_url["url"][:20] + "..."
                     elif isinstance(img_url, str) and img_url.startswith('data:image/'):
-                        img["image_url"] = img_url[:20] + "..."
-                truncated_images.append(img)
+                        truncated_img["image_url"] = img_url[:20] + "..."
+                truncated_images.append(truncated_img)
             kwargs_copy["images"] = truncated_images
         
         print(f"\n=== 开始SiliconFlow文本生成 ===")
@@ -405,19 +410,23 @@ class SiliconFlowProvider(BaseProvider):
             Optional[Dict[str, Any]]: 生成结果
         """
         # 处理kwargs中的reference_images，避免日志过长
+        # 必须深拷贝避免修改原始数据
+        import copy
         kwargs_copy = kwargs.copy()
         if "reference_images" in kwargs_copy:
             truncated_refs = []
             for ref in kwargs_copy["reference_images"]:
-                if isinstance(ref, dict) and "image_url" in ref:
-                    img_url = ref["image_url"]
+                # 深拷贝避免修改原始字典
+                truncated_ref = copy.deepcopy(ref) if isinstance(ref, dict) else ref
+                if isinstance(truncated_ref, dict) and "image_url" in truncated_ref:
+                    img_url = truncated_ref["image_url"]
                     if isinstance(img_url, dict):
                         url_value = img_url.get("url", "")
                         if url_value.startswith('data:image/'):
                             img_url["url"] = url_value[:20] + "..."
                     elif isinstance(img_url, str) and img_url.startswith('data:image/'):
-                        ref["image_url"] = img_url[:20] + "..."
-                truncated_refs.append(ref)
+                        truncated_ref["image_url"] = img_url[:20] + "..."
+                truncated_refs.append(truncated_ref)
             kwargs_copy["reference_images"] = truncated_refs
         
         print(f"\n=== 开始SiliconFlow图像生成 ===")
@@ -528,6 +537,17 @@ class SiliconFlowProvider(BaseProvider):
             reference_images = kwargs.get("reference_images", [])
             if reference_images and self.support_reference_image:
                 print(f"  收到参考图数量: {len(reference_images)}")
+                # 打印每张参考图的详细信息，包括长度
+                for i, ref in enumerate(reference_images):
+                    print(f"  参考图 {i+1}: {ref}")
+                    if isinstance(ref, dict) and "image_url" in ref:
+                        img_url = ref["image_url"]
+                        if isinstance(img_url, str):
+                            print(f"    image_url 类型: str, 长度: {len(img_url)}")
+                            if len(img_url) < 100:
+                                print(f"    image_url 内容: {img_url}")
+                            else:
+                                print(f"    image_url 前50字符: {img_url[:50]}")
                 # 处理参考图日志，只显示前20位
                 truncated_refs = []
                 for ref in reference_images:
@@ -583,21 +603,42 @@ class SiliconFlowProvider(BaseProvider):
             else:
                 print(f"  未使用参考图")
             
-            print(f"  最终请求体: {request_body}")
+            # 打印完整的请求体（包括完整的base64数据）
+            print(f"  最终请求体（完整）:")
+            for key, value in request_body.items():
+                if isinstance(value, str) and value.startswith('data:image/'):
+                    # 打印base64数据的长度，而不是截断
+                    print(f"    {key}: <base64 data, length={len(value)}>")
+                    # 同时打印前100个字符用于对比
+                    print(f"    {key} (前100字符): {value[:100]}")
+                else:
+                    print(f"    {key}: {value}")
             
             # 发送请求
             # 使用client.request方法直接发送完整URL
             print(f"\n2. 发送图像生成请求:")
             print(f"  请求URL: {self.base_url}")
             print(f"  请求方法: POST")
-            print(f"  请求头: {dict(self.client.headers)}")
-            print(f"  请求体: {request_body}")
             
-            # 使用client.request方法直接发送请求，指定完整URL
+            # 只传递必要的请求头，避免httpx自动添加额外头导致API调用失败
+            minimal_headers = {
+                "Authorization": self.headers.get("Authorization"),
+                "Content-Type": "application/json"
+            }
+            print(f"  配置的请求头: {minimal_headers}")
+            
+            # 添加事件监听器来捕获实际发送的请求
+            async def log_request(request):
+                print(f"  实际发送的请求头: {dict(request.headers)}")
+                return request
+            
+            event_handler = self.client.event_hooks['request'].append(log_request)
+            
             response = await self.client.request(
                 method="POST",
                 url=self.base_url,
-                json=request_body
+                json=request_body,
+                headers=minimal_headers
             )
             
             print(f"\n3. 处理响应:")
