@@ -75,7 +75,11 @@ class Settings(BaseSettings):
     
     # 日志配置
     LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
-    LOG_FILE: str = Field(default="logs/app.log", env="LOG_FILE")
+    # 使用绝对路径，避免路径解析问题
+    LOG_FILE: str = Field(default="logs/app.log", env="LOG_FILE", json_schema_extra={
+        "type": "string",
+        "description": "日志文件路径（相对于backend目录）"
+    })
     
     # 生成配置
     MAX_CONCURRENT_GENERATIONS: int = Field(default=5, env="MAX_CONCURRENT_GENERATIONS")

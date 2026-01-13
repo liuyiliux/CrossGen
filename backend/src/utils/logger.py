@@ -13,8 +13,11 @@ def setup_logger() -> None:
     """设置应用日志"""
     
     # 创建日志目录
-    log_dir = Path(settings.LOG_FILE).parent
-    log_dir.mkdir(exist_ok=True)
+    log_dir = Path(__file__).parent.parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 使用绝对路径配置日志文件
+    log_file = log_dir / "app.log"
     
     # 配置根日志器
     logging.basicConfig(
@@ -22,7 +25,7 @@ def setup_logger() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler(settings.LOG_FILE, encoding="utf-8")
+            logging.FileHandler(str(log_file), encoding="utf-8")
         ]
     )
     

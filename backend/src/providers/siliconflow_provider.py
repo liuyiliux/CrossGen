@@ -6,6 +6,9 @@ from typing import Dict, Any, Optional, List
 import httpx
 import jsonpath_ng
 from src.providers.base_provider import BaseProvider, ProviderConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SiliconFlowProvider(BaseProvider):
@@ -49,23 +52,14 @@ class SiliconFlowProvider(BaseProvider):
         Returns:
             bool: 初始化是否成功
         """
-        print(f"=== 开始初始化SiliconFlow提供商 ===")
-        print(f"提供商名称: {self.name}")
-        print(f"是否启用: {self.enabled}")
+        logger.info(f"初始化SiliconFlow提供商: {self.name}, 启用: {self.enabled}")
         
         if not self.enabled:
-            print(f"提供商已禁用，跳过初始化")
+            logger.info("提供商已禁用，跳过初始化")
             return False
         
         try:
-            # 打印初始配置
-            print(f"初始配置:")
-            print(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
-            print(f"  Base URL: {self.base_url}")
-            print(f"  Headers: {self.headers}")
-            
             # 解析环境变量
-            print(f"\n解析环境变量...")
             resolved_config = self._resolve_env_vars({
                 "api_key": self.api_key,
                 "base_url": self.base_url,
@@ -82,34 +76,24 @@ class SiliconFlowProvider(BaseProvider):
             if self.api_key:
                 # 优先使用直接提供的API密钥生成Authorization头
                 self.headers["Authorization"] = f"Bearer {self.api_key}"
-                print(f"自动生成Authorization头")
+                logger.info("自动生成Authorization头")
             
-            print(f"\n解析后的配置:")
-            print(f"  API Key: {self.api_key[:10]}..." if self.api_key else "  API Key: 未设置")
-            print(f"  Base URL: {self.base_url}")
-            print(f"  Headers: {self.headers}")
-            print(f"  支持的尺寸: {self.supported_sizes}")
+            logger.info(f"Base URL: {self.base_url}, 支持的尺寸: {self.supported_sizes}")
             
             # 创建HTTP客户端，不设置base_url，避免自动添加斜杠
             # 不在这里设置headers，避免httpx自动添加额外的头
             # 将在每次请求时单独设置必要的headers
-            print(f"\n创建HTTP客户端...")
             self.client = httpx.AsyncClient(
                 timeout=self.timeout,
                 follow_redirects=True  # 启用自动跟随重定向
             )
             
-            print(f"HTTP客户端创建成功")
-            print(f"客户端Base URL: 未设置")
-            print(f"客户端Headers: {dict(self.client.headers)}")
-            print(f"客户端Timeout: {self.client.timeout}")
-            
             self.initialized = True
-            print(f"初始化成功")
+            logger.info("SiliconFlow提供商初始化成功")
             return True
             
         except Exception as e:
-            print(f"初始化失败: {str(e)}")
+            logger.error(f"初始化失败: {str(e)}")
             import traceback
             traceback.print_exc()
             self.initialized = False
@@ -121,31 +105,31 @@ class SiliconFlowProvider(BaseProvider):
         Returns:
             bool: 连接是否成功
         """
-        print(f"\n=== 开始测试SiliconFlow连接 ===")
-        print(f"提供商: {self.name}")
-        print(f"类型: {type(self).__name__}")
-        print(f"模型: {self.model}")
-        print(f"基础URL: {self.base_url}")
-        print(f"超时: {self.timeout}秒")
+        logger.info(f"\n=== 开始测试SiliconFlow连接 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"类型: {type(self).__name__}")
+        logger.info(f"模型: {self.model}")
+        logger.info(f"基础URL: {self.base_url}")
+        logger.info(f"超时: {self.timeout}秒")
         
         if not self.initialized or not self.client:
-            print(f"提供商尚未初始化，尝试初始化...")
+            logger.info("提供商尚未初始化，尝试初始化...")
             if not await self.initialize():
-                print(f"初始化失败，连接测试失败")
+                logger.info("初始化失败，连接测试失败")
                 return False
         
         # 打印实际使用的HTTP客户端配置
-        print(f"实际使用的Headers: {dict(self.client.headers)}")
-        print(f"实际使用的Base URL: {self.client.base_url}")
+        logger.info(f"实际使用的Headers: {dict(self.client.headers)}")
+        logger.info(f"实际使用的Base URL: {self.client.base_url}")
         
         try:
             # 使用配置中的provider_type字段判断提供商类型
             is_text_provider = self.config.provider_type == "text"
-            print(f"\n1. 基于配置判断提供商类型: {'文本提供商' if is_text_provider else '图像提供商'}")
+            logger.info(f"\n1. 基于配置判断提供商类型: {'文本提供商' if is_text_provider else '图像提供商'}")
             
             if is_text_provider:
                 # 文本提供商测试：调用文本生成API进行连接测试
-                print(f"\n2. 直接使用配置的Base URL测试文本生成...")
+                logger.info(f"\n2. 直接使用配置的Base URL测试文本生成...")
                 test_prompt = "你好，这是一个连接测试"
                 
                 # 构建文本生成测试请求体
@@ -166,10 +150,10 @@ class SiliconFlowProvider(BaseProvider):
                 }
                 
                 # 打印测试请求信息
-                print(f"请求URL: {self.base_url}")
-                print(f"请求方法: POST")
-                print(f"请求头: {dict(self.client.headers)}")
-                print(f"请求体: {request_body}")
+                logger.info(f"请求URL: {self.base_url}")
+                logger.info(f"请求方法: POST")
+                logger.info(f"请求头: {dict(self.client.headers)}")
+                logger.info(f"请求体: {request_body}")
                 
                 # 发送测试请求
                 response = await self.client.request(
@@ -177,19 +161,19 @@ class SiliconFlowProvider(BaseProvider):
                     url=self.base_url,
                     json=request_body
                 )
-                print(f"响应状态码: {response.status_code}")
-                print(f"响应体: {response.text}")
+                logger.info(f"响应状态码: {response.status_code}")
+                logger.info(f"响应体: {response.text}")
                 
                 # 检查测试结果
                 if response.status_code == 200:
-                    print("✓ 文本生成测试成功")
-                    print(f"=== 测试结束 ===")
+                    logger.info("✓ 文本生成测试成功")
+                    logger.info(f"=== 测试结束 ===")
                     return True
                 else:
-                    print(f"✗ 文本生成测试失败，状态码: {response.status_code}")
+                    logger.info(f"✗ 文本生成测试失败，状态码: {response.status_code}")
             else:
                 # 图像提供商测试：调用图像生成API进行连接测试
-                print(f"\n2. 直接使用配置的Base URL测试图像生成...")
+                logger.info(f"\n2. 直接使用配置的Base URL测试图像生成...")
                 test_prompt = "测试图片生成"
                 
                 # 测试时使用支持尺寸列表中的第一个尺寸，确保尺寸有效
@@ -207,10 +191,10 @@ class SiliconFlowProvider(BaseProvider):
                 }
                 
                 # 打印测试请求信息
-                print(f"请求URL: {self.base_url}")
-                print(f"请求方法: POST")
-                print(f"请求头: {dict(self.client.headers)}")
-                print(f"请求体: {request_body}")
+                logger.info(f"请求URL: {self.base_url}")
+                logger.info(f"请求方法: POST")
+                logger.info(f"请求头: {dict(self.client.headers)}")
+                logger.info(f"请求体: {request_body}")
                 
                 # 发送测试请求，避免base_url和路径拼接问题
                 response = await self.client.request(
@@ -218,25 +202,25 @@ class SiliconFlowProvider(BaseProvider):
                     url=self.base_url,
                     json=request_body
                 )
-                print(f"响应状态码: {response.status_code}")
-                print(f"响应头: {dict(response.headers)}")
-                print(f"响应体: {response.text}")
+                logger.info(f"响应状态码: {response.status_code}")
+                logger.info(f"响应头: {dict(response.headers)}")
+                logger.info(f"响应体: {response.text}")
                 
                 # 检查测试结果
                 if response.status_code == 200:
-                    print("✓ 图像生成测试成功")
-                    print(f"=== 测试结束 ===")
+                    logger.info("✓ 图像生成测试成功")
+                    logger.info(f"=== 测试结束 ===")
                     return True
                 else:
-                    print(f"✗ 图像生成测试失败，状态码: {response.status_code}")
+                    logger.info(f"✗ 图像生成测试失败，状态码: {response.status_code}")
         except Exception as e:
             # 捕获并记录测试异常
-            print(f"✗ 测试失败: {str(e)}")
+            logger.info(f"✗ 测试失败: {str(e)}")
             import traceback
             traceback.print_exc()
         
         # 测试失败，返回连接失败
-        print(f"=== 测试结束，连接失败 ===")
+        logger.info(f"=== 测试结束，连接失败 ===")
         return False
     
     async def generate_text(self, prompt: str, **kwargs) -> Optional[Dict[str, Any]]:
@@ -268,21 +252,21 @@ class SiliconFlowProvider(BaseProvider):
                 truncated_images.append(truncated_img)
             kwargs_copy["images"] = truncated_images
         
-        print(f"\n=== 开始SiliconFlow文本生成 ===")
-        print(f"提供商: {self.name}")
-        print(f"参数: {kwargs_copy}")
+        logger.info(f"\n=== 开始SiliconFlow文本生成 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"参数: {kwargs_copy}")
         
         if not self.is_available() or not self.client:
-            print(f"提供商不可用，无法生成文本")
+            logger.info("提供商不可用，无法生成文本")
             return None
         
         try:
             # 获取模型名称，用于特殊处理
             model = kwargs.get("model", self.model)
-            print(f"\n1. 构建请求参数:")
-            print(f"  模型: {model}")
-            print(f"  最大令牌数: {kwargs.get('max_tokens', self.max_output_tokens)}")
-            print(f"  温度: {kwargs.get('temperature', self.temperature)}")
+            logger.debug(f"\n1. 构建请求参数:")
+            logger.debug(f"  模型: {model}")
+            logger.debug(f"  最大令牌数: {kwargs.get('max_tokens', self.max_output_tokens)}")
+            logger.debug(f"  温度: {kwargs.get('temperature', self.temperature)}")
             
             # 构建用户消息内容
             user_content = []
@@ -290,15 +274,15 @@ class SiliconFlowProvider(BaseProvider):
             # 检测prompt类型，支持多模态输入
             if isinstance(prompt, str):
                 # 纯文本输入，保持向后兼容
-                print(f"纯文本输入: {prompt[:50]}..." if len(prompt) > 50 else f"纯文本输入: {prompt}")
+                logger.debug(f"纯文本输入: {prompt[:50]}..." if len(prompt) > 50 else f"纯文本输入: {prompt}")
                 user_content = prompt
             elif isinstance(prompt, list):
                 # 多模态输入，包含文本和图像
-                print(f"多模态输入，包含 {len(prompt)} 个元素")
+                logger.debug(f"多模态输入，包含 {len(prompt)} 个元素")
                 for item in prompt:
                     if isinstance(item, dict):
                         if item.get("type") == "text":
-                            print(f"文本元素: {item['text'][:50]}..." if len(item['text']) > 50 else f"文本元素: {item['text']}")
+                            logger.debug(f"文本元素: {item['text'][:50]}..." if len(item['text']) > 50 else f"文本元素: {item['text']}")
                             user_content.append(item)
                         elif item.get("type") == "image_url":
                             image_url = item['image_url']
@@ -306,16 +290,16 @@ class SiliconFlowProvider(BaseProvider):
                                 url = image_url.get("url", "")
                                 # 只对base64格式的图像进行截断处理
                                 if url.startswith('data:image/'):
-                                    print(f"图像元素: {url[:20]}...")
+                                    logger.debug(f"图像元素: {url[:20]}...")
                                 else:
-                                    print(f"图像元素: {url}")
+                                    logger.debug(f"图像元素: {url}")
                                 user_content.append(item)
                             elif isinstance(image_url, str):
                                 # 只对base64格式的图像进行截断处理
                                 if image_url.startswith('data:image/'):
-                                    print(f"图像元素: {image_url[:20]}...")
+                                    logger.debug(f"图像元素: {image_url[:20]}...")
                                 else:
-                                    print(f"图像元素: {image_url}")
+                                    logger.debug(f"图像元素: {image_url}")
                                 user_content.append({
                                     "type": "image_url",
                                     "image_url": {
@@ -343,13 +327,13 @@ class SiliconFlowProvider(BaseProvider):
                 "presence_penalty": kwargs.get("presence_penalty", 0)
             }
             
-            print(f"  最终请求体: {request_body}")
+            logger.debug(f"  最终请求体: {request_body}")
             
             # 发送请求
-            print(f"\n2. 发送文本生成请求:")
-            print(f"  请求URL: {self.base_url}")
-            print(f"  请求方法: POST")
-            print(f"  请求头: {dict(self.client.headers)}")
+            logger.debug(f"\n2. 发送文本生成请求:")
+            logger.debug(f"  请求URL: {self.base_url}")
+            logger.debug(f"  请求方法: POST")
+            logger.debug(f"  请求头: {dict(self.client.headers)}")
             
             response = await self.client.request(
                 method="POST",
@@ -357,15 +341,15 @@ class SiliconFlowProvider(BaseProvider):
                 json=request_body
             )
             
-            print(f"\n3. 处理响应:")
-            print(f"  响应状态码: {response.status_code}")
-            print(f"  响应体: {response.text}")
+            logger.debug(f"\n3. 处理响应:")
+            logger.debug(f"  响应状态码: {response.status_code}")
+            logger.debug(f"  响应体: {response.text}")
             
             # 直接检查HTTP状态
             response.raise_for_status()
             
             result = response.json()
-            print(f"  解析后的响应体: {result}")
+            logger.debug(f"  解析后的响应体: {result}")
             
             return {
                 "success": True,
@@ -376,9 +360,9 @@ class SiliconFlowProvider(BaseProvider):
             }
             
         except httpx.HTTPStatusError as e:
-            print(f"\n3. 文本生成失败 - HTTP错误:")
-            print(f"  状态码: {e.response.status_code}")
-            print(f"  错误响应: {e.response.text}")
+            logger.error(f"\n3. 文本生成失败 - HTTP错误:")
+            logger.error(f"  状态码: {e.response.status_code}")
+            logger.error(f"  错误响应: {e.response.text}")
             import traceback
             traceback.print_exc()
             return {
@@ -387,9 +371,9 @@ class SiliconFlowProvider(BaseProvider):
                 "provider": self.name
             }
         except Exception as e:
-            print(f"\n3. 文本生成失败 - 其他错误:")
-            print(f"  错误类型: {type(e).__name__}")
-            print(f"  错误信息: {str(e)}")
+            logger.error(f"\n3. 文本生成失败 - 其他错误:")
+            logger.error(f"  错误类型: {type(e).__name__}")
+            logger.error(f"  错误信息: {str(e)}")
             import traceback
             traceback.print_exc()
             return {
@@ -429,14 +413,14 @@ class SiliconFlowProvider(BaseProvider):
                 truncated_refs.append(truncated_ref)
             kwargs_copy["reference_images"] = truncated_refs
         
-        print(f"\n=== 开始SiliconFlow图像生成 ===")
-        print(f"提供商: {self.name}")
-        print(f"平台: {platform}")
-        print(f"提示词: {prompt[:50]}..." if len(prompt) > 50 else f"提示词: {prompt}")
-        print(f"参数: {kwargs_copy}")
+        logger.info(f"\n=== 开始SiliconFlow图像生成 ===")
+        logger.info(f"提供商: {self.name}")
+        logger.info(f"平台: {platform}")
+        logger.info(f"提示词: {prompt[:50]}..." if len(prompt) > 50 else f"提示词: {prompt}")
+        logger.info(f"参数: {kwargs_copy}")
         
         if not self.is_available() or not self.client:
-            print(f"提供商不可用，无法生成图像")
+            logger.info("提供商不可用，无法生成图像")
             return None
         
         try:
@@ -444,11 +428,11 @@ class SiliconFlowProvider(BaseProvider):
             # 优先使用kwargs中的size参数，这是用户在界面上选择的尺寸
             selected_size = kwargs.get("size")
             
-            print(f"\n1. 构建请求参数:")
-            print(f"  平台: {platform}")
-            print(f"  用户选择的尺寸: {selected_size}")
-            print(f"  模型: {self.model}")
-            print(f"  返回格式: {kwargs.get('response_format', self.return_format)}")
+            logger.debug(f"\n1. 构建请求参数:")
+            logger.debug(f"  平台: {platform}")
+            logger.debug(f"  用户选择的尺寸: {selected_size}")
+            logger.debug(f"  模型: {self.model}")
+            logger.debug(f"  返回格式: {kwargs.get('response_format', self.return_format)}")
             
             # 直接使用用户配置的模型，不进行回退
             model = self.model
@@ -461,7 +445,7 @@ class SiliconFlowProvider(BaseProvider):
             
             # 获取模型配置，支持动态扩展
             model_config = self.model_configs.get(model, self.model_configs["default"])
-            print(f"  模型配置: {model_config}")
+            logger.debug(f"  模型配置: {model_config}")
             
             # 确定最终使用的尺寸
             # 优先使用用户选择的尺寸，忽略参考图尺寸
@@ -471,22 +455,22 @@ class SiliconFlowProvider(BaseProvider):
             if not final_size:
                 # 如果没有指定尺寸，使用配置的默认尺寸
                 final_size = model_config["default_size"]
-                print(f"  未指定尺寸，使用配置的默认尺寸: {final_size}")
+                logger.debug(f"  未指定尺寸，使用配置的默认尺寸: {final_size}")
             else:
                 # 检查尺寸是否在支持列表中
                 if self.supported_sizes and final_size not in self.supported_sizes:
                     # 尺寸不在支持列表，仍使用用户选择的尺寸，不回退到默认尺寸
-                    print(f"  信息：尺寸 {final_size} 不在支持列表中，但仍使用用户选择的尺寸")
-                print(f"  使用用户选择的尺寸: {final_size}")
+                    logger.debug(f"  信息：尺寸 {final_size} 不在支持列表中，但仍使用用户选择的尺寸")
+                logger.debug(f"  使用用户选择的尺寸: {final_size}")
             
             # 根据配置使用正确的尺寸参数名
             size_param = model_config["size_param"]
             request_body[size_param] = final_size
-            print(f"  使用尺寸参数: {size_param} = {final_size}")
+            logger.debug(f"  使用尺寸参数: {size_param} = {final_size}")
             
             # 处理批处理参数
             request_body["batch_size"] = kwargs.get("n", 1)
-            print(f"  使用batch_size参数: {request_body['batch_size']}")
+            logger.debug(f"  使用batch_size参数: {request_body['batch_size']}")
             
             # 处理配置文件中的image_parameters
             config_image_params = self.image_parameters
@@ -500,54 +484,54 @@ class SiliconFlowProvider(BaseProvider):
             # 添加所有合并后的图像参数到请求体
             if combined_image_params:
                 request_body.update(combined_image_params)
-                print(f"  添加配置的图像参数: {combined_image_params}")
+                logger.debug(f"  添加配置的图像参数: {combined_image_params}")
             
             # 添加默认参数值（仅当配置中没有指定时）
             if "negative_prompt" not in request_body:
                 default_negative_prompt = kwargs.get("negative_prompt", "")
                 request_body["negative_prompt"] = default_negative_prompt
-                print(f"  添加默认negative_prompt: {request_body['negative_prompt']}")
+                logger.debug(f"  添加默认negative_prompt: {request_body['negative_prompt']}")
             
             if "num_inference_steps" not in request_body:
                 default_num_steps = kwargs.get("num_inference_steps", 30)
                 request_body["num_inference_steps"] = default_num_steps
-                print(f"  添加默认num_inference_steps: {request_body['num_inference_steps']}")
+                logger.debug(f"  添加默认num_inference_steps: {request_body['num_inference_steps']}")
             
             # 处理seed参数，如果用户提供了则使用，否则不设置
             if "seed" in kwargs and "seed" not in request_body:
                 request_body["seed"] = kwargs["seed"]
-                print(f"  添加用户指定seed: {request_body['seed']}")
+                logger.debug(f"  添加用户指定seed: {request_body['seed']}")
             
             # 添加kwargs中的其他直接参数（排除特殊参数）
             special_params = ["model", "prompt", "reference_images", "image_parameters", "n", "response_format", "size"]
             for key, value in kwargs.items():
                 if key not in special_params and key not in request_body:
                     request_body[key] = value
-                    print(f"  添加直接参数: {key} = {value}")
+                    logger.debug(f"  添加直接参数: {key} = {value}")
             
             # 根据配置处理响应格式
             if model_config["supports_response_format"] and kwargs.get("response_format"):
                 request_body["response_format"] = kwargs.get("response_format", self.return_format)
-                print(f"  使用响应格式: {request_body['response_format']}")
+                logger.debug(f"  使用响应格式: {request_body['response_format']}")
             elif not model_config["supports_response_format"]:
                 # 对于不支持response_format的模型，确保不添加此参数
-                print(f"  模型不支持response_format，跳过此参数")
+                logger.debug(f"  模型不支持response_format，跳过此参数")
             
             # 处理参考图 - 继续使用参考图，但使用用户选择的尺寸
             reference_images = kwargs.get("reference_images", [])
             if reference_images and self.support_reference_image:
-                print(f"  收到参考图数量: {len(reference_images)}")
+                logger.debug(f"  收到参考图数量: {len(reference_images)}")
                 # 打印每张参考图的详细信息，包括长度
                 for i, ref in enumerate(reference_images):
-                    print(f"  参考图 {i+1}: {ref}")
+                    logger.debug(f"  参考图 {i+1}: {ref}")
                     if isinstance(ref, dict) and "image_url" in ref:
                         img_url = ref["image_url"]
                         if isinstance(img_url, str):
-                            print(f"    image_url 类型: str, 长度: {len(img_url)}")
+                            logger.debug(f"    image_url 类型: str, 长度: {len(img_url)}")
                             if len(img_url) < 100:
-                                print(f"    image_url 内容: {img_url}")
+                                logger.debug(f"    image_url 内容: {img_url}")
                             else:
-                                print(f"    image_url 前50字符: {img_url[:50]}")
+                                logger.debug(f"    image_url 前50字符: {img_url[:50]}")
                 # 处理参考图日志，只显示前20位
                 truncated_refs = []
                 for ref in reference_images:
@@ -570,7 +554,7 @@ class SiliconFlowProvider(BaseProvider):
                             truncated_refs.append({"image_url": truncated_url})
                     else:
                         truncated_refs.append(ref)
-                print(f"  处理参考图: {truncated_refs}")
+                logger.debug(f"  处理参考图: {truncated_refs}")
                 # 提取参考图数据（完全按照配置处理，不管是URL还是base64）
                 reference_image_values = []
                 for ref_image in reference_images:
@@ -591,7 +575,7 @@ class SiliconFlowProvider(BaseProvider):
                         truncated_values.append(value[:20] + "...")
                     else:
                         truncated_values.append(value)
-                print(f"  提取后的参考图数据: {truncated_values}")
+                logger.debug(f"  提取后的参考图数据: {truncated_values}")
                 
                 # 完全按照配置的reference_image_field来处理
                 if self.support_multiple_reference_images:
@@ -601,35 +585,35 @@ class SiliconFlowProvider(BaseProvider):
                     # 不支持多图参考的模型，使用配置的字段名，传递第一个参考图数据
                     request_body[self.reference_image_field] = reference_image_values[0]
             else:
-                print(f"  未使用参考图")
+                logger.debug(f"  未使用参考图")
             
             # 打印完整的请求体（包括完整的base64数据）
-            print(f"  最终请求体（完整）:")
+            logger.debug(f"  最终请求体（完整）:")
             for key, value in request_body.items():
                 if isinstance(value, str) and value.startswith('data:image/'):
                     # 打印base64数据的长度，而不是截断
-                    print(f"    {key}: <base64 data, length={len(value)}>")
+                    logger.debug(f"    {key}: <base64 data, length={len(value)}>")
                     # 同时打印前100个字符用于对比
-                    print(f"    {key} (前100字符): {value[:100]}")
+                    logger.debug(f"    {key} (前100字符): {value[:100]}")
                 else:
-                    print(f"    {key}: {value}")
+                    logger.debug(f"    {key}: {value}")
             
             # 发送请求
             # 使用client.request方法直接发送完整URL
-            print(f"\n2. 发送图像生成请求:")
-            print(f"  请求URL: {self.base_url}")
-            print(f"  请求方法: POST")
+            logger.debug(f"\n2. 发送图像生成请求:")
+            logger.debug(f"  请求URL: {self.base_url}")
+            logger.debug(f"  请求方法: POST")
             
             # 只传递必要的请求头，避免httpx自动添加额外头导致API调用失败
             minimal_headers = {
                 "Authorization": self.headers.get("Authorization"),
                 "Content-Type": "application/json"
             }
-            print(f"  配置的请求头: {minimal_headers}")
+            logger.debug(f"  配置的请求头: {minimal_headers}")
             
             # 添加事件监听器来捕获实际发送的请求
             async def log_request(request):
-                print(f"  实际发送的请求头: {dict(request.headers)}")
+                logger.debug(f"  实际发送的请求头: {dict(request.headers)}")
                 return request
             
             event_handler = self.client.event_hooks['request'].append(log_request)
@@ -641,29 +625,29 @@ class SiliconFlowProvider(BaseProvider):
                 headers=minimal_headers
             )
             
-            print(f"\n3. 处理响应:")
-            print(f"  响应状态码: {response.status_code}")
-            print(f"  响应头: {dict(response.headers)}")
-            print(f"  响应体: {response.text}")
+            logger.debug(f"\n3. 处理响应:")
+            logger.debug(f"  响应状态码: {response.status_code}")
+            logger.debug(f"  响应头: {dict(response.headers)}")
+            logger.debug(f"  响应体: {response.text}")
             
             # 直接检查HTTP状态，不进行重试
             response.raise_for_status()
             
             result = response.json()
-            print(f"  解析后的响应体: {result}")
+            logger.debug(f"  解析后的响应体: {result}")
             
             # 使用JSONPath提取图像URL或Base64数据
-            print(f"\n4. 提取图像数据:")
-            print(f"  使用JSONPath: {self.image_jsonpath}")
+            logger.debug(f"\n4. 提取图像数据:")
+            logger.debug(f"  使用JSONPath: {self.image_jsonpath}")
             
             image_matches = jsonpath_ng.parse(self.image_jsonpath).find(result)
-            print(f"  匹配结果: {image_matches}")
+            logger.debug(f"  匹配结果: {image_matches}")
             
             images = [match.value for match in image_matches]
-            print(f"  提取到的图像: {images}")
+            logger.debug(f"  提取到的图像: {images}")
             
-            print(f"\n5. 生成结果:")
-            print(f"  成功生成 {len(images)} 张图片")
+            logger.info(f"\n5. 生成结果:")
+            logger.info(f"  成功生成 {len(images)} 张图片")
             
             return {
                 "success": True,
@@ -676,9 +660,9 @@ class SiliconFlowProvider(BaseProvider):
             }
             
         except httpx.HTTPStatusError as e:
-            print(f"\n5. 图像生成失败 - HTTP错误:")
-            print(f"  状态码: {e.response.status_code}")
-            print(f"  错误响应: {e.response.text}")
+            logger.error(f"\n5. 图像生成失败 - HTTP错误:")
+            logger.error(f"  状态码: {e.response.status_code}")
+            logger.error(f"  错误响应: {e.response.text}")
             import traceback
             traceback.print_exc()
             return {
@@ -687,9 +671,9 @@ class SiliconFlowProvider(BaseProvider):
                 "provider": self.name
             }
         except Exception as e:
-            print(f"\n5. 图像生成失败 - 其他错误:")
-            print(f"  错误类型: {type(e).__name__}")
-            print(f"  错误信息: {str(e)}")
+            logger.error(f"\n5. 图像生成失败 - 其他错误:")
+            logger.error(f"  错误类型: {type(e).__name__}")
+            logger.error(f"  错误信息: {str(e)}")
             import traceback
             traceback.print_exc()
             return {
