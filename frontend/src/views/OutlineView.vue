@@ -403,6 +403,13 @@ const onImageProviderChange = () => {
     store.useCoverAsReference = false
     referenceImageFiles.value = []
   }
+  
+  // 获取当前服务商支持的尺寸
+  const supportedSizes = getSupportedSizes()
+  // 如果有支持的尺寸，自动选择第一个
+  if (supportedSizes.length > 0) {
+    store.selectedSize = supportedSizes[0]
+  }
 }
 
 const onReferenceImageToggle = (enabled: boolean) => {
