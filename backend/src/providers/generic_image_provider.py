@@ -27,9 +27,9 @@ class GenericImageProvider(BaseProvider):
         self.initialized = False
 
         # 通用配置
-        self.request_config = getattr(config, 'request_config', {})
-        self.response_config = getattr(config, 'response_config', {})
-        self.size_config = getattr(config, 'size_config', {})
+        self.request_config = getattr(config, 'request_config', {}) or {}
+        self.response_config = getattr(config, 'response_config', {}) or {}
+        self.size_config = getattr(config, 'size_config', {}) or {}
 
         # 支持的尺寸列表
         self.supported_sizes = getattr(config, 'supported_sizes', [])
@@ -46,10 +46,10 @@ class GenericImageProvider(BaseProvider):
             self.request_template = Template(self.request_config['template'])
 
         # 默认参数
-        self.default_params = self.request_config.get('defaults', {})
+        self.default_params = self.request_config.get('defaults', {}) or {}
 
         # 参数转换规则
-        self.parameter_transforms = self.request_config.get('parameter_transforms', {})
+        self.parameter_transforms = self.request_config.get('parameter_transforms', {}) or {}
     
     async def initialize(self) -> bool:
         """初始化通用图像提供商
@@ -376,14 +376,15 @@ class GenericImageProvider(BaseProvider):
         """
         transformed = params.copy()
         
-        # 应用参数转换规则
-        for key, transform in self.parameter_transforms.items():
-            if key in transformed:
-                value = transformed[key]
-                # 使用Jinja2模板进行转换
-                transform_template = Template(transform)
-                transformed_value = transform_template.render({key: value, **params})
-                transformed[key] = transformed_value
+        # 应用参数转换规则，确保parameter_transforms不是None
+        if self.parameter_transforms:
+            for key, transform in self.parameter_transforms.items():
+                if key in transformed:
+                    value = transformed[key]
+                    # 使用Jinja2模板进行转换
+                    transform_template = Template(transform)
+                    transformed_value = transform_template.render({key: value, **params})
+                    transformed[key] = transformed_value
         
         return transformed
     

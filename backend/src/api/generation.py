@@ -207,6 +207,7 @@ async def generate_single_image(
     page_index: int = Body(..., description="页面索引"),
     prompt: str = Body(..., description="生成提示词"),
     image_provider: str = Body(..., description="图像提供商名称"),
+    size: str = Body("", description="生成图片尺寸"),
     reference_images: List[Dict[str, Any]] = Body(None, description="参考图片列表"),
     use_cover_as_reference: bool = Body(False, description="是否使用封面作为参考图"),
     image_id: Optional[str] = Body(None, description="图片ID，用于替换原有图片")
@@ -336,9 +337,9 @@ async def generate_single_image(
             HistoryRecordUpdate(status=GenerationStatus.IMAGE_GENERATING)
         )
         
-        # 生成图片（传递处理后的参考图）
+        # 生成图片（传递处理后的参考图和尺寸）
         service = GenerationService()
-        result = await service.generate_single_image(prompt, image_provider, processed_reference_images, history_id, page_index, image_id)
+        result = await service.generate_single_image(prompt, image_provider, processed_reference_images, history_id, page_index, image_id, size)
         
         logger.info(f"生成图片结果: {result}")
         

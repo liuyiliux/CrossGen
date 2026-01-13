@@ -351,11 +351,11 @@ export const useGeneratorStore = defineStore('generator', {
     /**
      * 更新页面内容
      */
-    updatePage(index: number, content: string) {
+    updatePage(index: number, content: string | undefined) {
       const page = this.outline.pages.find(p => p.index === index)
       if (page) {
-        page.content = content
-        page.image_prompt = content  // 同时更新image_prompt
+        // 只更新image_prompt，不再强制同步content
+        page.image_prompt = content || ''
         // 同步更新 raw 文本
         this.syncRawFromPages()
       }
@@ -397,11 +397,8 @@ export const useGeneratorStore = defineStore('generator', {
       
       // 添加图片提示词
       for (const page of this.outline.pages) {
-        if (page.image_prompt) {
-          raw += `【图片提示词】：${page.image_prompt}\n\n`
-        } else {
-          raw += `【图片提示词】：${page.content}\n\n`
-        }
+        // 允许image_prompt为空，直接使用它的值
+        raw += `【图片提示词】：${page.image_prompt || ''}\n\n`
         
         // 添加<page>标签分隔（除了最后一页）
         if (page.index < this.outline.pages.length - 1) {

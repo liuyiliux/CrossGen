@@ -251,11 +251,11 @@
             v-model="page.image_prompt"
             class="textarea-paper"
             placeholder="在此输入图片提示词..."
-            @input="store.updatePage(page.index, page.image_prompt || page.content)"
+            @input="store.updatePage(page.index, page.image_prompt)"
             rows="5"
             style="resize: vertical; min-height: 100px; max-height: 500px;"
           />
-          <div class="word-count">{{ (page.image_prompt || page.content).length }} 字</div>
+          <div class="word-count">{{ (page.image_prompt || '').length }} 字</div>
         </div>
         
 
@@ -426,15 +426,17 @@ const onReferenceImageOptionSelect = (command: string) => {
 // 图片上传相关方法
 const handleBeforeUpload = (rawFile: File) => {
   // 这里只是本地处理，不实际上传到服务器
-  // 生成一个本地URL用于预览
+  // 生成一个本地URL用于预览，同时生成base64字符串用于发送到后端
   const reader = new FileReader()
   reader.readAsDataURL(rawFile)
   reader.onload = () => {
-    const file: UploadFile = {
+    const base64Url = reader.result as string
+    const file: UploadFile & { base64Url?: string } = {
       uid: Date.now(),
       name: rawFile.name,
       status: 'success',
-      url: reader.result as string,
+      url: URL.createObjectURL(rawFile), // 使用blob URL作为预览URL
+      base64Url: base64Url, // 单独保存base64字符串用于发送到后端
       raw: rawFile
     }
     referenceImageFiles.value.push(file)
@@ -451,6 +453,10 @@ const handleExceed = (files: File[], fileList: UploadFile[]) => {
 const handleRemove = (file: UploadFile) => {
   const index = referenceImageFiles.value.findIndex(item => item.uid === file.uid)
   if (index !== -1) {
+    // 释放blob URL
+    if (file.url && typeof file.url === 'string' && file.url.startsWith('blob:')) {
+      URL.revokeObjectURL(file.url)
+    }
     referenceImageFiles.value.splice(index, 1)
     // 保存到store
     saveReferenceImagesToStore()
@@ -468,9 +474,10 @@ const saveReferenceImagesToStore = () => {
     store.referenceImages = []
   } else {
     // 保存上传的图片到store，格式为{ file: File; url: string }
+    // 注意：这里使用的是base64Url，而不是url，因为url是blob URL，无法直接发送到后端
     store.referenceImages = referenceImageFiles.value.map(file => ({
       file: file.raw as File,
-      url: file.url as string
+      url: (file as any).base64Url as string || file.url as string
     }))
   }
 }
@@ -687,6 +694,23 @@ const startVideoGeneration = () => {
   ElMessage.info('视频生成功能正在开发中')
 }
 
+// 将blob URL转换为base64字符串
+const blobUrlToBase64 = async (url: string): Promise<string> => {
+  try {
+    const response = await fetch(url)
+    const blob = await response.blob()
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch (error) {
+    console.error('转换blob URL为base64失败:', error)
+    throw error
+  }
+}
+
 // 单张生成图片
 const generateSingleImage = async (index: number) => {
   if (!imageProviderId.value) {
@@ -784,10 +808,21 @@ const generateSingleImage = async (index: number) => {
     let referenceImagesForBackend: Array<{ type: string; image_url: string }> = []
     if (!store.useCoverAsReference && store.referenceImages.length > 0) {
       // 只有当不使用封面作为参考图时，才传递上传的参考图
-      referenceImagesForBackend = store.referenceImages.map(img => ({
-        type: "image_url",
-        image_url: img.url
-      }))
+      referenceImagesForBackend = await Promise.all(
+        store.referenceImages.map(async img => {
+          let imageUrl = img.url
+          // 如果是blob URL，转换为base64字符串
+          if (imageUrl.startsWith('blob:')) {
+            console.log('转换blob URL为base64:', imageUrl)
+            imageUrl = await blobUrlToBase64(imageUrl)
+            console.log('转换成功，base64长度:', imageUrl.length)
+          }
+          return {
+            type: "image_url",
+            image_url: imageUrl
+          }
+        })
+      )
     }
 
     // 调用API生成单张图片
@@ -795,7 +830,7 @@ const generateSingleImage = async (index: number) => {
     const response = await axios.post('/api/generate/image', {
       history_id: historyId,
       page_index: index,
-      prompt: store.outline.pages[index].content,
+      prompt: store.outline.pages[index].image_prompt,
       image_provider: store.imageProviderId, // 使用store中的imageProviderId确保一致性
       size: store.selectedSize, // 添加用户选择的尺寸
       reference_images: referenceImagesForBackend,
