@@ -75,6 +75,7 @@ export default {
     selectTextProvider: 'Please select text service provider',
     uploadHint: 'These images will be used for generating cover and content reference',
     generateOutline: 'Generate Outline',
+    generateBlankOutline: 'Generate Blank Outline',
     uploadReference: 'Upload Reference Image'
   },
   config: {

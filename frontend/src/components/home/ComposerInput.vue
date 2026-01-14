@@ -109,6 +109,15 @@
       </div>
       <div class="toolbar-right">
         <button
+              class="btn btn-secondary generate-btn"
+              @click="$emit('blankGenerate', generatorStore.selectedPlatform || 'xiaohongshu')"
+              :disabled="loading"
+              style="margin-right: 12px;"
+            >
+              <span v-if="loading" class="spinner-sm"></span>
+              <span v-else>{{ t('composer.generateBlankOutline') }}</span>
+            </button>
+        <button
               class="btn btn-primary generate-btn"
               @click="$emit('generate', generatorStore.selectedPlatform || 'xiaohongshu')"
               :disabled="!modelValue.trim() || loading"
@@ -162,6 +171,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
   (e: 'generate', platform: string): void
+  (e: 'blankGenerate', platform: string): void
   (e: 'imagesChange', images: File[]): void
 }>()
 

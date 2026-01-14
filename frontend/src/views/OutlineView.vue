@@ -1,6 +1,6 @@
 <template>
   <div class="container" style="max-width: 100%;">
-    <div class="page-header" style="max-width: 1200px; margin: 0 auto 30px auto;">
+    <div class="page-header" style="max-width: 1200px; margin: 0 auto 30px auto; display: flex; flex-direction: column; gap: 20px;">
       <div>
         <h1 class="page-title">编辑大纲</h1>
         <p class="page-subtitle">调整页面顺序，修改文案，打造完美内容</p>
@@ -15,9 +15,9 @@
         </div>
         
         <!-- 主题编辑输入框容器，使用两列布局 -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; max-width: 1200px;">
+        <div class="grid-container">
           <!-- 生成主题输入框 -->
-          <div class="topic-edit">
+          <div class="topic-edit" style="grid-column: 1; grid-row: 1;">
             <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">生成主题</label>
             <el-input
               v-model="store.topic"
@@ -26,11 +26,11 @@
               clearable
               style="width: 100%;"
             />
-            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">修改主题后，将基于新主题生成内容</span>
+            <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">修改主题后，将基于新主题生成内容</span>
           </div>
           
           <!-- 总标题输入 -->
-          <div class="topic-edit">
+          <div class="topic-edit" style="grid-column: 1; grid-row: 2;">
             <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
             <el-input
               v-model="store.outline.title"
@@ -40,11 +40,11 @@
               style="width: 100%;"
               @input="store.updateOutlineTitle(store.outline.title || '')"
             />
-            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总标题，用于展示在所有图片之上</span>
+            <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">图文内容的总标题，用于展示在所有图片之上</span>
           </div>
           
-          <!-- 总文案输入，占据两列 -->
-          <div class="topic-edit" style="grid-column: 1 / -1;">
+          <!-- 总文案输入，占据右侧两行 -->
+          <div class="topic-edit" style="grid-column: 2; grid-row: 1 / 3;">
             <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总文案</label>
             <el-input
               v-model="store.outline.copywriting"
@@ -52,11 +52,11 @@
               size="large"
               clearable
               type="textarea"
-              :rows="3"
-              style="width: 100%; resize: vertical; min-height: 100px;"
+              :rows="6"
+              style="width: 100%; resize: vertical; min-height: 160px;"
               @input="store.updateOutlineCopywriting(store.outline.copywriting || '')"
             />
-            <span style="font-size: 12px; color: #666; margin-top: 4px; display: block;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
+            <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
           </div>
         </div>
       </div>
@@ -1398,18 +1398,49 @@ const generateSingleVideo = (index: number) => {
 
 .page-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
   margin-bottom: 40px;
   padding: 24px 0;
   border-bottom: 1px solid #e8e8e8;
-  flex-wrap: wrap;
   gap: 24px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 30px;
   margin-bottom: 30px;
+}
+
+/* 主题编辑区域样式 */
+.topic-edit {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 修改Element Plus textarea样式 - 增强特异性 */
+.topic-edit :deep(.el-textarea__inner) {
+  width: 100% !important;
+  min-height: 160px !important;
+  resize: vertical;
+  box-sizing: border-box;
+  height: auto !important;
+}
+
+/* 确保el-textarea容器也有正确的宽度 */
+.topic-edit :deep(.el-textarea) {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* 确保grid布局容器正确工作 */
+.grid-container {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px;
+  margin-top: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-title {

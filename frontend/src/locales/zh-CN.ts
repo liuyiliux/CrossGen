@@ -75,6 +75,7 @@ export default {
     selectTextProvider: '请选择文本服务商',
     uploadHint: '这些图片将用于生成封面和内容参考',
     generateOutline: '生成大纲',
+    generateBlankOutline: '生成空白大纲',
     uploadReference: '上传参考图'
   },
   config: {

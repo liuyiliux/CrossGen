@@ -23,6 +23,7 @@
         v-model="generatorStore.topic"
         :loading="generatorStore.loading"
         @generate="handleGenerate"
+        @blankGenerate="handleBlankGenerate"
         @imagesChange="handleImagesChange"
       />
     </div>
@@ -335,6 +336,48 @@ const handleGenerate = async () => {
     console.error('生成失败:', err)
   } finally {
     generatorStore.setLoading(false)
+    // 关闭全局加载指示器
+    loadingInstance.close()
+  }
+}
+
+/**
+ * 生成空白大纲
+ */
+const handleBlankGenerate = async () => {
+  // 确保platform是string类型，使用默认值'xiaohongshu'如果为null
+  const platform = generatorStore.selectedPlatform || 'xiaohongshu'
+  
+  // 创建全局加载指示器
+  const loadingInstance = ElLoading.service({
+    lock: true,
+    text: '正在生成空白大纲...',
+    background: 'rgba(255, 255, 255, 0.95)',
+    customClass: 'custom-loading',
+    spinner: '<div class="simple-loading"><div class="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>'
+  })
+  
+  try {
+    // 创建空白大纲
+    generatorStore.createBlankOutline()
+    
+    // 创建历史记录
+    await createHistoryRecord(
+      generatorStore.topic.trim() || '空白大纲',
+      platform,
+      generatorStore.outline,
+      [],
+      'success'
+    )
+    
+    ElMessage.success('空白大纲生成成功！')
+    
+    // 跳转到大纲编辑页面
+    router.push('/outline')
+  } catch (err: any) {
+    console.error('生成空白大纲失败:', err)
+    ElMessage.error('生成空白大纲失败，请重试')
+  } finally {
     // 关闭全局加载指示器
     loadingInstance.close()
   }

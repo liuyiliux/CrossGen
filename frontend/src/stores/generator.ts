@@ -347,6 +347,36 @@ export const useGeneratorStore = defineStore('generator', {
       // 不再清空recordId，保留API返回的history_id
       // 确保大纲生成和图片生成使用同一个历史记录ID
     },
+    
+    /**
+     * 创建空白大纲
+     */
+    createBlankOutline() {
+      // 创建默认页面：封面页 + 两个内容页
+      const defaultPages: Page[] = [
+        {
+          index: 0,
+          type: 'cover',
+          content: '',
+          image_prompt: ''
+        },
+        {
+          index: 1,
+          type: 'content',
+          content: '',
+          image_prompt: ''
+        },
+        {
+          index: 2,
+          type: 'content',
+          content: '',
+          image_prompt: ''
+        }
+      ]
+      
+      // 设置空白大纲
+      this.setOutline('', defaultPages, '', '')
+    },
 
     /**
      * 更新页面内容
