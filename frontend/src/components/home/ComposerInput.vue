@@ -112,7 +112,7 @@
               class="btn btn-secondary generate-btn"
               @click="$emit('blankGenerate', generatorStore.selectedPlatform || 'xiaohongshu')"
               :disabled="loading"
-              style="margin-right: 12px;"
+              style="margin-right: 12px; display: inline-block;"
             >
               <span v-if="loading" class="spinner-sm"></span>
               <span v-else>{{ t('composer.generateBlankOutline') }}</span>
@@ -121,6 +121,7 @@
               class="btn btn-primary generate-btn"
               @click="$emit('generate', generatorStore.selectedPlatform || 'xiaohongshu')"
               :disabled="!modelValue.trim() || loading"
+              style="display: inline-block;"
             >
               <span v-if="loading" class="spinner-sm"></span>
               <span v-else>{{ t('composer.generateOutline') }}</span>

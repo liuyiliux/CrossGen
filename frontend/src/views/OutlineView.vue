@@ -1,12 +1,12 @@
 <template>
   <div class="container" style="max-width: 100%;">
     <div class="page-header" style="max-width: 1200px; margin: 0 auto 30px auto; display: flex; flex-direction: column; gap: 20px;">
-      <div>
-        <h1 class="page-title">编辑大纲</h1>
-        <p class="page-subtitle">调整页面顺序，修改文案，打造完美内容</p>
+      <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <h1 class="page-title" style="text-align: center;">编辑大纲</h1>
+        <p class="page-subtitle" style="text-align: center;">调整页面顺序，修改文案，打造完美内容</p>
         
         <!-- 整体生成状态提示 -->
-        <div v-if="store.progress.status === 'done' && store.images.length > 0" class="overall-status success">
+        <div v-if="store.progress.status === 'done' && store.images.length > 0" class="overall-status success" style="margin: 0 auto;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
@@ -15,36 +15,39 @@
         </div>
         
         <!-- 主题编辑输入框容器，使用两列布局 -->
-        <div class="grid-container">
-          <!-- 生成主题输入框 -->
-          <div class="topic-edit" style="grid-column: 1; grid-row: 1;">
-            <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">生成主题</label>
-            <el-input
-              v-model="store.topic"
-              placeholder="请输入生成主题"
-              size="large"
-              clearable
-              style="width: 100%;"
-            />
-            <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">修改主题后，将基于新主题生成内容</span>
+        <div class="grid-container" style="display: flex; flex-direction: column; align-items: center; gap: 30px; width: 100%;">
+          <!-- 生成主题和总标题在同一行 -->
+          <div style="display: flex; gap: 30px; width: 100%; max-width: 1200px;">
+            <!-- 生成主题输入框 -->
+            <div class="topic-edit" style="flex: 1;">
+              <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">生成主题</label>
+              <el-input
+                v-model="store.topic"
+                placeholder="请输入生成主题"
+                size="large"
+                clearable
+                style="width: 100%;"
+              />
+              <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">修改主题后，将基于新主题生成内容</span>
+            </div>
+            
+            <!-- 总标题输入 -->
+            <div class="topic-edit" style="flex: 1; margin-left: 30px;">
+              <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
+              <el-input
+                v-model="store.outline.title"
+                placeholder="请输入总标题"
+                size="large"
+                clearable
+                style="width: 100%;"
+                @input="store.updateOutlineTitle(store.outline.title || '')"
+              />
+              <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">图文内容的总标题，用于展示在所有图片之上</span>
+            </div>
           </div>
           
-          <!-- 总标题输入 -->
-          <div class="topic-edit" style="grid-column: 1; grid-row: 2;">
-            <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总标题</label>
-            <el-input
-              v-model="store.outline.title"
-              placeholder="请输入总标题"
-              size="large"
-              clearable
-              style="width: 100%;"
-              @input="store.updateOutlineTitle(store.outline.title || '')"
-            />
-            <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">图文内容的总标题，用于展示在所有图片之上</span>
-          </div>
-          
-          <!-- 总文案输入，占据右侧两行 -->
-          <div class="topic-edit" style="grid-column: 2; grid-row: 1 / 3;">
+          <!-- 总文案输入，独占一行 -->
+          <div class="topic-edit" style="width: 100%; max-width: 1200px; margin-top: 20px;">
             <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px; font-weight: 500;">总文案</label>
             <el-input
               v-model="store.outline.copywriting"
@@ -53,7 +56,7 @@
               clearable
               type="textarea"
               :rows="6"
-              style="width: 100%; resize: vertical; min-height: 160px;"
+              style="width: 100%; resize: vertical;"
               @input="store.updateOutlineCopywriting(store.outline.copywriting || '')"
             />
             <span style="font-size: 12px; color: #999; margin-top: 4px; display: block; line-height: 1.4;">图文内容的总文案，将与所有图片关联，建议添加相关#话题标签</span>
@@ -1434,9 +1437,9 @@ const generateSingleVideo = (index: number) => {
 
 /* 确保grid布局容器正确工作 */
 .grid-container {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 20px;
   margin-top: 16px;
   width: 100%;
