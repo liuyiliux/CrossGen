@@ -952,8 +952,8 @@ const generateSingleVideo = (index: number) => {
 /* 网格布局 */
 .outline-grid {
   display: grid;
-  /* 响应式列：最小宽度 320px，自动填充 */
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* 每行三个卡片布局 */
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
