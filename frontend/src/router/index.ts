@@ -52,6 +52,14 @@ const router = createRouter({
       }
     },
     {
+      path: '/inspiration',
+      name: 'Inspiration',
+      component: () => import('@/views/InspirationView.vue'),
+      meta: {
+        title: '灵感获取 - 逸流'
+      }
+    },
+    {
       path: '/batch',
       name: 'Batch',
       component: () => import('@/views/Batch.vue'),

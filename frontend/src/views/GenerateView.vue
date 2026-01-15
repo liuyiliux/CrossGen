@@ -5,7 +5,7 @@
         <h1 class="page-title">生成结果</h1>
         <p class="page-subtitle">
           <span v-if="isGenerating">正在生成第 {{ store.progress.current + 1 }} / {{ store.progress.total }} 页</span>
-          <span v-else-if="hasFailedImages">{{ failedCount }} 张图片生成失败，可点击重试</span>
+          <span v-else-if="hasFailedImages">{{ failedCount }} {{ t('common.images') }} {{ t('common.failed') }}，{{ t('common.click') }} {{ t('common.retry') }}</span>
           <span v-else>全部 {{ store.progress.total }} 张图片生成完成</span>
         </p>
       </div>

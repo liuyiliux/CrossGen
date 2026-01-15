@@ -288,7 +288,7 @@
               @click="generateSingleImage(idx)"
               :disabled="!imageProviderId"
             >
-              点击重试
+              {{ t('common.retry') }}
             </button>
             <div class="error-message">{{ store.images[idx].error }}</div>
           </div>

@@ -271,8 +271,8 @@ const handleRegenerate = async (image: any) => {
   } catch (e: any) {
     console.error('重新生成图片失败:', e)
     store.images[image.index].status = 'error'
-    store.images[image.index].error = e.message || '网络错误，请重试'
-    ElMessage.error(`重绘失败: ${e.message || '网络错误，请重试'}`)
+    store.images[image.index].error = e.message || t('common.retryFailed')
+    ElMessage.error(`${t('common.redrawFailed')}: ${e.message || t('common.retryFailed')}`)
   } finally {
     regeneratingIndex.value = null
   }

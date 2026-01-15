@@ -15,7 +15,7 @@ from pathlib import Path
 # 添加项目根目录到 Python 路径，解决模块导入问题
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.api import generation, config, health, history
+from src.api import generation, config, health, history, inspiration
 from src.utils.config import Settings
 from src.utils.logger import setup_logger, logger
 
@@ -105,6 +105,7 @@ def create_app() -> FastAPI:
     app.include_router(generation.router, prefix="/api", tags=["内容生成"])
     app.include_router(config.router, prefix="/api", tags=["配置管理"])
     app.include_router(history.router, prefix="/api", tags=["历史记录"])
+    app.include_router(inspiration.router, prefix="/api", tags=["灵感获取"])
     
     @app.get("/")
     async def root():

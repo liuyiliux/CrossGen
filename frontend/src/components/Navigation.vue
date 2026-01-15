@@ -32,10 +32,14 @@
               <el-icon><Clock /></el-icon>
               <span>{{ t('common.history') }}</span>
             </el-menu-item>
-            <el-menu-item index="/batch">
-              <el-icon><List /></el-icon>
-              <span>{{ t('common.batch') }}</span>
-            </el-menu-item>
+            <el-menu-item index="/inspiration">
+            <el-icon><EditPen /></el-icon>
+            <span>{{ t('common.inspiration') }}</span>
+          </el-menu-item>
+          <el-menu-item index="/batch">
+            <el-icon><List /></el-icon>
+            <span>{{ t('common.batch') }}</span>
+          </el-menu-item>
           </el-menu>
           
           <!-- 语言切换 -->
@@ -67,7 +71,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { HomeFilled, Setting, Clock, List, ArrowDown } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Clock, List, ArrowDown, EditPen } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()

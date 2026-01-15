@@ -112,6 +112,17 @@
     <div class="quick-actions">
       <h3 class="section-title">{{ t('home.quickActions') }}</h3>
       <div class="action-cards">
+        <el-card shadow="hover" @click="$router.push('/inspiration')" class="action-card">
+          <div class="action-card-content">
+            <div class="action-icon inspiration-icon">
+              <el-icon><EditPen /></el-icon>
+            </div>
+            <h4>{{ t('home.inspirationGet') }}</h4>
+            <p>{{ t('home.inspirationDesc') }}</p>
+            <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
+          </div>
+        </el-card>
+
         <el-card shadow="hover" @click="$router.push('/batch')" class="action-card">
           <div class="action-card-content">
             <div class="action-icon batch-icon">
@@ -122,7 +133,7 @@
             <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
-        
+
         <el-card shadow="hover" @click="$router.push('/config')" class="action-card">
           <div class="action-card-content">
             <div class="action-icon config-icon">
@@ -133,7 +144,7 @@
             <el-button type="primary" size="small">{{ t('home.goTo') }}</el-button>
           </div>
         </el-card>
-        
+
         <el-card shadow="hover" @click="$router.push('/history')" class="action-card">
           <div class="action-card-content">
             <div class="action-icon history-icon">
@@ -150,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -164,7 +175,8 @@ import {
   PictureRounded,
   List,
   Setting,
-  Clock
+  Clock,
+  EditPen
 } from '@element-plus/icons-vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -247,6 +259,13 @@ import { getPlatformLabel, loadPlatformConfig } from '../utils/platformUtils'
 onMounted(async () => {
   await loadPlatformConfig()
   loadProviders()
+
+  // 监听从灵感页面导入的主题
+  window.addEventListener('import-topic', (event: CustomEvent) => {
+    const topic = event.detail
+    generatorStore.setTopic(topic)
+    ElMessage.success(`${t('inspiration.importSuccess')}: ${topic}`)
+  })
 })
 
 // 格式化时间
@@ -331,8 +350,8 @@ const handleGenerate = async () => {
       ElMessage.error(result.error || '生成失败')
     }
   } catch (err: any) {
-    generatorStore.setError(err.message || '网络错误，请重试')
-    ElMessage.error(err.message || '网络错误，请重试')
+    generatorStore.setError(err.message || t('common.retryFailed'))
+    ElMessage.error(err.message || t('common.retryFailed'))
     console.error('生成失败:', err)
   } finally {
     generatorStore.setLoading(false)
@@ -488,6 +507,11 @@ const generateOutline = async (topic: string, platform: string, imageFiles?: Fil
     }
   }
 }
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  window.removeEventListener('import-topic', () => {})
+})
 
 // 复制结果
 const copyResult = () => {
@@ -899,16 +923,21 @@ async function createHistoryRecord(
       margin-bottom: var(--xhs-space-sm);
       transition: var(--xhs-transition-default);
       
+      &.inspiration-icon {
+        background: linear-gradient(135deg, rgba(103, 58, 183, 0.12) 0%, rgba(156, 39, 176, 0.12) 100%);
+        color: var(--xhs-accent-purple);
+      }
+
       &.batch-icon {
         background: linear-gradient(135deg, rgba(255, 36, 66, 0.12) 0%, rgba(255, 107, 157, 0.12) 100%);
         color: var(--xhs-primary);
       }
-      
+
       &.config-icon {
         background: linear-gradient(135deg, rgba(0, 200, 83, 0.12) 0%, rgba(76, 175, 80, 0.12) 100%);
         color: var(--xhs-success);
       }
-      
+
       &.history-icon {
         background: linear-gradient(135deg, rgba(255, 160, 0, 0.12) 0%, rgba(245, 124, 0, 0.12) 100%);
         color: var(--xhs-warning);

@@ -311,7 +311,8 @@ async def get_general_config() -> Dict[str, Any]:
                 "mysql_port": system_config.get("mysql", {}).get("port", 3306),
                 "mysql_database": system_config.get("mysql", {}).get("database", ""),
                 "mysql_username": system_config.get("mysql", {}).get("username", ""),
-                "mysql_password": system_config.get("mysql", {}).get("password", "")
+                "mysql_password": system_config.get("mysql", {}).get("password", ""),
+                "xiaohongshu_cookie": system_config.get("xiaohongshu", {}).get("cookie", "")
             }
         }
     except Exception as e:
@@ -341,6 +342,9 @@ async def update_general_config(
                 "database": config.get("mysql_database", ""),
                 "username": config.get("mysql_username", ""),
                 "password": config.get("mysql_password", "")
+            },
+            "xiaohongshu": {
+                "cookie": config.get("xiaohongshu_cookie", "")
             }
         }
         

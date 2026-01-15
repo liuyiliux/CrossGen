@@ -260,6 +260,9 @@ class ConfigService:
                     "database": "",
                     "username": "",
                     "password": ""
+                },
+                "xiaohongshu": {
+                    "cookie": ""
                 }
             })
         return self._system_config_cache
