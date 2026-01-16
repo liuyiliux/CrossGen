@@ -774,7 +774,7 @@ platform_templates:
     image_template: '{full_outline}
 
       '
-    name: 反推
+    name: 反推人像
     outline_template: '你是一个图片创作高手。用户会给你一个要求以及说明，你需要生成包含一个标题、一个文案和多个图片提示词的内容。
 
 
