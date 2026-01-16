@@ -68,7 +68,9 @@ class ImageAnalysisService:
                 },
                 {
                     "type": "image_url",
-                    "image_url": image_data
+                    "image_url": {
+                        "url": image_data
+                    }
                 }
             ]
             

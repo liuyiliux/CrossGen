@@ -247,23 +247,6 @@ class GenerationService:
                         logger.info(f"使用默认提示词: {prompt}")
                         logger.warning(f"未找到平台 {platform_str} 的大纲模板，可用模板平台: {list(platform_templates.keys())}")
                     
-                    # 如果有参考图片，使用图片分析服务生成提示词
-                    if reference_images:
-                        logger.info(f"使用参考图生成提示词: {len(reference_images)}张")
-                        
-                        # 从参考图片生成提示词
-                        prompt_results = await self.image_analysis_service.generate_prompts_from_images(reference_images)
-                        
-                        # 提取生成的提示词
-                        generated_prompts = []
-                        for result in prompt_results:
-                            if result.get("success"):
-                                generated_prompts.append(result.get("prompt"))
-                        
-                        if generated_prompts:
-                            # 将生成的提示词添加到原始提示词中
-                            prompt += f"\n\n参考图片生成的提示词:\n{chr(10).join(generated_prompts)}"
-                    
                     # 获取当前使用的提供商
                     # 优先使用请求中指定的提供商
                     provider = None
@@ -295,7 +278,7 @@ class GenerationService:
                     
                     if provider:
                         logger.debug(f"提供商地址: {provider.base_url}")
-                    
+
                     # 调用AI API生成文本（大纲）
                     logger.info(f"\n=== 开始生成大纲 ===")
                     
@@ -337,7 +320,12 @@ class GenerationService:
                         
                         # 添加参考图
                         for img in reference_images:
-                            multimodal_prompt.append(img)
+                            multimodal_prompt.append({
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": img
+                                }
+                            })
                         
                         ai_result = await provider.generate_text(
                             multimodal_prompt,
