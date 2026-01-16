@@ -95,7 +95,14 @@ def create_app() -> FastAPI:
     )
     
     # 静态文件服务
+    # 确保上传目录存在
     upload_dir = Path(settings.UPLOAD_DIR)
+    if not upload_dir.is_absolute():
+        # 如果是相对路径，则相对于backend目录（即当前运行目录）
+        upload_dir = Path.cwd() / settings.UPLOAD_DIR
+    
+    upload_dir.mkdir(exist_ok=True)
+    
     if upload_dir.exists():
         app.mount("/" + settings.UPLOAD_DIR, StaticFiles(directory=settings.UPLOAD_DIR), name=settings.UPLOAD_DIR)
     if Path("history").exists():
