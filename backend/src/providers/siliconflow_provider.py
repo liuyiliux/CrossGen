@@ -292,11 +292,14 @@ class SiliconFlowProvider(BaseProvider):
                             image_url = item['image_url']
                             if isinstance(image_url, dict):
                                 url = image_url.get("url", "")
-                                # 只对base64格式的图像进行截断处理
-                                if url.startswith('data:image/'):
-                                    logger.debug(f"图像元素: {url[:20]}...")
+                                if isinstance(url, str):
+                                    # 只对base64格式的图像进行截断处理
+                                    if url.startswith('data:image/'):
+                                        logger.debug(f"图像元素: {url[:20]}...")
+                                    else:
+                                        logger.debug(f"图像元素: {url}")
                                 else:
-                                    logger.debug(f"图像元素: {url}")
+                                    logger.debug(f"图像元素url类型: {type(url)}")
                                 user_content.append(item)
                             elif isinstance(image_url, str):
                                 # 只对base64格式的图像进行截断处理
@@ -310,6 +313,16 @@ class SiliconFlowProvider(BaseProvider):
                                         "url": image_url
                                     }
                                 })
+                            elif isinstance(image_url, dict):
+                                # 兼容image_url已经是字典的情况（通常不应该走到这里，因为前面已经判断了isinstance(image_url, dict)）
+                                # 但为了保险起见，添加这个分支
+                                url = image_url.get("url", "")
+                                if url and isinstance(url, str):
+                                     if url.startswith('data:image/'):
+                                         logger.debug(f"图像元素: {url[:20]}...")
+                                     else:
+                                         logger.debug(f"图像元素: {url}")
+                                user_content.append(item)
             
             # 构建请求参数，符合SiliconFlow API规范
             request_body = {
