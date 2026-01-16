@@ -71,6 +71,12 @@
                 {{ parsing ? t('inspiration.parsing') : t('inspiration.parseButton') }}
               </el-button>
             </div>
+            <div class="input-helper" style="margin-top: 8px; font-size: 13px; color: #909399;">
+              <el-button link type="primary" size="small" @click="fillExampleUrl">
+                <el-icon style="margin-right: 4px"><Link /></el-icon>
+                {{ t('inspiration.tryExample') }}
+              </el-button>
+            </div>
           </el-tab-pane>
         </el-tabs>
 
@@ -120,6 +126,42 @@
           </div>
         </div>
       </el-card>
+    </div>
+
+    <!-- 外部搜索引导 -->
+    <div v-if="showEmbed" class="external-search-guide" style="margin-top: 20px; padding: 40px 20px; background: white; border-radius: 12px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
+      <el-result icon="info" title="已在新窗口打开小红书搜索">
+        <template #sub-title>
+          <div style="font-size: 15px; line-height: 1.6; color: #606266;">
+            <p>由于小红书的安全策略限制（二维码不显示等问题），建议您在新窗口中浏览。</p>
+            <p>请在弹出的新窗口中找到喜欢的笔记，<b>复制链接</b>并粘贴到下方进行解析。</p>
+          </div>
+        </template>
+        <template #extra>
+          <div style="max-width: 600px; margin: 30px auto 0; display: flex; gap: 12px;">
+            <el-input
+              v-model="noteUrl"
+              size="large"
+              :placeholder="t('inspiration.urlPlaceholder')"
+              clearable
+              @keyup.enter="handleParse"
+            >
+              <template #prefix>
+                <el-icon><Link /></el-icon>
+              </template>
+            </el-input>
+            <el-button type="primary" size="large" :loading="parsing" @click="handleParse">
+              {{ t('inspiration.parseButton') }}
+            </el-button>
+          </div>
+          <div style="margin-top: 20px;">
+             <el-button link type="primary" @click="openEmbedUrl">
+               <el-icon style="margin-right: 4px"><TopRight /></el-icon>
+               未弹出窗口？点击这里手动打开
+             </el-button>
+          </div>
+        </template>
+      </el-result>
     </div>
 
     <!-- 结果统计 -->
@@ -215,13 +257,9 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!loading && results.length === 0 && hasSearched" class="empty-state">
+    <div v-if="!loading && results.length === 0 && hasSearched && !showEmbed" class="empty-state">
       <el-empty description="" />
       <p class="empty-hint">{{ t('inspiration.noResultsHint') }}</p>
-      <el-button type="primary" @click="handleSearch">
-        <el-icon><RefreshRight /></el-icon>
-        {{ t('common.retry') }}
-      </el-button>
     </div>
 
     <!-- 错误提示 -->
@@ -236,10 +274,6 @@
       <template #default>
         <div class="error-content">
           <p>{{ error }}</p>
-          <el-button type="text" @click="handleSearch">
-            <el-icon><RefreshRight /></el-icon>
-            {{ t('common.retry') }}
-          </el-button>
         </div>
       </template>
     </el-alert>
@@ -285,6 +319,10 @@
             <span class="option-desc">{{ t('inspiration.importOptionDescDesc') }}</span>
           </el-radio>
         </el-radio-group>
+        
+        <div style="margin-top: 16px; padding: 0 4px;">
+          <el-checkbox v-model="importImages" :label="t('inspiration.importImages')" />
+        </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -347,11 +385,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { EditPen, Search, Link, Collection, PictureRounded, Download, User, RefreshRight, Star, Delete, CopyDocument, Close, TrendCharts, Setting } from '@element-plus/icons-vue'
+import { EditPen, Search, Link, Collection, PictureRounded, Download, User, RefreshRight, Star, Delete, CopyDocument, Close, TrendCharts, Setting, InfoFilled, TopRight, Clock } from '@element-plus/icons-vue'
 import axios from 'axios'
+
+import { useGeneratorStore } from '../stores/generator'
 
 const router = useRouter()
 const { t } = useI18n()
+const generatorStore = useGeneratorStore()
 
 // 响应式状态
 const activeTab = ref('search')
@@ -362,6 +403,10 @@ const parsing = ref(false)
 const loading = ref(false)
 const error = ref('')
 const hasSearched = ref(false)
+const embedUrl = ref('')
+const showEmbed = ref(false)
+
+
 
 // 历史记录和热门推荐
 const searchHistory = ref<string[]>([])
@@ -373,6 +418,7 @@ const trendingKeywords = ref([
 // 导入对话框状态
 const importDialogVisible = ref(false)
 const importType = ref('title') // title, both, desc
+const importImages = ref(true)
 const selectedItem = ref<any>(null)
 
 // Cookie设置对话框
@@ -447,10 +493,39 @@ const handleTabChange = (tabName: string) => {
   results.value = []
   error.value = ''
   hasSearched.value = false
+  showEmbed.value = false
+}
+
+const openEmbedUrl = () => {
+  if (embedUrl.value) {
+    window.open(embedUrl.value, '_blank')
+  }
+}
+
+// 填充示例链接
+const fillExampleUrl = () => {
+  noteUrl.value = 'https://www.xiaohongshu.com/explore/695d333c000000000a02d266?xsec_token=CBjUoUnHqBU-sGN_NU_Fe4TIBvjbCn6pptTtw_-HpvOJs='
 }
 
 // 关键词搜索
 const handleSearch = async () => {
+  if (!keyword.value.trim()) {
+    ElMessage.warning(t('inspiration.searchHint'))
+    return
+  }
+
+  // 切换到嵌入模式
+  showEmbed.value = true
+  embedUrl.value = `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(keyword.value.trim())}&type=54`
+  window.open(embedUrl.value, '_blank')
+  hasSearched.value = true
+  
+  // 保存搜索历史
+  saveHistory(keyword.value.trim())
+}
+
+/*
+const handleSearchOld = async () => {
   if (!keyword.value.trim()) {
     ElMessage.warning(t('inspiration.searchHint'))
     return
@@ -483,6 +558,7 @@ const handleSearch = async () => {
     loading.value = false
   }
 }
+*/
 
 // 链接解析
 const handleParse = async () => {
@@ -541,7 +617,7 @@ const handleImport = (item: any) => {
 }
 
 // 确认导入
-const confirmImport = () => {
+const confirmImport = async () => {
   if (!selectedItem.value) return
   
   const item = selectedItem.value
@@ -553,15 +629,73 @@ const confirmImport = () => {
     topic = `${item.title}\n\n${item.description}`
   }
   
+  // 处理图片
+  let files: File[] = []
+  if (importImages.value && item.images && item.images.length > 0) {
+    // 限制最多5张，避免请求过多
+    const imageUrls = item.images.slice(0, 5)
+    
+    // 显示加载提示
+    const loadingInstance = ElLoading.service({
+      lock: true,
+      text: '正在准备图片资源...',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+
+    try {
+      // 并行下载图片
+      const promises = imageUrls.map(async (url: string, index: number) => {
+        try {
+          // 使用fetch获取图片Blob
+          const response = await fetch(url, { mode: 'cors' })
+          if (!response.ok) throw new Error('Network response was not ok')
+          const blob = await response.blob()
+          // 创建File对象
+          const filename = `ref_image_${index}_${Date.now()}.jpg`
+          return new File([blob], filename, { type: blob.type })
+        } catch (e) {
+          console.warn('Failed to fetch image:', url, e)
+          return null
+        }
+      })
+      
+      const results = await Promise.all(promises)
+      files = results.filter((f): f is File => f !== null)
+      
+    } catch (e) {
+      console.error('Error preparing images:', e)
+    } finally {
+      loadingInstance.close()
+    }
+  }
+  
   importDialogVisible.value = false
   
-  router.push('/')
+  // 直接更新 Store 状态
+  generatorStore.setTopic(topic)
   
-  // 延迟一点时间等待页面跳转
-  setTimeout(() => {
-    // 触发全局事件
-    window.dispatchEvent(new CustomEvent('import-topic', { detail: topic }))
-  }, 100)
+  if (files.length > 0) {
+    // 设置用户图片
+    generatorStore.setUserImages(files)
+    // 自动开启参考图功能
+    generatorStore.setReferenceImageEnabled(true)
+    // 生成预览URL并设置参考图
+    const refImages = files.map((file: File) => ({
+      file,
+      url: URL.createObjectURL(file)
+    }))
+    generatorStore.setReferenceImages(refImages)
+    
+    ElMessage.success(`${t('inspiration.importSuccess')}: ${topic} (+${files.length}张参考图)`)
+  } else {
+    // 清空可能存在的旧图片
+    generatorStore.setUserImages([])
+    generatorStore.clearReferenceImages()
+    generatorStore.setReferenceImageEnabled(false)
+    ElMessage.success(`${t('inspiration.importSuccess')}: ${topic}`)
+  }
+
+  router.push('/')
 }
 
 // 打开设置

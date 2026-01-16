@@ -260,11 +260,12 @@ onMounted(async () => {
   await loadPlatformConfig()
   loadProviders()
 
-  // 监听从灵感页面导入的主题
+  // 监听从灵感页面导入的主题 (Legacy fallback, now using Store directly)
   window.addEventListener('import-topic', (event: CustomEvent) => {
-    const topic = event.detail
-    generatorStore.setTopic(topic)
-    ElMessage.success(`${t('inspiration.importSuccess')}: ${topic}`)
+    // ... logic kept for backward compatibility if needed, but primarily relying on Store
+    // 如果 Store 已经有数据，这里可以忽略，或者再次覆盖
+    // 为避免重复提示，我们这里可以移除核心逻辑，或者仅保留作为调试
+    console.log('Legacy import-topic event received', event.detail)
   })
 })
 

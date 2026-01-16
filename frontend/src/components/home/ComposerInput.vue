@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onUnmounted, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 
@@ -187,6 +187,29 @@ const platforms = ref<Array<{value: string, label: string}>>([])
 
 // 加载状态
 const loading = ref(true)
+
+// 监听 store 中的 userImages 变化，同步到本地 uploadedImages
+watch(() => generatorStore.userImages, (newImages) => {
+  const currentFiles = uploadedImages.value.map(img => img.file)
+  
+  // 检查是否需要更新（避免无限循环和不必要的刷新）
+  if (newImages.length === currentFiles.length && 
+      newImages.every((f, i) => f === currentFiles[i])) {
+    return
+  }
+  
+  // 清理旧的预览
+  uploadedImages.value.forEach(img => {
+    // 只有当图片不在新列表中时才清理URL（虽然createObjectURL每次都会生成新的，但为了保险起见全部清理重新生成）
+    URL.revokeObjectURL(img.preview)
+  })
+  
+  // 更新本地状态
+  uploadedImages.value = newImages.map(file => ({
+    file,
+    preview: URL.createObjectURL(file)
+  }))
+}, { deep: true, immediate: true })
 
 // 组件挂载时加载平台配置
 onMounted(async () => {
