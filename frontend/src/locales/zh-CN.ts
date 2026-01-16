@@ -11,6 +11,7 @@ export default {
     english: '英文',
     save: '保存',
     reset: '重置',
+    retry: '重试',
     test: '测试',
     copy: '复制',
     delete: '删除',
@@ -81,7 +82,7 @@ export default {
     settings: '设置',
     cookieSettings: '小红书 Cookie 设置',
     cookiePlaceholder: '请粘贴从小红书网页版获取的完整 Cookie',
-    cookieHelp: '获取方法：浏览器访问小红书网页版 -> F12打开开发者工具 -> 网络(Network) -> 刷新页面 -> 找到任意请求 -> 复制请求头中的 Cookie',
+    cookieHelp: '获取方法：\n1. 浏览器访问小红书网页版并登录\n2. 按 F12 打开开发者工具，点击"网络(Network)"\n3. 刷新页面，点击列表中的第一个请求\n4. 在右侧点击"标头(Headers)"，找到"请求标头(Request Headers)"下的 "Cookie" 字段\n5. 复制 Cookie 冒号后的所有内容',
     cookieSaveSuccess: 'Cookie 保存成功',
     cookieSaveFailed: 'Cookie 保存失败'
   },

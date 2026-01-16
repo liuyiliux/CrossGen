@@ -25,6 +25,7 @@ class InspirationItem(BaseModel):
     source_url: str = Field(..., description="来源链接")
     author: Optional[str] = Field(None, description="作者")
     likes: Optional[int] = Field(None, description="点赞数")
+    images: Optional[List[str]] = Field(default_factory=list, description="图片列表")
 
 
 class InspirationRequest(BaseModel):
@@ -131,7 +132,8 @@ async def parse_inspiration(request: Request, data: InspirationParseRequest) -> 
             description=result.get('description', ''),
             source_url=result.get('source_url', ''),
             author=result.get('author'),
-            likes=result.get('likes')
+            likes=result.get('likes'),
+            images=result.get('images', [])
         )
         
         return InspirationParseResponse(

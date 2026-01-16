@@ -103,6 +103,32 @@ async def get_image_providers() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"获取图像提供商配置失败: {str(e)}")
 
 
+@router.get("/config/system")
+async def get_system_config() -> Dict[str, Any]:
+    """获取系统配置"""
+    try:
+        service = ConfigService()
+        config = service.get_system_config()
+        return {"config": config}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取系统配置失败: {str(e)}")
+
+
+@router.post("/config/system")
+async def update_system_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """更新系统配置"""
+    try:
+        service = ConfigService()
+        success = service.update_system_config(config)
+        if not success:
+            raise HTTPException(status_code=400, detail="系统配置更新失败")
+        return {"message": "系统配置更新成功", "config": config}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新系统配置失败: {str(e)}")
+
+
 @router.get("/config/providers/video")
 async def get_video_providers() -> Dict[str, Any]:
     """获取视频生成提供商配置"""
@@ -402,3 +428,31 @@ async def test_mysql_connection(
             'success': False,
             'message': f"测试MySQL连接失败: {str(e)}"
         }
+
+
+@router.get("/config/system")
+async def get_system_config() -> Dict[str, Any]:
+    """获取系统配置"""
+    try:
+        service = ConfigService()
+        config = service.get_system_config()
+        return {"config": config}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取系统配置失败: {str(e)}")
+
+
+@router.post("/config/system")
+async def update_system_config(
+    config: Dict[str, Any]
+) -> Dict[str, str]:
+    """更新系统配置"""
+    try:
+        service = ConfigService()
+        success = service.update_system_config(config)
+        if not success:
+            raise HTTPException(status_code=400, detail="系统配置无效")
+        return {"message": "系统配置更新成功"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新系统配置失败: {str(e)}")

@@ -176,6 +176,29 @@
           <h3 class="card-title">{{ item.title }}</h3>
           <p class="card-description">{{ item.description }}</p>
           
+          <!-- 多图预览 -->
+          <div v-if="item.images && item.images.length > 1" class="image-gallery">
+            <div 
+              v-for="(img, idx) in item.images.slice(0, 5)" 
+              :key="idx" 
+              class="gallery-item"
+              @click.stop
+            >
+              <el-image 
+                :src="img" 
+                :preview-src-list="item.images"
+                :initial-index="idx"
+                fit="cover" 
+                class="gallery-img"
+                hide-on-click-modal
+                preview-teleported
+              />
+              <div v-if="idx === 4 && item.images.length > 5" class="more-count">
+                +{{ item.images.length - 5 }}
+              </div>
+            </div>
+          </div>
+          
           <!-- 元信息 -->
           <div class="card-meta">
             <span v-if="item.author" class="meta-item">
@@ -544,12 +567,12 @@ const confirmImport = () => {
 // 打开设置
 const openSettings = async () => {
   try {
-    const response = await axios.get('/api/config/general')
+    const response = await axios.get('/api/config/system')
     if (response.data?.config) {
-      // 尝试从通用配置中获取Cookie（如果有的话，虽然现在后端是分开存的，这里为了兼容）
-      // 目前后端API并没有直接暴露xiaohongshu_cookie在general config中，我们需要修改后端或单独请求
-      // 暂时假设用户需要重新输入，或者我们也可以请求获取
-      // 由于安全原因，通常不回显敏感Cookie，但为了方便用户，我们尝试获取
+      const systemConfig = response.data.config
+      if (systemConfig.xiaohongshu?.cookie) {
+        cookieForm.value.cookie = systemConfig.xiaohongshu.cookie
+      }
     }
   } catch (e) {
     console.error('获取配置失败', e)
@@ -561,18 +584,21 @@ const openSettings = async () => {
 const saveCookie = async () => {
   savingCookie.value = true
   try {
-    // 获取当前通用配置
-    const configResponse = await axios.get('/api/config/general')
+    // 获取当前系统配置
+    const configResponse = await axios.get('/api/config/system')
     const currentConfig = configResponse.data?.config || {}
     
-    // 合并新Cookie
+    // 更新小红书Cookie
     const newConfig = {
       ...currentConfig,
-      xiaohongshu_cookie: cookieForm.value.cookie
+      xiaohongshu: {
+        ...currentConfig.xiaohongshu,
+        cookie: cookieForm.value.cookie
+      }
     }
     
     // 更新配置
-    await axios.post('/api/config/general', newConfig)
+    await axios.post('/api/config/system', newConfig)
     
     ElMessage.success(t('inspiration.cookieSaveSuccess'))
     settingsVisible.value = false
@@ -712,37 +738,54 @@ const formatNumber = (num: number) => {
 
 :deep(.search-tabs) {
   .el-tabs__header {
+    margin: 0 auto var(--xhs-space-xl);
+    max-width: 360px;
+    background: var(--xhs-bg-secondary);
+    border-radius: var(--xhs-radius-full);
+    padding: 4px;
     border: none;
-    background: transparent;
-    gap: var(--xhs-space-md);
-    justify-content: center;
   }
 
-  .el-tabs__nav-wrap::after {
-    display: none;
+  .el-tabs__nav-wrap {
+    width: 100%;
+    &::after {
+      display: none;
+    }
+  }
+
+  .el-tabs__nav-scroll {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .el-tabs__nav {
+    width: 100%;
+    display: flex;
+    border: none !important;
   }
 
   .el-tabs__item {
-    padding: var(--xhs-space-md) var(--xhs-space-lg);
+    flex: 1;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: var(--xhs-radius-full);
+    color: var(--xhs-text-secondary);
     font-size: var(--xhs-text-base);
     font-weight: var(--xhs-font-weight-medium);
-    border: none;
-    border-radius: var(--xhs-radius-lg);
-    color: var(--xhs-text-secondary);
-    background: var(--xhs-bg-secondary);
-    transition: all var(--xhs-duration-base) var(--xhs-ease-default);
-
-    &:hover {
-      background: var(--xhs-bg-tertiary);
-      color: var(--xhs-text-primary);
-      transform: translateY(-2px);
-    }
-
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
     &.is-active {
-      background: var(--xhs-gradient-primary);
-      color: white;
+      background: white;
+      color: var(--xhs-primary);
       font-weight: var(--xhs-font-weight-semibold);
-      box-shadow: 0 4px 12px rgba(255, 36, 66, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    &:hover:not(.is-active) {
+      color: var(--xhs-text-primary);
     }
   }
 
@@ -1023,6 +1066,49 @@ const formatNumber = (num: number) => {
   -webkit-box-orient: vertical;
 }
 
+.image-gallery {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--xhs-space-md);
+  overflow: hidden;
+}
+
+.gallery-item {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 1;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--xhs-radius-md);
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.more-count {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--xhs-text-lg);
+  font-weight: var(--xhs-font-weight-semibold);
+  backdrop-filter: blur(2px);
+}
+
 .card-meta {
   display: flex;
   gap: var(--xhs-space-md);
@@ -1043,9 +1129,13 @@ const formatNumber = (num: number) => {
 
 // 空状态 / Empty State
 .empty-state {
-  max-width: 800px;
+  width: 100%;
+  max-width: 1200px;
   margin: var(--xhs-space-4xl) auto;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: var(--xhs-space-2xl);
 }
 
@@ -1209,5 +1299,6 @@ const formatNumber = (num: number) => {
   line-height: 1.6;
   font-size: var(--xhs-text-sm);
   color: #003a8c; /* 正文深蓝色 */
+  white-space: pre-line;
 }
 </style>

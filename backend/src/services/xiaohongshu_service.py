@@ -24,19 +24,25 @@ class XiaohongshuService:
         self.config_service = ConfigService()
         # 随机User-Agent池，模拟不同浏览器
         self.user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0',
         ]
         
         # 请求头配置
         self.headers = {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
+            'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Microsoft Edge";v="122"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
             'Referer': 'https://www.xiaohongshu.com/',
         }
         
@@ -69,9 +75,9 @@ class XiaohongshuService:
             cookie = system_config.get("xiaohongshu", {}).get("cookie", "")
             if cookie:
                 headers['Cookie'] = cookie
-                # 如果有Cookie，尝试添加其他必要的头部
-                headers['X-s'] = '' # 占位，实际可能需要更复杂的签名
-                headers['X-t'] = str(int(time.time() * 1000))
+                # 暂时移除 X-s 和 X-t，因为对于普通HTML请求可能不需要，且错误的签名可能导致反爬
+                # headers['X-s'] = '' 
+                # headers['X-t'] = str(int(time.time() * 1000))
         except Exception as e:
             logger.warning(f"获取小红书Cookie失败: {e}")
         
@@ -302,7 +308,7 @@ class XiaohongshuService:
             note_url: 小红书笔记链接
             
         Returns:
-            笔记详细信息，包含title, cover_url, description, source_url等
+            笔记详细信息，包含title, cover_url, description, source_url, images等
         """
         try:
             logger.info(f"开始解析笔记链接: {note_url}")
@@ -326,58 +332,172 @@ class XiaohongshuService:
             # 解析HTML
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # 提取标题
+            # 初始化结果字段
             title = ""
-            title_tag = soup.find('h1', class_=re.compile(r'title|note-title'))
-            if title_tag:
-                title = title_tag.get_text(strip=True)
-            
-            # 提取封面图
-            cover_url = ""
-            img_tags = soup.find_all('img')
-            for img in img_tags:
-                src = img.get('src', '')
-                if src and ('cover' in src.lower() or 'note' in src.lower()):
-                    cover_url = src
-                    if cover_url.startswith('//'):
-                        cover_url = 'https:' + cover_url
-                    break
-            # 如果没有找到封面图，使用第一张图片
-            if not cover_url and img_tags:
-                src = img_tags[0].get('src', '')
-                if src:
-                    cover_url = src
-                    if cover_url.startswith('//'):
-                        cover_url = 'https:' + cover_url
-            
-            # 提取文案/描述
             description = ""
-            desc_tags = soup.find_all('span', class_=re.compile(r'note|content|desc'))
-            if desc_tags:
-                description = desc_tags[0].get_text(strip=True)
-            # 如果没有找到，尝试从div中提取
-            if not description:
-                content_divs = soup.find_all('div', class_=re.compile(r'content|note'))
-                if content_divs:
-                    description = content_divs[0].get_text(strip=True, separator=' ')
-            
-            # 限制描述长度
-            if len(description) > 200:
-                description = description[:200] + "..."
-            
-            # 提取作者信息（可选）
-            author = None
-            author_tags = soup.find_all('span', class_=re.compile(r'author|user|name'))
-            if author_tags:
-                author = author_tags[0].get_text(strip=True)
-            
-            # 提取点赞数（可选）
+            cover_url = ""
+            author = ""
             likes = 0
-            like_tags = soup.find_all('span', class_=re.compile(r'like|count|engage'))
-            if like_tags:
-                likes_text = like_tags[0].get_text(strip=True)
-                likes_match = re.search(r'\d+', likes_text)
-                likes = int(likes_match.group()) if likes_match else 0
+            images = []
+            
+            # 优先尝试从 window.__INITIAL_STATE__ 提取数据 (这是获取多图和准确信息的最佳方式)
+            import json
+            scripts = soup.find_all('script')
+            initial_state_found = False
+            
+            for script in scripts:
+                if script.string and "window.__INITIAL_STATE__" in script.string:
+                    try:
+                        logger.info("解析笔记页面 INITIAL_STATE...")
+                        json_str = script.string.replace("window.__INITIAL_STATE__=", "").replace("undefined", "null")
+                        if json_str.strip().endswith(";"):
+                            json_str = json_str.strip()[:-1]
+                        data = json.loads(json_str)
+                        
+                        # 尝试查找笔记数据
+                        note_data = None
+                        
+                        # 路径1: note.note
+                        if 'note' in data and 'note' in data['note']:
+                            note_data = data['note']['note']
+                        # 路径2: note.firstNote
+                        elif 'note' in data and 'firstNote' in data['note']:
+                            note_data = data['note']['firstNote']
+                        # 路径3: note.noteDetailMap (Map结构，需要遍历或用ID)
+                        elif 'note' in data and 'noteDetailMap' in data['note']:
+                            detail_map = data['note']['noteDetailMap']
+                            if detail_map:
+                                # 取第一个值
+                                temp_data = next(iter(detail_map.values()))
+                                # 检查是否包裹在 'note' 字段中 (新版结构 fix)
+                                if temp_data and 'note' in temp_data and isinstance(temp_data['note'], dict) and 'title' in temp_data['note']:
+                                    note_data = temp_data['note']
+                                else:
+                                    note_data = temp_data
+                        
+                        if note_data:
+                            initial_state_found = True
+                            title = note_data.get('title', '') or note_data.get('display_title', '')
+                            description = note_data.get('desc', '') or note_data.get('description', '')
+                            
+                            # 获取图片列表
+                            if 'imageList' in note_data:
+                                logger.info(f"Found imageList with {len(note_data['imageList'])} items")
+                                images = []
+                                for img in note_data['imageList']:
+                                    # Try various keys
+                                    url = img.get('urlDefault', '') or img.get('url', '') or img.get('infoList', [{}])[0].get('url', '')
+                                    if url:
+                                        images.append(url)
+                            elif 'images_list' in note_data:
+                                logger.info(f"Found images_list with {len(note_data['images_list'])} items")
+                                images = [img.get('url', '') for img in note_data['images_list']]
+                            else:
+                                logger.warning("No imageList or images_list found in note_data")
+                            
+                            # 过滤空链接
+                            images = [img for img in images if img]
+                            if images:
+                                cover_url = images[0]
+                                
+                            # 获取作者
+                            user = note_data.get('user', {})
+                            author = user.get('nickname', '')
+                            
+                            # 获取点赞
+                            likes = note_data.get('likes', 0) or note_data.get('interact_info', {}).get('liked_count', 0)
+                            
+                            logger.info("成功从 INITIAL_STATE 提取笔记详情")
+                            break
+                            
+                    except Exception as e:
+                        logger.warning(f"解析笔记 INITIAL_STATE 失败: {e}")
+            
+            # 如果 JSON 解析失败或缺少关键信息，尝试 Meta 标签和 DOM
+            if not title or not initial_state_found:
+                logger.info("尝试从 Meta 标签提取信息...")
+                
+                # Title: 优先 og:title -> title tag
+                meta_title = soup.find('meta', property='og:title')
+                if meta_title:
+                    title = meta_title.get('content', '')
+                if not title:
+                    if soup.title:
+                        title = soup.title.string.replace(' - 小红书', '')
+                
+                # Fallback to h1 if still empty (but be careful of nav bars)
+                if not title:
+                    h1 = soup.find('h1', class_=re.compile(r'title|note-title'))
+                    if h1:
+                        title = h1.get_text(strip=True)
+                
+                # Description: og:description -> meta description
+                meta_desc = soup.find('meta', property='og:description')
+                if meta_desc:
+                    description = meta_desc.get('content', '')
+                if not description:
+                    meta_desc_name = soup.find('meta', attrs={'name': 'description'})
+                    if meta_desc_name:
+                        description = meta_desc_name.get('content', '')
+                
+                # Images: og:image (usually only one)
+                if not images:
+                    meta_image = soup.find('meta', property='og:image')
+                    if meta_image:
+                        cover_url = meta_image.get('content', '')
+                        if cover_url:
+                            images.append(cover_url)
+                    
+                    # Try finding content images
+                    content_div = soup.find('div', class_=re.compile(r'content|note-content'))
+                    if content_div:
+                        img_tags = content_div.find_all('img')
+                        for img in img_tags:
+                            src = img.get('src', '')
+                            if src and src not in images:
+                                images.append(src)
+            
+            # 兜底：如果还是没找到图片，尝试页面所有大图（增强版）
+            if not images:
+                # 尝试查找 background-image
+                div_tags = soup.find_all('div', style=re.compile(r'background-image'))
+                for div in div_tags:
+                    style = div.get('style', '')
+                    match = re.search(r'url\("?([^")]+)"?\)', style)
+                    if match:
+                        url = match.group(1)
+                        if url and ('sns-webpic' in url or 'ci.xiaohongshu.com' in url):
+                            if url not in images:
+                                images.append(url)
+
+                img_tags = soup.find_all('img')
+                for img in img_tags:
+                    src = img.get('src', '')
+                    # 简单的过滤逻辑，排除头像、图标等小图
+                    if src and ('cover' in src or 'sns-webpic' in src or 'ci.xiaohongshu.com' in src):
+                         if src not in images:
+                            images.append(src)
+            
+            # 确保 cover_url 存在
+            if not cover_url and images:
+                cover_url = images[0]
+            
+            # 处理 URL 协议
+            if cover_url and cover_url.startswith('//'):
+                cover_url = 'https:' + cover_url
+            
+            # 规范化所有图片链接
+            final_images = []
+            for img in images:
+                if img.startswith('//'):
+                    final_images.append('https:' + img)
+                elif img.startswith('http'):
+                    final_images.append(img)
+            images = final_images
+            
+            # 如果标题还是为空，使用默认
+            if not title:
+                title = "无标题笔记"
             
             result = {
                 'title': title,
@@ -385,10 +505,11 @@ class XiaohongshuService:
                 'description': description,
                 'source_url': note_url,
                 'author': author,
-                'likes': likes
+                'likes': int(likes) if likes else 0,
+                'images': images # 新增图片列表
             }
             
-            logger.info(f"笔记解析完成: {title[:30]}...")
+            logger.info(f"笔记解析完成: {title[:30]}... (包含 {len(images)} 张图片)")
             return result
             
         except requests.RequestException as e:

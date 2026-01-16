@@ -11,6 +11,7 @@ export default {
     english: 'English',
     save: 'Save',
     reset: 'Reset',
+    retry: 'Retry',
     test: 'Test',
     copy: 'Copy',
     delete: 'Delete',
