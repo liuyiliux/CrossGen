@@ -320,12 +320,21 @@ class GenerationService:
                         
                         # 添加参考图
                         for img in reference_images:
-                            multimodal_prompt.append({
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": img
-                                }
-                            })
+                            if isinstance(img, dict):
+                                if img.get("type") == "image_url" and "image_url" in img:
+                                    multimodal_prompt.append(img)
+                                else:
+                                    value = img.get("image_url") or img.get("url") or img.get("base64")
+                                    if isinstance(value, str) and value:
+                                        multimodal_prompt.append({
+                                            "type": "image_url",
+                                            "image_url": value
+                                        })
+                            elif isinstance(img, str) and img:
+                                multimodal_prompt.append({
+                                    "type": "image_url",
+                                    "image_url": img
+                                })
                         
                         ai_result = await provider.generate_text(
                             multimodal_prompt,
