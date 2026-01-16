@@ -1,11 +1,42 @@
+# 系统配置示例
+# 复制此文件为 system_config.yaml 并根据实际环境修改
+
+# 日志配置
+logger:
+  level: "INFO"  # 日志级别：DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file_path: "logs/yiliu.log"  # 日志文件路径
+  rotation: "10 MB"  # 日志文件轮转大小
+  retention: 7  # 日志保留天数
+
+# 数据库配置（可选）
 mysql:
-  database: ''
   enabled: false
   host: localhost
-  password: ''
   port: 3306
-  username: ''
+  username: root
+  password: ""
+  database: yiliu_db
+  pool_size: 10
+  max_overflow: 20
+  echo: false
+
+# Redis配置
 redis:
   enabled: false
-  password: ''
-  url: redis://localhost:6379/0
+  url: "redis://localhost:6379/0"
+  password: ""
+  encoding: "utf-8"
+  decode_responses: true
+  db: 0
+
+# API配置
+api:
+  prefix: "/api"
+  timeout: 300  # API超时时间（秒）
+
+# 图片配置
+image:
+  save_path: "images"  # 图片保存路径
+  max_size: 10485760  # 图片最大大小（10MB）
+  quality: 90  # 图片质量（0-100）
+  allowed_formats: ["jpg", "jpeg", "png"]
