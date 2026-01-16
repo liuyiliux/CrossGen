@@ -13,11 +13,16 @@ def setup_logger() -> None:
     """设置应用日志"""
 
     # 创建日志目录
-    log_dir = Path(__file__).parent.parent.parent / "logs"
+    log_path = Path(settings.LOG_FILE)
+    if not log_path.is_absolute():
+        # 如果是相对路径，则相对于backend目录
+        log_path = Path(__file__).parent.parent.parent / log_path
+    
+    log_dir = log_path.parent
     log_dir.mkdir(parents=True, exist_ok=True)
 
     # 使用绝对路径配置日志文件
-    log_file = log_dir / "app.log"
+    log_file = log_path
 
     # 获取根日志器
     root_logger = logging.getLogger()

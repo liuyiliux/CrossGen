@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: Optional[str] = Field(default=None, env="REDIS_PASSWORD")
     REDIS_ENABLED: bool = Field(default=True, env="REDIS_ENABLED")
     
+    # API 配置
+    API_PREFIX: str = Field(default="/api", env="API_PREFIX")
+    API_TIMEOUT: int = Field(default=300, env="API_TIMEOUT")
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # 尝试从system_config.yaml加载配置，覆盖环境变量
@@ -38,18 +42,41 @@ class Settings(BaseSettings):
                 with open(system_config_file, 'r', encoding='utf-8') as f:
                     system_config = yaml.safe_load(f) or {}
                     
-                # 优先使用system_config.yaml中的Redis配置
+                # 1. Redis 配置
                 if "redis" in system_config:
                     redis_config = system_config["redis"]
-                    # 覆盖REDIS_ENABLED
                     if "enabled" in redis_config:
                         self.REDIS_ENABLED = redis_config["enabled"]
-                    # 覆盖REDIS_URL
                     if "url" in redis_config:
                         self.REDIS_URL = redis_config["url"]
-                    # 覆盖REDIS_PASSWORD
                     if "password" in redis_config:
                         self.REDIS_PASSWORD = redis_config["password"]
+
+                # 2. 日志配置
+                if "logger" in system_config:
+                    logger_config = system_config["logger"]
+                    if "level" in logger_config:
+                        self.LOG_LEVEL = logger_config["level"]
+                    if "file_path" in logger_config:
+                        self.LOG_FILE = logger_config["file_path"]
+                
+                # 3. 图片/文件配置
+                if "image" in system_config:
+                    image_config = system_config["image"]
+                    if "save_path" in image_config:
+                        self.UPLOAD_DIR = image_config["save_path"]
+                    if "max_size" in image_config:
+                        # 转换为字符串，保持类型一致
+                        self.MAX_FILE_SIZE = str(image_config["max_size"])
+                
+                # 4. API 配置
+                if "api" in system_config:
+                    api_config = system_config["api"]
+                    if "prefix" in api_config:
+                        self.API_PREFIX = api_config["prefix"]
+                    if "timeout" in api_config:
+                        self.API_TIMEOUT = api_config["timeout"]
+                        
         except Exception as e:
             # 如果加载失败，使用默认值
             print(f"加载system_config.yaml失败: {str(e)}")

@@ -263,6 +263,22 @@ class ConfigService:
                 },
                 "xiaohongshu": {
                     "cookie": ""
+                },
+                "logger": {
+                    "level": "INFO",
+                    "file_path": "logs/yiliu.log",
+                    "rotation": "10 MB",
+                    "retention": 7
+                },
+                "image": {
+                    "save_path": "images",
+                    "max_size": 10485760,
+                    "quality": 90,
+                    "allowed_formats": ["jpg", "jpeg", "png"]
+                },
+                "api": {
+                    "prefix": "/api",
+                    "timeout": 300
                 }
             })
         return self._system_config_cache

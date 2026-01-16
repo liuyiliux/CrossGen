@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.api import generation, config, health, history, inspiration
-from src.utils.config import Settings
+from src.utils.config import Settings, settings
 from src.utils.logger import setup_logger, logger
 
 
@@ -28,8 +28,8 @@ async def lifespan(app: FastAPI):
     app_root = Path(__file__).resolve().parent.parent
     
     # 创建必要的目录
-    (app_root / "logs").mkdir(exist_ok=True)
-    (app_root / "uploads").mkdir(exist_ok=True)
+    # 日志目录由setup_logger处理
+    (app_root / settings.UPLOAD_DIR).mkdir(exist_ok=True)
     (app_root / "history").mkdir(exist_ok=True)
     
     # 配置日志
@@ -95,17 +95,18 @@ def create_app() -> FastAPI:
     )
     
     # 静态文件服务
-    if Path("uploads").exists():
-        app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+    upload_dir = Path(settings.UPLOAD_DIR)
+    if upload_dir.exists():
+        app.mount("/" + settings.UPLOAD_DIR, StaticFiles(directory=settings.UPLOAD_DIR), name=settings.UPLOAD_DIR)
     if Path("history").exists():
         app.mount("/history", StaticFiles(directory="history"), name="history")
     
     # 注册路由
-    app.include_router(health.router, prefix="/api", tags=["健康检查"])
-    app.include_router(generation.router, prefix="/api", tags=["内容生成"])
-    app.include_router(config.router, prefix="/api", tags=["配置管理"])
-    app.include_router(history.router, prefix="/api", tags=["历史记录"])
-    app.include_router(inspiration.router, prefix="/api", tags=["灵感获取"])
+    app.include_router(health.router, prefix=settings.API_PREFIX, tags=["健康检查"])
+    app.include_router(generation.router, prefix=settings.API_PREFIX, tags=["内容生成"])
+    app.include_router(config.router, prefix=settings.API_PREFIX, tags=["配置管理"])
+    app.include_router(history.router, prefix=settings.API_PREFIX, tags=["历史记录"])
+    app.include_router(inspiration.router, prefix=settings.API_PREFIX, tags=["灵感获取"])
     
     @app.get("/")
     async def root():
@@ -140,5 +141,5 @@ if __name__ == "__main__":
         host=settings.HOST,
         port=port,
         reload=settings.DEBUG,
-        log_level="info"
+        log_level=settings.LOG_LEVEL.lower()
     )

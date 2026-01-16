@@ -2,6 +2,11 @@
 
 > 🚀 基于 AI 的一站式多平台图文内容生成工具
 
+## 🔗 项目地址
+
+- **GitHub**: [https://github.com/liuyiliux/CrossGen](https://github.com/liuyiliux/CrossGen)
+- **CNB**: [https://cnb.cool/yiliu/yiliu](https://cnb.cool/yiliu/yiliu)
+
 ## 项目简介
 
 逸流是一款智能化的多平台图文生成器，帮助内容创作者通过"一句话"快速生成符合小红书、抖音、微信公众号、头条号、反推等平台特色的专业图文内容。最新版本集成了强大的**灵感获取**功能，支持从小红书链接解析并导入标题、文案及**参考图片**，让创作更高效。
@@ -35,6 +40,36 @@
 - **Vite**: 快速构建工具
 - **Element Plus**: UI 组件库
 - **Pinia**: 状态管理
+
+## 📂 项目结构
+
+```text
+yiliu/
+├── backend/                # 后端代码 (FastAPI)
+│   ├── src/
+│   │   ├── api/           # API 路由定义
+│   │   ├── models/        # 数据模型 (Pydantic)
+│   │   ├── providers/     # AI 模型提供商实现
+│   │   ├── services/      # 核心业务逻辑
+│   │   ├── utils/         # 工具函数 (配置、日志等)
+│   │   └── app.py         # 应用入口
+│   └── scripts/           # 辅助脚本
+├── frontend/               # 前端代码 (Vue 3)
+│   ├── src/
+│   │   ├── components/    # Vue 组件
+│   │   ├── stores/        # Pinia 状态管理
+│   │   ├── views/         # 页面视图
+│   │   ├── router/        # 路由配置
+│   │   ├── styles/        # 样式文件 (SCSS)
+│   │   └── utils/         # 前端工具函数
+│   └── index.html         # 入口 HTML
+├── config/                 # 配置文件模板
+│   ├── system_config.yaml      # 系统配置
+│   ├── platform_templates.yaml # 平台模板
+│   ├── text_providers.yaml     # LLM 提供商配置
+│   └── image_providers.yaml    # 绘图模型配置
+└── docs/                   # 项目文档
+```
 
 ## 🚀 快速开始
 
